@@ -1,0 +1,37 @@
+name: "Test using kind and chart-testing tool"
+on: [pull_request, push]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        kubernetesVersion: ["v1.13.12", "v1.17.2"]
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/master'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Shellcheck
+      uses: ludeeus/action-shellcheck@0.1.0
+    - name: Install kind
+      uses: helm/kind-action@v1.0.0-alpha.3
+      with:
+        node_image: "kindest/node:${{ matrix.kubernetesVersion }}"
+        config: kind-config.yaml
+        install_local_path_provisioner: true
+    - name: Verify kind
+      run: |
+        kubectl cluster-info
+        kubectl get nodes -o wide
+        kubectl get pods -n kube-system
+    - name: Run chart-testing (lint)
+      uses: helm/chart-testing-action@v1.0.0-alpha.3
+      with:
+        command: lint
+        config: ct-config.yaml
+    - name: Run chart-testing (install)
+      uses: helm/chart-testing-action@v1.0.0-alpha.3
+      with:
+        command: install
+        config: ct-config.yaml
