@@ -3,9 +3,9 @@ entries:
   redis-ha:
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-03-23T04:38:44.245901896Z"
+    created: "2020-03-23T08:17:43.495223904Z"
     description: Highly available Kubernetes implementation of Redis
-    digest: 15876aaab8a462c6c5dea752f5ab20a3fd5031f8b66dce7d2be7d41f48a31353
+    digest: 335b71e24c7163fde98d2c7fdbd2967439590a3fe0fcd4ad26288efeb7084a47
     home: http://redis.io/
     icon: https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Redis_Logo.svg/1200px-Redis_Logo.svg.png
     keywords:
@@ -27,7 +27,7 @@ entries:
     version: 4.5.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-03-23T04:38:44.244195986Z"
+    created: "2020-03-23T08:17:43.490893021Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 21ec2fca6bd6b12b9582982d831e5be7aecdf8ecabf1b15f0e0ffcc97ed47076
     home: http://redis.io/
@@ -49,4 +49,4 @@ entries:
     urls:
     - redis-ha-4.4.2.tgz
     version: 4.4.2
-generated: "2020-03-23T04:38:44.242225874Z"
+generated: "2020-03-23T08:17:43.489240542Z"
