@@ -2,8 +2,6 @@ name: Publish Charts to /docs
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,4 +11,5 @@ jobs:
     - name: Package and Publish charts
       uses: J12934/helm-gh-pages-action@master
       with:
+        deploy-branch: gh-pages
         access-token: "${{ secrets.CR_TOKEN }}"
