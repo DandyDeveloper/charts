@@ -18,7 +18,7 @@ jobs:
       uses: helm/kind-action@v1.0.0-alpha.3
       with:
         node_image: "kindest/node:${{ matrix.kubernetesVersion }}"
-        config: kind-config.yaml
+        config: .ci/kind-config.yaml
         install_local_path_provisioner: true
     - name: Verify kind
       run: |
@@ -29,9 +29,9 @@ jobs:
       uses: helm/chart-testing-action@v1.0.0-alpha.3
       with:
         command: lint
-        config: ct-config.yaml
+        config: .ci/ct-config.yaml
     - name: Run chart-testing (install)
       uses: helm/chart-testing-action@v1.0.0-alpha.3
       with:
         command: install
-        config: ct-config.yaml
+        config: .ci/ct-config.yaml
