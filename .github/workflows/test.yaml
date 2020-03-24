@@ -1,5 +1,11 @@
 name: "Test using kind and chart-testing tool"
-on: [pull_request, push]
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
 
 jobs:
   test:
