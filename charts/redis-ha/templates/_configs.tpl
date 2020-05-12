@@ -142,7 +142,7 @@
     # works only if index is less than 10
     echo "Verifying redis read-only replica.."
     echo "  we have RO_REPLICAS='${RO_REPLICAS}' with INDEX='${INDEX}'"
-    if echo -n "${RO_REPLICAS}" | grep -q "${INDEX}" ; then
+    if echo "${RO_REPLICAS}" | grep -q "${INDEX}" ; then
         redis_ro_update
     fi
 
