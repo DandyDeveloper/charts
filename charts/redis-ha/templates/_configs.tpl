@@ -56,7 +56,9 @@
     }
 
     sentinel_get_master_retry() {
-        master retry=${1} sleep=3
+        master=''
+        retry=${1}
+        sleep=3
         for i in $(seq 1 "${retry}"); do
             master=$(sentinel_get_master)
             if [ -n "${master}" ]; then
@@ -140,7 +142,9 @@
     }
 
     redis_ping_retry() {
-        ping='' retry=${1} sleep=3
+        ping=''
+        retry=${1}
+        sleep=3
         for i in $(seq 1 "${retry}"); do
             if [ "$(redis_ping)" = "PONG" ]; then
                ping='PONG'
