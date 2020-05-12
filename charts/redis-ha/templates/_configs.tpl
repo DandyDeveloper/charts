@@ -39,7 +39,7 @@
     HOSTNAME="$(hostname)"
     INDEX="${HOSTNAME##*-}"
     MASTER=''
-    MASTER_GROUP="{{ .Values.redis.masterGroupName }}"
+    MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
     QUORUM="{{ .Values.sentinel.quorum }}"
     REDIS_CONF=/data/conf/redis.conf
     REDIS_PORT={{ .Values.redis.port }}
