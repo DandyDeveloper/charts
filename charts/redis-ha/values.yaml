@@ -365,3 +365,19 @@ hostPath:
   chown: true
 
 emptyDir: {}
+
+# restore init container is executed if restore.[s3|ssh].source is not false
+# restore init container creates /data/dump.rdb_ from original if exists
+# restore init container overrides /data/dump.rdb
+# secrets are stored into environment of init container - stored encoded on k8s
+restore:
+  timeout: 600
+  s3:
+    source: false
+#    source: "s3://bucket/dump.rdb"
+    access_key: "define_s3_access_key"
+    secret_key: "define_s3_secret_key"
+  ssh:
+    source: false
+#    source: "user@server:/path/dump.rdb"
+    key: "-----BEGIN RSA PRIVATE KEY-----\n...\n...\n...\n-----END RSA PRIVATE KEY-----"
