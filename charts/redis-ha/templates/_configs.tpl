@@ -64,9 +64,9 @@
             if [ -n "${master}" ]; then
                 break
             fi
-            sleep ${sleep}
+            sleep $((${sleep} + ${i}))
         done
-        echo ${master}
+        echo "${master}"
     }
 
     identify_master() {
@@ -150,7 +150,7 @@
                ping='PONG'
                break
             fi
-            sleep ${sleep}
+            sleep $((${sleep} + ${i}))
             MASTER=$(sentinel_get_master)
         done
         echo "${ping}"
@@ -200,9 +200,9 @@
         pod="${SERVICE}-server-${index}"
         host=$(getent hosts "${service}")
         if [ -z "${host}" ]; then
-            host=$(getent hosts ${pod})
+            host=$(getent hosts "${pod}")
         fi
-        echo ${host}
+        echo "${host}"
     }
 
     mkdir -p /data/conf/
