@@ -90,6 +90,7 @@ spec:
       securityContext:
 {{ toYaml .Values.securityContext | indent 8 }}
       serviceAccountName: {{ template "redis-ha.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountToken }}
       initContainers:
       {{- if .Values.sysctlImage.enabled }}
       - name: init-sysctl

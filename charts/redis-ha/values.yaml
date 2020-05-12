@@ -31,6 +31,9 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the redis-ha.fullname template
   # name:
+  ## opt in/out of automounting API credentials into container
+  ## https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+  automountToken: false
 
 ## Enables a HA Proxy for better LoadBalancing / Sentinel Master support. Automatically proxies to Redis master.
 ## Recommend for externally exposed Redis clusters.
