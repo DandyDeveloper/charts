@@ -38,7 +38,6 @@
     echo "$(date) Start..."
     HOSTNAME="$(hostname)"
     INDEX="${HOSTNAME##*-}"
-    RO_REPLICAS="{{ .Values.ro_replicas }}"
     MASTER=''
     MASTER_GROUP="{{ .Values.redis.masterGroupName }}"
     QUORUM="{{ .Values.sentinel.quorum }}"
