@@ -36,6 +36,7 @@
 
 {{- define "config-init.sh" }}
     HOSTNAME="$(hostname)"
+    RO_REPLICAS="{{ .Values.ro_replicas }}"
     INDEX="${HOSTNAME##*-}"
     MASTER="$(redis-cli -h {{ template "redis-ha.fullname" . }} -p {{ .Values.sentinel.port }} sentinel get-master-addr-by-name {{ template "redis-ha.masterGroupName" . }} | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
     MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
@@ -111,6 +112,12 @@
         fi
     }
 
+    redis_ro_update() {
+        echo "Updating read-only redis config.."
+        echo "  redis.conf set 'replica-priority 0'"
+        echo "replica-priority 0" >> ${REDIS_CONF}
+    }
+
     mkdir -p /data/conf/
 
     echo "Initializing config.."
@@ -130,6 +137,13 @@
         echo "Setting auth values"
         ESCAPED_AUTH=$(echo "$AUTH" | sed -e 's/[\/&]/\\&/g');
         sed -i "s/replace-default-auth/${ESCAPED_AUTH}/" "$REDIS_CONF" "$SENTINEL_CONF"
+    fi
+
+    # works only if index is less than 10
+    echo "Verifying redis read-only replica.."
+    echo "  we have RO_REPLICAS='${RO_REPLICAS}' with INDEX='${INDEX}'"
+    if echo -n "${RO_REPLICAS}" | grep -q "${INDEX}" ; then
+        redis_ro_update
     fi
 
     echo "Ready..."
