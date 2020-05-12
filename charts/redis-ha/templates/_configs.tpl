@@ -56,22 +56,22 @@
     }
 
     sentinel_get_master_retry() {
-        local master retry=${1:-3} sleep=3
-        for i in $(seq 1 ${retry}); do
+        master retry=${1} sleep=3
+        for i in $(seq 1 "${retry}"); do
             master=$(sentinel_get_master)
             if [ -n "${master}" ]; then
                 break
             fi
             sleep ${sleep}
         done
-        echo -n ${master}
+        echo ${master}
     }
 
     identify_master() {
         echo "Identifying redis master (get-master-addr-by-name).."
         echo "  using sentinel ({{ template "redis-ha.fullname" . }}:{{ .Values.sentinel.port }}), sentinel group name ({{ .Values.redis.masterGroupName }})"
         echo "  $(date).."
-        MASTER="$(sentinel_get_master_retry)"
+        MASTER="$(sentinel_get_master_retry 3)"
         if [ -n "${MASTER}" ]; then
             echo "  $(date) Found redis master (${MASTER})"
         else
@@ -140,8 +140,8 @@
     }
 
     redis_ping_retry() {
-        local ping='' retry=${1:-3} sleep=3
-        for i in $(seq 1 ${retry}); do
+        ping='' retry=${1} sleep=3
+        for i in $(seq 1 "${retry}"); do
             if [ "$(redis_ping)" = "PONG" ]; then
                ping='PONG'
                break
@@ -149,14 +149,14 @@
             sleep ${sleep}
             MASTER=$(sentinel_get_master)
         done
-        echo -n "${ping}"
+        echo "${ping}"
     }
 
     find_master() {
         echo "Verifying redis master.."
         echo "  ping (${MASTER}:${REDIS_PORT})"
         echo "  $(date).."
-        if [ "$(redis_ping_retry)" != "PONG" ]; then
+        if [ "$(redis_ping_retry 3)" != "PONG" ]; then
             echo "  $(date) Can't ping redis master (${MASTER})"
             echo "Attempting to force failover (sentinel failover).."
             echo "  on sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
@@ -191,14 +191,14 @@
     }
 
     getent_hosts() {
-        local index=${1:-${INDEX}}
-        local service="${SERVICE}-announce-${index}"
-        local pod="${SERVICE}-server-${index}"
-        local host=$(getent hosts ${service})
+        index=${1:-${INDEX}}
+        service="${SERVICE}-announce-${index}"
+        pod="${SERVICE}-server-${index}"
+        host=$(getent hosts "${service}")
         if [ -z "${host}" ]; then
             host=$(getent hosts ${pod})
         fi
-        echo -n ${host}
+        echo ${host}
     }
 
     mkdir -p /data/conf/
@@ -224,7 +224,6 @@
 
     if [ "${AUTH:-}" ]; then
         echo "Setting redis auth values.."
-        echo "  auth (${AUTH:0:3}...)"
         ESCAPED_AUTH=$(echo "${AUTH}" | sed -e 's/[\/&]/\\&/g');
         sed -i "s/replace-default-auth/${ESCAPED_AUTH}/" "${REDIS_CONF}" "${SENTINEL_CONF}"
     fi
