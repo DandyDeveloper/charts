@@ -370,14 +370,16 @@ emptyDir: {}
 # restore init container creates /data/dump.rdb_ from original if exists
 # restore init container overrides /data/dump.rdb
 # secrets are stored into environment of init container - stored encoded on k8s
+# REQUIRED for s3 restore: AWS 'access_key' and 'secret_key'
+# EXAMPLE source for s3 restore: 's3://bucket/dump.rdb'
+# REQUIRED for ssh restore: 'key' should be in one line including CR i.e. '-----BEGIN RSA PRIVATE KEY-----\n...\n...\n...\n-----END RSA PRIVATE KEY-----'
+# EXAMPLE source for ssh restore: 'user@server:/path/dump.rdb'
 restore:
   timeout: 600
   s3:
     source: false
-#    source: "s3://bucket/dump.rdb"
-    access_key: "define_s3_access_key"
-    secret_key: "define_s3_secret_key"
+    access_key: ""
+    secret_key: ""
   ssh:
     source: false
-#    source: "user@server:/path/dump.rdb"
-    key: "-----BEGIN RSA PRIVATE KEY-----\n...\n...\n...\n-----END RSA PRIVATE KEY-----"
+    key: ""
