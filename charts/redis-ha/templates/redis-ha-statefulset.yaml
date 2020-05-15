@@ -172,10 +172,8 @@ spec:
               then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
            && mv -v /data/dump.rdb_ /data/dump.rdb"
         envFrom:
-        - configMapRef:
-            name: {{ include "redis-ha.fullname" . }}-init-s3-env-cm
         - secretRef:
-            name: {{ include "redis-ha.fullname" . }}-init-s3-env-secret
+            name: {{ include "redis-ha.fullname" . }}-secret
         volumeMounts:
         - name: data
           mountPath: /data
@@ -207,7 +205,7 @@ spec:
           runAsUser: 0
         envFrom:
         - secretRef:
-            name: {{ include "redis-ha.fullname" . }}-init-ssh-env-secret
+            name: {{ include "redis-ha.fullname" . }}-secret
         volumeMounts:
         - name: data
           mountPath: /data
