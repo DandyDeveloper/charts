@@ -1,3 +1,6 @@
+{{- $regexRestoreS3 := "^s3://.+|^S3://.+" -}}
+{{- $regexRestoreSSH := "^.+@.+:.+" -}}
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -155,7 +158,7 @@ spec:
           readOnly: true
         - name: data
           mountPath: /data
-{{ if regexFind "^s3://.+|^S3://.+" (toString .Values.restore.s3.source) }}
+{{ if regexFind $regexRestoreS3 (toString .Values.restore.s3.source) }}
       - name: restore-s3
         image: s3cmd/s3cmd:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -178,7 +181,7 @@ spec:
         - name: data
           mountPath: /data
 {{- end }}
-{{ if regexFind "^.+@.+:.+" (toString .Values.restore.ssh.source) }}
+{{ if regexFind $regexRestoreSSH (toString .Values.restore.ssh.source) }}
       - name: restore-ssh
         image: lgatica/openssh-client:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
