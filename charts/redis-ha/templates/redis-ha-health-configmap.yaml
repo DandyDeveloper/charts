@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "redis-ha.fullname" . }}-health-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app: {{ template "redis-ha.fullname" . }}
+data:
+  redis_liveness.sh: |
+{{- include "redis_liveness.sh" . }}
+  sentinel_liveness.sh: |
+{{- include "sentinel_liveness.sh" . }}

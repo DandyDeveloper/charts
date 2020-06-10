@@ -6,6 +6,21 @@
 {{- else }}
     dir "/data"
     port {{ .Values.redis.port }}
+    {{- if .Values.sentinel.tlsPort }}
+    tls-port {{ .Values.redis.tlsPort }}
+    tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
+    tls-key-file /tls-certs/{{ .Values.tls.keyFile }}
+    {{- if .Values.tls.dhParamsFile }}
+    tls-dh-params-file /tls-certs/{{ .Values.tls.dhParamsFile }}
+    {{- end }}
+    {{- if .Values.tls.caCertFile }}
+    tls-ca-cert-file /tls-certs/{{ .Values.tls.caCertFile }}
+    {{- end }}
+    {{- if eq (default "yes" .Values.redis.authClients) "no"}}
+    tls-auth-clients no
+    {{- end }}
+    tls-replication {{ if .Values.redis.tlsReplication }}yes{{ else }}no{{ end }}
+    {{- end }}
     {{- range $key, $value := .Values.redis.config }}
     {{ $key }} {{ $value }}
     {{- end }}
@@ -21,6 +36,22 @@
 {{ tpl .Values.sentinel.customConfig . | indent 4 }}
 {{- else }}
     dir "/data"
+    port {{ .Values.sentinel.port }}
+    {{- if .Values.sentinel.tlsPort }}
+    tls-port {{ .Values.sentinel.tlsPort }}
+    tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
+    tls-key-file /tls-certs/{{ .Values.tls.keyFile }}
+    {{- if .Values.tls.dhParamsFile }}
+    tls-dh-params-file /tls-certs/{{ .Values.tls.dhParamsFile }}
+    {{- end }}
+    {{- if .Values.tls.caCertFile }}
+    tls-ca-cert-file /tls-certs/{{ .Values.tls.caCertFile }}
+    {{- end }}
+    {{- if eq (default "yes" .Values.sentinel.authClients) "no"}}
+    tls-auth-clients no
+    {{- end }}
+    tls-replication {{ if .Values.sentinel.tlsReplication }}yes{{ else }}no{{ end }}
+    {{- end }}
     {{- range $key, $value := .Values.sentinel.config }}
     {{- if eq "maxclients" $key  }}
         {{ $key }} {{ $value }}
@@ -30,6 +61,9 @@
     {{- end }}
 {{- if .Values.auth }}
     sentinel auth-pass {{ template "redis-ha.masterGroupName" . }} replace-default-auth
+{{- if .Values.sentinel.auth }}
+    requirepass replace-default-sentinel-auth
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -37,30 +71,51 @@
 {{- define "config-init.sh" }}
     HOSTNAME="$(hostname)"
     INDEX="${HOSTNAME##*-}"
-    MASTER="$(redis-cli -h {{ template "redis-ha.fullname" . }} -p {{ .Values.sentinel.port }} sentinel get-master-addr-by-name {{ template "redis-ha.masterGroupName" . }} | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    if [ {{ .Values.sentinel.port }} != 0 ]; then
+        MASTER="$(redis-cli -h {{ template "redis-ha.fullname" . }} -p {{ .Values.sentinel.port }} {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} sentinel get-master-addr-by-name {{ template "redis-ha.masterGroupName" . }} | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+    else
+        MASTER="$(redis-cli -h {{ template "redis-ha.fullname" . }} -p {{ .Values.sentinel.tlsPort }} {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} sentinel get-master-addr-by-name {{ template "redis-ha.masterGroupName" . }} | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+    fi
     MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
     QUORUM="{{ .Values.sentinel.quorum }}"
     REDIS_CONF=/data/conf/redis.conf
     REDIS_PORT={{ .Values.redis.port }}
+    REDIS_TLS_PORT={{ .Values.redis.tlsPort }}
     SENTINEL_CONF=/data/conf/sentinel.conf
     SENTINEL_PORT={{ .Values.sentinel.port }}
+    SENTINEL_TLS_PORT={{ .Values.sentinel.tlsPort }}
     SERVICE={{ template "redis-ha.fullname" . }}
+    MASTER_PING_SUCCESSFUL=false
     set -eu
 
     sentinel_update() {
         echo "Updating sentinel config with master $MASTER"
         eval MY_SENTINEL_ID="\${SENTINEL_ID_$INDEX}"
         sed -i "1s/^/sentinel myid $MY_SENTINEL_ID\\n/" "$SENTINEL_CONF"
-        sed -i "2s/^/sentinel monitor $MASTER_GROUP $1 $REDIS_PORT $QUORUM \\n/" "$SENTINEL_CONF"
+        if [ {{ .Values.sentinel.tlsReplication }} ]; then
+            sed -i "2s/^/sentinel monitor $MASTER_GROUP $1 $REDIS_TLS_PORT $QUORUM \\n/" "$SENTINEL_CONF"
+        else
+        	sed -i "2s/^/sentinel monitor $MASTER_GROUP $1 $REDIS_PORT $QUORUM \\n/" "$SENTINEL_CONF"
+        fi
         echo "sentinel announce-ip $ANNOUNCE_IP" >> $SENTINEL_CONF
-        echo "sentinel announce-port $SENTINEL_PORT" >> $SENTINEL_CONF
+        if [ {{ .Values.sentinel.tlsReplication }} ]; then
+        	echo "sentinel announce-port $SENTINEL_TLS_PORT" >> $SENTINEL_CONF
+        else
+        	echo "sentinel announce-port $SENTINEL_PORT" >> $SENTINEL_CONF
+        fi
     }
 
     redis_update() {
         echo "Updating redis config"
-        echo "slaveof $1 $REDIS_PORT" >> "$REDIS_CONF"
+        if [ {{ .Values.redis.tlsReplication }} ]; then
+        	echo "slaveof $1 $REDIS_TLS_PORT" >> "$REDIS_CONF"
+        	echo "slave-announce-port $REDIS_TLS_PORT" >> $REDIS_CONF
+        else
+        	echo "slaveof $1 $REDIS_PORT" >> "$REDIS_CONF"
+        	echo "slave-announce-port $REDIS_PORT" >> $REDIS_CONF
+        fi
         echo "slave-announce-ip $ANNOUNCE_IP" >> $REDIS_CONF
-        echo "slave-announce-port $REDIS_PORT" >> $REDIS_CONF
     }
 
     copy_config() {
@@ -89,14 +144,35 @@
 
     find_master() {
         echo "Attempting to find master"
-        if [ "$(redis-cli -h "$MASTER"{{ if .Values.auth }} -a "$AUTH"{{ end }} ping)" != "PONG" ]; then
+        if [ {{ .Values.redis.port }} != 0 ]; then
+        	if [ "$(redis-cli -h "$MASTER"{{ if .Values.auth }} -a "$AUTH"{{ end }} -p "$REDIS_PORT" ping)" == "PONG" ]; then
+        		MASTER_PING_SUCCESSFUL=true
+        	fi
+        else
+            if [ "$(redis-cli -h "$MASTER"{{ if .Values.auth }} -a "$AUTH"{{ end }} -p "$REDIS_TLS_PORT" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} ping)" == "PONG" ]; then
+        		MASTER_PING_SUCCESSFUL=true
+        	fi
+        fi
+        
+        if [ "$MASTER_PING_SUCCESSFUL" != true ]; then
            echo "Can't ping master, attempting to force failover"
-           if redis-cli -h "$SERVICE" -p "$SENTINEL_PORT" sentinel failover "$MASTER_GROUP" | grep -q 'NOGOODSLAVE' ; then
-               setup_defaults
-               return 0
+           if [ {{ .Values.sentinel.port }} != 0 ]; then
+           	   if redis-cli -h "$SERVICE" -p "$SENTINEL_PORT" {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} sentinel failover "$MASTER_GROUP" | grep -q 'NOGOODSLAVE' ; then
+            	   setup_defaults
+               	   return 0
+               fi
+           else
+           	   if redis-cli -h "$SERVICE" -p "$SENTINEL_TLS_PORT" {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} sentinel failover "$MASTER_GROUP" | grep -q 'NOGOODSLAVE' ; then
+            	   setup_defaults
+               	   return 0
+               fi
            fi
            sleep 10
-           MASTER="$(redis-cli -h $SERVICE -p $SENTINEL_PORT sentinel get-master-addr-by-name $MASTER_GROUP | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+           if [ {{ .Values.sentinel.port }} != 0 ]; then
+               MASTER="$(redis-cli -h $SERVICE -p $SENTINEL_PORT {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} sentinel get-master-addr-by-name $MASTER_GROUP | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+           else
+           	   MASTER="$(redis-cli -h $SERVICE -p $SENTINEL_TLS_PORT {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} sentinel get-master-addr-by-name $MASTER_GROUP | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+           fi
            if [ "$MASTER" ]; then
                sentinel_update "$MASTER"
                redis_update "$MASTER"
@@ -130,6 +206,12 @@
         echo "Setting auth values"
         ESCAPED_AUTH=$(echo "$AUTH" | sed -e 's/[\/&]/\\&/g');
         sed -i "s/replace-default-auth/${ESCAPED_AUTH}/" "$REDIS_CONF" "$SENTINEL_CONF"
+    fi
+    
+    if [ "${SENTINELAUTH:-}" ]; then
+        echo "Setting sentinel auth values"
+        ESCAPED_AUTH_SENTINEL=$(echo "$SENTINELAUTH" | sed -e 's/[\/&]/\\&/g');
+        sed -i "s/replace-default-sentinel-auth/${ESCAPED_AUTH_SENTINEL}/" "$SENTINEL_CONF"
     fi
 
     echo "Ready..."
@@ -272,4 +354,50 @@
         sed -i "s/REPLACE_AUTH_SECRET/${ESCAPED_AUTH}/" "$HAPROXY_CONF"
     fi
     {{- end }}
+{{- end }}
+
+{{- define "redis_liveness.sh" }}
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "$AUTH" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if ne (int .Values.redis.port) 0 }}
+        -p {{ .Values.redis.port }} \
+      {{- else }}
+        -p {{ .Values.redis.tlsPort }} $TLS_CLIENT_OPTION \
+      {{- end}}
+        ping
+    )
+    if [ "$response" != "PONG" ]; then
+      echo "$response"
+      exit 1
+    fi
+    echo "response=$response"
+{{- end }}
+
+{{- define "sentinel_liveness.sh" }}
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "$SENTINELAUTH" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if ne (int .Values.sentinel.port) 0 }}
+        -p {{ .Values.sentinel.port }} \
+      {{- else }}
+        -p {{ .Values.sentinel.tlsPort }} $TLS_CLIENT_OPTION \
+      {{- end}}
+        ping
+    )
+    if [ "$response" != "PONG" ]; then
+      echo "$response"
+      exit 1
+    fi
+    echo "response=$response"
 {{- end }}

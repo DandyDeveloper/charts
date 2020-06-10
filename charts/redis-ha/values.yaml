@@ -3,7 +3,7 @@
 ##
 image:
   repository: redis
-  tag: 5.0.6-alpine
+  tag: 6.0.3-alpine
   pullPolicy: IfNotPresent
 
 ## Reference to one or more secrets to be used when pulling images
@@ -147,6 +147,24 @@ sysctlImage:
 redis:
   port: 6379
   masterGroupName: "mymaster"       # must match ^[\\w-\\.]+$) and can be templated
+  
+  ## Configures redis with tls-port parameter
+  #tlsPort: 6385
+  
+  ## Configures redis with tls-replication parameter, if true sets "tls-replication yes" in redis.conf
+  #tlsReplication: true
+  
+  ## It is possible to disable client side certificates authentication when "authClients" is set to "no"
+  #authClients: "no"
+  
+  #liveness probe parameters for redis container
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 15
+    successThreshold: 1
+    failureThreshold: 5
+
   config:
     ## Additional redis conf options can be added below
     ## For all available options see http://download.redis.io/redis-stable/redis.conf
@@ -178,6 +196,35 @@ redis:
 ## Sentinel specific configuration options
 sentinel:
   port: 26379
+  
+  ## Configures sentinel with tls-port parameter
+  #tlsPort: 26385
+  
+  ## Configures sentinel with tls-replication parameter, if true sets "tls-replication yes" in sentinel.conf
+  #tlsReplication: true
+  
+  ## It is possible to disable client side certificates authentication when "authClients" is set to "no"
+  #authClients: "no"
+
+  ## Configures sentinel with AUTH (requirepass params)
+  auth: false
+  
+  #password: password
+  
+  ## Use existing secret containing key `authKey` (ignores sentinel.password)
+  #existingSecret: sentinel-secret
+ 
+  ## Defines the key holding the sentinel password in existing secret.
+  authKey: sentinel-password
+  
+  #liveness probe parameters for sentinel container
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 15
+    successThreshold: 1
+    failureThreshold: 5
+    
   quorum: 2
   config:
     ## Additional sentinel conf options can be added below. Only options that
@@ -273,7 +320,10 @@ exporter:
   # Exists to circumvent issues with IPv6 dns resolution that occurs on certain environments
   ##
   address: localhost
-
+  
+  ## Set this to true if you want to connect to redis tls port
+  #sslEnabled: true
+  
   # cpu/memory resource limits/requests
   resources: {}
 
@@ -365,3 +415,18 @@ hostPath:
   chown: true
 
 emptyDir: {}
+
+tls:
+  ## Fill the name of secret if you want to use your own TLS certificates. 
+  ## The secret should contains keys named by "tls.certFile" - the certificate, "tls.keyFile" - the private key, "tls.caCertFile" - the certificate of CA and "tls.dhParamsFile" - the dh parameter file
+  ## These secret will be genrated using files from certs folder if the secretName is not set and redis.tlsPort is set
+  #secretName: tls-secret
+  
+  ## Name of certificate file
+  certFile: redis.crt
+  ## Name of key file
+  keyFile: redis.key
+  ## Name of Diffie-Hellman (DH) key exchange parameters file
+  #dhParamsFile: redis.dh
+  ## Name of CA certificate file
+  caCertFile: ca.crt

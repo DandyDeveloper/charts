@@ -20,14 +20,30 @@ spec:
   publishNotReadyAddresses: true
   type: ClusterIP
   ports:
+  {{- if ne (int $root.Values.redis.port) 0 }}
   - name: server
     port: {{ $root.Values.redis.port }}
     protocol: TCP
     targetPort: redis
+  {{- end }}
+  {{- if $root.Values.redis.tlsPort }}
+  - name: server-tls
+    port: {{ $root.Values.redis.tlsPort }}
+    protocol: TCP
+    targetPort: redis-tls
+  {{- end }}
+  {{- if ne (int $root.Values.sentinel.port) 0 }}
   - name: sentinel
     port: {{ $root.Values.sentinel.port }}
     protocol: TCP
     targetPort: sentinel
+  {{- end }}
+  {{- if $root.Values.sentinel.tlsPort }}
+  - name: sentinel-tls
+    port: {{ $root.Values.sentinel.tlsPort }}
+    protocol: TCP
+    targetPort: sentinel-tls
+  {{- end }}
   {{- if $root.Values.exporter.enabled }}
   - name: exporter
     port: {{ $root.Values.exporter.port }}
