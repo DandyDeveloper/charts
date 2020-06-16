@@ -153,7 +153,7 @@ redis:
 
   ## Configures redis with tls-replication parameter, if true sets "tls-replication yes" in redis.conf
   # tlsReplication: true
- 
+
   ## It is possible to disable client side certificates authentication when "authClients" is set to "no"
   # authClients: "no"
 
