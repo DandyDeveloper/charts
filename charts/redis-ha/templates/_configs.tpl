@@ -72,10 +72,10 @@
     HOSTNAME="$(hostname)"
     INDEX="${HOSTNAME##*-}"
     TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
-    if [ {{ .Values.sentinel.port }} != 0 ]; then
+    if [ "{{ .Values.sentinel.port }}" != 0 ]; then
         MASTER="$(redis-cli -h {{ template "redis-ha.fullname" . }} -p {{ .Values.sentinel.port }} {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} sentinel get-master-addr-by-name {{ template "redis-ha.masterGroupName" . }} | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
     else
-        MASTER="$(redis-cli -h {{ template "redis-ha.fullname" . }} -p {{ .Values.sentinel.tlsPort }} {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} sentinel get-master-addr-by-name {{ template "redis-ha.masterGroupName" . }} | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+        MASTER="$(redis-cli -h {{ template "redis-ha.fullname" . }} -p {{ .Values.sentinel.tlsPort }} {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} "$TLS_CLIENT_OPTION"{{ end }} sentinel get-master-addr-by-name {{ template "redis-ha.masterGroupName" . }} | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
     fi
     MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
     QUORUM="{{ .Values.sentinel.quorum }}"
@@ -93,13 +93,13 @@
         echo "Updating sentinel config with master $MASTER"
         eval MY_SENTINEL_ID="\${SENTINEL_ID_$INDEX}"
         sed -i "1s/^/sentinel myid $MY_SENTINEL_ID\\n/" "$SENTINEL_CONF"
-        if [ {{ .Values.sentinel.tlsReplication }} ]; then
+        if [ "{{ .Values.sentinel.tlsReplication }}" = true ]; then
             sed -i "2s/^/sentinel monitor $MASTER_GROUP $1 $REDIS_TLS_PORT $QUORUM \\n/" "$SENTINEL_CONF"
         else
         	sed -i "2s/^/sentinel monitor $MASTER_GROUP $1 $REDIS_PORT $QUORUM \\n/" "$SENTINEL_CONF"
         fi
         echo "sentinel announce-ip $ANNOUNCE_IP" >> $SENTINEL_CONF
-        if [ {{ .Values.sentinel.tlsReplication }} ]; then
+        if [ "{{ .Values.sentinel.tlsReplication }}" = true ]; then
         	echo "sentinel announce-port $SENTINEL_TLS_PORT" >> $SENTINEL_CONF
         else
         	echo "sentinel announce-port $SENTINEL_PORT" >> $SENTINEL_CONF
@@ -108,7 +108,7 @@
 
     redis_update() {
         echo "Updating redis config"
-        if [ {{ .Values.redis.tlsReplication }} ]; then
+        if [ "{{ .Values.redis.tlsReplication }}" = true ]; then
         	echo "slaveof $1 $REDIS_TLS_PORT" >> "$REDIS_CONF"
         	echo "slave-announce-port $REDIS_TLS_PORT" >> $REDIS_CONF
         else
@@ -144,34 +144,34 @@
 
     find_master() {
         echo "Attempting to find master"
-        if [ {{ .Values.redis.port }} != 0 ]; then
-        	if [ "$(redis-cli -h "$MASTER"{{ if .Values.auth }} -a "$AUTH"{{ end }} -p "$REDIS_PORT" ping)" == "PONG" ]; then
+        if [ "{{ .Values.redis.port }}" != 0 ]; then
+        	if [ "$(redis-cli -h "$MASTER"{{ if .Values.auth }} -a "$AUTH"{{ end }} -p "$REDIS_PORT" ping)" = "PONG" ]; then
         		MASTER_PING_SUCCESSFUL=true
         	fi
         else
-            if [ "$(redis-cli -h "$MASTER"{{ if .Values.auth }} -a "$AUTH"{{ end }} -p "$REDIS_TLS_PORT" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} ping)" == "PONG" ]; then
+            if [ "$(redis-cli -h "$MASTER"{{ if .Values.auth }} -a "$AUTH"{{ end }} -p "$REDIS_TLS_PORT" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} ping)" = "PONG" ]; then
         		MASTER_PING_SUCCESSFUL=true
         	fi
         fi
         
         if [ "$MASTER_PING_SUCCESSFUL" != true ]; then
            echo "Can't ping master, attempting to force failover"
-           if [ {{ .Values.sentinel.port }} != 0 ]; then
+           if [ "{{ .Values.sentinel.port }}" != 0 ]; then
            	   if redis-cli -h "$SERVICE" -p "$SENTINEL_PORT" {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} sentinel failover "$MASTER_GROUP" | grep -q 'NOGOODSLAVE' ; then
             	   setup_defaults
                	   return 0
                fi
            else
-           	   if redis-cli -h "$SERVICE" -p "$SENTINEL_TLS_PORT" {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} sentinel failover "$MASTER_GROUP" | grep -q 'NOGOODSLAVE' ; then
+           	   if redis-cli -h "$SERVICE" -p "$SENTINEL_TLS_PORT" {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} "$TLS_CLIENT_OPTION"{{ end }} sentinel failover "$MASTER_GROUP" | grep -q 'NOGOODSLAVE' ; then
             	   setup_defaults
                	   return 0
                fi
            fi
            sleep 10
-           if [ {{ .Values.sentinel.port }} != 0 ]; then
+           if [ "{{ .Values.sentinel.port }}" != 0 ]; then
                MASTER="$(redis-cli -h $SERVICE -p $SENTINEL_PORT {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} sentinel get-master-addr-by-name $MASTER_GROUP | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
            else
-           	   MASTER="$(redis-cli -h $SERVICE -p $SENTINEL_TLS_PORT {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} $TLS_CLIENT_OPTION{{ end }} sentinel get-master-addr-by-name $MASTER_GROUP | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
+           	   MASTER="$(redis-cli -h $SERVICE -p $SENTINEL_TLS_PORT {{ if .Values.sentinel.auth }} -a "$SENTINELAUTH"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} "$TLS_CLIENT_OPTION"{{ end }} sentinel get-master-addr-by-name $MASTER_GROUP | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
            fi
            if [ "$MASTER" ]; then
                sentinel_update "$MASTER"
