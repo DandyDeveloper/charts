@@ -177,6 +177,9 @@ redis:
 
 ## Sentinel specific configuration options
 sentinel:
+  # Enable auth to set up 'requirepass' in the config-sentinel.conf
+  # This will configure Sentinel itself to require a password.
+  auth: false
   port: 26379
   quorum: 2
   config:

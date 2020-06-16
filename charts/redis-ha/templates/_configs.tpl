@@ -31,6 +31,9 @@
 {{- if .Values.auth }}
     sentinel auth-pass {{ template "redis-ha.masterGroupName" . }} replace-default-auth
 {{- end }}
+{{- if .Values.sentinel.auth }}
+    requirepass replace-default-auth
+{{- end }}
 {{- end }}
 {{- end }}
 
