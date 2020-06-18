@@ -304,10 +304,7 @@ spec:
     {{- else }}
       storageClassName: "{{ .Values.persistentVolume.storageClass }}"
     {{- end }}
-    {{- end }}
-    {{- if .Values.persistentVolume.reclaimPolicy }}
-    persistentVolumeReclaimPolicy: "{{ .Values.persistentVolume.reclaimPolicy }}"
-    {{- end }}
+{{- end }}
 {{- else if .Values.hostPath.path }}
       - name: data
         hostPath:
