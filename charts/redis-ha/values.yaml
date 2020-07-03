@@ -161,7 +161,8 @@ redis:
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
-
+  livenessProbe:
+    initialDelaySeconds: 15
 
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.

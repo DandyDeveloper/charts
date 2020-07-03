@@ -178,7 +178,7 @@ spec:
         livenessProbe:
           tcpSocket:
             port: {{ .Values.redis.port }}
-          initialDelaySeconds: 15
+          initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds }}
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
