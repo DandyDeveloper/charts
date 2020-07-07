@@ -120,6 +120,7 @@ haproxy:
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # extraConfig: |-
       # Define configuration here
+  lifecycle: {}
 
 
 ## Role Based Access
@@ -176,6 +177,8 @@ redis:
   #  limits:
   #    memory: 700Mi
 
+  lifecycle: {}
+
 ## Sentinel specific configuration options
 sentinel:
   port: 26379
@@ -202,6 +205,8 @@ sentinel:
   #    cpu: 100m
   #  limits:
   #    memory: 200Mi
+
+  lifecycle: {}
 
 securityContext:
   runAsUser: 1000
