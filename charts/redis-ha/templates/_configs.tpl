@@ -22,7 +22,7 @@
 {{- else }}
     dir "/data"
     {{- range $key, $value := .Values.sentinel.config }}
-    {{- if eq "maxclients" $key  }}
+    {{- if or (eq "maxclients" $key) (eq "requirepass" $key) }}
         {{ $key }} {{ $value }}
     {{- else }}
         sentinel {{ $key }} {{ template "redis-ha.masterGroupName" $ }} {{ $value }}
