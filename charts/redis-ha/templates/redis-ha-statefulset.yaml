@@ -187,6 +187,8 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: data
+        lifecycle:
+{{ toYaml .Values.redis.lifecycle | indent 10 }}
       - name: sentinel
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -218,6 +220,8 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: data
+        lifecycle:
+{{ toYaml .Values.sentinel.lifecycle | indent 10 }}
 {{- if .Values.exporter.enabled }}
       - name: redis-exporter
         image: "{{ .Values.exporter.image }}:{{ .Values.exporter.tag }}"

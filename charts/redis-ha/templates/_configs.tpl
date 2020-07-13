@@ -137,7 +137,7 @@
 
 {{- define "config-haproxy.cfg" }}
 {{- if .Values.haproxy.customConfig }}
-{{ .Values.haproxy.customConfig | indent 4}}
+{{ tpl .Values.haproxy.customConfig . | indent 4 }}
 {{- else }}
     defaults REDIS
       mode tcp
