@@ -125,6 +125,13 @@ haproxy:
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
 
+## PodSecurityPolicy configuration
+## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+##
+podSecurityPolicy:
+  ## Specifies whether a PodSecurityPolicy should be created
+  ##
+  create: false
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
