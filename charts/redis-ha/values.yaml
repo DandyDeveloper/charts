@@ -120,7 +120,7 @@ haproxy:
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # extraConfig: |-
     # Define configuration here
-  
+ 
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
