@@ -249,7 +249,7 @@ spec:
             path: {{ .Values.exporter.scrapePath }}
             port: {{ .Values.exporter.port }}
           initialDelaySeconds: 15
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           periodSeconds: 15
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
