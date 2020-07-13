@@ -116,10 +116,13 @@ haproxy:
   ## Custom config-haproxy.cfg files used to override default settings. If this file is
   ## specified then the config-haproxy.cfg above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # extraConfig: |-
-      # Define configuration here
+    # Define configuration here
+  
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
 
 
@@ -168,7 +171,7 @@ redis:
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
 
   resources: {}
   #  requests:
@@ -177,6 +180,8 @@ redis:
   #  limits:
   #    memory: 700Mi
 
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
 
 ## Sentinel specific configuration options
@@ -197,7 +202,7 @@ sentinel:
   ## Custom sentinel.conf files used to override default settings. If this file is
   ## specified then the sentinel.config above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
 
   resources: {}
   #  requests:
@@ -206,6 +211,8 @@ sentinel:
   #  limits:
   #    memory: 200Mi
 
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
 
 securityContext:
