@@ -56,6 +56,15 @@ haproxy:
   annotations: {}
   resources: {}
   emptyDir: {}
+
+  ## PodSecurityPolicy configuration
+  ## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+  ##
+  podSecurityPolicy:
+    ## Specifies whether a PodSecurityPolicy should be created
+    ##
+    create: false
+
   ## Enable sticky sessions to Redis nodes via HAProxy
   ## Very useful for long-living connections as in case of Sentry for example
   stickyBalancing: false
@@ -116,11 +125,22 @@ haproxy:
   ## Custom config-haproxy.cfg files used to override default settings. If this file is
   ## specified then the config-haproxy.cfg above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # extraConfig: |-
-      # Define configuration here
+    # Define configuration here
 
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+  lifecycle: {}
+
+## PodSecurityPolicy configuration
+## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+##
+podSecurityPolicy:
+  ## Specifies whether a PodSecurityPolicy should be created
+  ##
+  create: false
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -161,12 +181,13 @@ redis:
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
-
+  livenessProbe:
+    initialDelaySeconds: 15
 
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
 
   resources: {}
   #  requests:
@@ -174,6 +195,10 @@ redis:
   #    cpu: 100m
   #  limits:
   #    memory: 700Mi
+
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+  lifecycle: {}
 
 ## Sentinel specific configuration options
 sentinel:
@@ -193,7 +218,7 @@ sentinel:
   ## Custom sentinel.conf files used to override default settings. If this file is
   ## specified then the sentinel.config above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
 
   resources: {}
   #  requests:
@@ -201,6 +226,10 @@ sentinel:
   #    cpu: 100m
   #  limits:
   #    memory: 200Mi
+
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+  lifecycle: {}
 
 securityContext:
   runAsUser: 1000
@@ -354,8 +383,6 @@ persistentVolume:
     - ReadWriteOnce
   size: 10Gi
   annotations: {}
-  # reclaimPolicy per https://kubernetes.io/docs/concepts/storage/persistent-volumes/#reclaiming
-  reclaimPolicy: ""
 init:
   resources: {}
 
