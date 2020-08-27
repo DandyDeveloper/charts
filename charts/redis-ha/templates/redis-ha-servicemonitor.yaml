@@ -31,5 +31,5 @@ spec:
     matchLabels:
       app: {{ template "redis-ha.name" . }}
       release: {{ .Release.Name }}
-      servicemonitor: enabled
+      exporter: enabled
 {{- end }}

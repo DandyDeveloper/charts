@@ -179,7 +179,7 @@ spec:
         livenessProbe:
           tcpSocket:
             port: {{ .Values.redis.port }}
-          initialDelaySeconds: 15
+          initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds }}
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
@@ -188,6 +188,8 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: data
+        lifecycle:
+{{ toYaml .Values.redis.lifecycle | indent 10 }}
       - name: sentinel
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -219,6 +221,8 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: data
+        lifecycle:
+{{ toYaml .Values.sentinel.lifecycle | indent 10 }}
 {{- if .Values.exporter.enabled }}
       - name: redis-exporter
         image: "{{ .Values.exporter.image }}:{{ .Values.exporter.tag }}"
@@ -250,7 +254,7 @@ spec:
             path: {{ .Values.exporter.scrapePath }}
             port: {{ .Values.exporter.port }}
           initialDelaySeconds: 15
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           periodSeconds: 15
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
@@ -305,10 +309,7 @@ spec:
     {{- else }}
       storageClassName: "{{ .Values.persistentVolume.storageClass }}"
     {{- end }}
-    {{- end }}
-    {{- if .Values.persistentVolume.reclaimPolicy }}
-    persistentVolumeReclaimPolicy: "{{ .Values.persistentVolume.reclaimPolicy }}"
-    {{- end }}
+{{- end }}
 {{- else if .Values.hostPath.path }}
       - name: data
         hostPath:
