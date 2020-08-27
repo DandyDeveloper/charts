@@ -3,7 +3,31 @@ entries:
   redis-ha:
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.63954141Z"
+    created: "2020-08-27T07:01:05.590963852Z"
+    description: Highly available Kubernetes implementation of Redis
+    digest: 9a158e22d3f36827b5ccee16d562ca4ae52334535de06886dbf65b23ca266e7c
+    home: http://redis.io/
+    icon: https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Redis_Logo.svg/1200px-Redis_Logo.svg.png
+    keywords:
+    - redis
+    - keyvalue
+    - database
+    maintainers:
+    - email: salimsalaues@gmail.com
+      name: ssalaues
+    - email: aaron.layfield@gmail.com
+      name: dandydeveloper
+    name: redis-ha
+    sources:
+    - https://redis.io/download
+    - https://github.com/scality/Zenko/tree/development/1.0/kubernetes/zenko/charts/redis-ha
+    - https://github.com/oliver006/redis_exporter
+    urls:
+    - redis-ha-4.8.2.tgz
+    version: 4.8.2
+  - apiVersion: v1
+    appVersion: 5.0.6
+    created: "2020-08-27T07:01:05.588197344Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 28a9f11a00deb5c6db70dfb6fe6db26fc5bddb6df0834863ee6eed161c407e9e
     home: http://redis.io/
@@ -27,7 +51,7 @@ entries:
     version: 4.8.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.637921486Z"
+    created: "2020-08-27T07:01:05.586150737Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 51524a4a2463677bebf1de520eecac5654d7bfe59da2315410d41f2299b46ad6
     home: http://redis.io/
@@ -51,7 +75,7 @@ entries:
     version: 4.8.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.636502565Z"
+    created: "2020-08-27T07:01:05.584148231Z"
     description: Highly available Kubernetes implementation of Redis
     digest: a3d5a762d446016d8e6fd494b899bb098611b7e93e057a827af94ebea0482b48
     home: http://redis.io/
@@ -75,7 +99,7 @@ entries:
     version: 4.7.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.634734239Z"
+    created: "2020-08-27T07:01:05.582181925Z"
     description: Highly available Kubernetes implementation of Redis
     digest: bd8bee76d18f5cbe48c7ec13fd88c31d110f37e54066daabfecda1964e7025c4
     home: http://redis.io/
@@ -99,7 +123,7 @@ entries:
     version: 4.6.2
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.633144016Z"
+    created: "2020-08-27T07:01:05.58028322Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 5cf7aaf78333a46ab3ebc3668e9dc09d8042066aaa777bc5109985bfab774f49
     home: http://redis.io/
@@ -123,7 +147,7 @@ entries:
     version: 4.6.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.631522892Z"
+    created: "2020-08-27T07:01:05.578409514Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 891a278c078033403eba40a3010fbd2c774ec8b7f4f2eec83a5396c80099dcc7
     home: http://redis.io/
@@ -147,7 +171,7 @@ entries:
     version: 4.6.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.613145422Z"
+    created: "2020-08-27T07:01:05.551185631Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 66d60c5c48473b574dc2693b232407f0c90b95c134913b8937343c3b39630ca3
     home: http://redis.io/
@@ -171,7 +195,7 @@ entries:
     version: 4.5.10
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.628542848Z"
+    created: "2020-08-27T07:01:05.575248004Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 2d3b71d216bc08e0a9e3a3ac33daac07e49e9d7d521c2b81876bab5e7613639d
     home: http://redis.io/
@@ -195,7 +219,7 @@ entries:
     version: 4.5.9
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.626950625Z"
+    created: "2020-08-27T07:01:05.573475499Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 5490dc2b9bf55cea4ffb3e5fed20000617f77a82b17a1618db096355852cae94
     home: http://redis.io/
@@ -219,7 +243,7 @@ entries:
     version: 4.5.8
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.625518704Z"
+    created: "2020-08-27T07:01:05.571729794Z"
     description: Highly available Kubernetes implementation of Redis
     digest: da2ed9031c9a4c4370510c838faa6555820de70b0a097d5404e281252fa6e78c
     home: http://redis.io/
@@ -243,7 +267,7 @@ entries:
     version: 4.5.7
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.62389058Z"
+    created: "2020-08-27T07:01:05.569953888Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 3cf0070080f04cdd9d552a185bb34f1d35da69455ef7313750279b96a1e60c76
     home: http://redis.io/
@@ -267,7 +291,7 @@ entries:
     version: 4.5.6
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.622190755Z"
+    created: "2020-08-27T07:01:05.568126483Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 52759830b24606b5b2f99d33151a4b9bfb7ea13b722ea5eb9381da80bee50aa0
     home: http://redis.io/
@@ -291,7 +315,7 @@ entries:
     version: 4.5.5
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.620695733Z"
+    created: "2020-08-27T07:01:05.566315677Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 98a745cd9ffd2e59220c04f3ddf6f1dda061cecfbc765370f8978b1a3b9e7f3c
     home: http://redis.io/
@@ -315,7 +339,7 @@ entries:
     version: 4.5.4
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.616530172Z"
+    created: "2020-08-27T07:01:05.555334844Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 9751137e2c0a28633147d50de5ef18ec053c04d774cccd87032262f7224fe27b
     home: http://redis.io/
@@ -339,7 +363,7 @@ entries:
     version: 4.5.3
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.614643644Z"
+    created: "2020-08-27T07:01:05.552983437Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 0e423790afd91af45979c58088103f64d3420e0a35389d92f7f2ec54d53800d7
     home: http://redis.io/
@@ -363,7 +387,7 @@ entries:
     version: 4.5.2
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.611405097Z"
+    created: "2020-08-27T07:01:05.549235225Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 7ef16484cf0542f43eb95dd14f4a3a7408d45e3824fb9dfcd43ab4fce0e4468e
     home: http://redis.io/
@@ -387,7 +411,7 @@ entries:
     version: 4.5.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2020-08-27T06:54:09.609788073Z"
+    created: "2020-08-27T07:01:05.54741532Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 21ec2fca6bd6b12b9582982d831e5be7aecdf8ecabf1b15f0e0ffcc97ed47076
     home: http://redis.io/
@@ -409,4 +433,4 @@ entries:
     urls:
     - redis-ha-4.4.2.tgz
     version: 4.4.2
-generated: "2020-08-27T06:54:09.608162449Z"
+generated: "2020-08-27T07:01:05.535341183Z"
