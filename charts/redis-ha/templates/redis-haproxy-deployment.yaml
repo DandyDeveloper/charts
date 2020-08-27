@@ -59,18 +59,20 @@ spec:
               topologyKey: kubernetes.io/hostname
     {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app: {{ template "redis-ha.name" . }}-haproxy
-                  release: {{ .Release.Name }}
-              topologyKey: kubernetes.io/hostname
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "redis-ha.name" . }}-haproxy
+                    release: {{ .Release.Name }}
+                topologyKey: kubernetes.io/hostname
     {{- end }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app:  {{ template "redis-ha.name" . }}-haproxy
+                    app: {{ template "redis-ha.name" . }}-haproxy
                     release: {{ .Release.Name }}
                 topologyKey: failure-domain.beta.kubernetes.io/zone
     {{- end }}
