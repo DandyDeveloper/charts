@@ -16,6 +16,13 @@ imagePullSecrets: []
 ## replicas number for each component
 replicas: 3
 
+## read-only replicas
+## indexed slaves get never promoted to be master
+## index starts with 0 - which is master on init
+## i.e. "8,9" means 8th and 9th slave will be replica with replica-priority=0
+## see also: https://redis.io/topics/sentinel
+ro_replicas: ""
+
 ## Kubernetes priorityClass name for the redis-ha-server pod
 # priorityClassName: ""
 
@@ -31,6 +38,9 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the redis-ha.fullname template
   # name:
+  ## opt in/out of automounting API credentials into container
+  ## https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+  automountToken: false
 
 ## Enables a HA Proxy for better LoadBalancing / Sentinel Master support. Automatically proxies to Redis master.
 ## Recommend for externally exposed Redis clusters.
@@ -56,6 +66,15 @@ haproxy:
   annotations: {}
   resources: {}
   emptyDir: {}
+
+  ## PodSecurityPolicy configuration
+  ## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+  ##
+  podSecurityPolicy:
+    ## Specifies whether a PodSecurityPolicy should be created
+    ##
+    create: false
+
   ## Enable sticky sessions to Redis nodes via HAProxy
   ## Very useful for long-living connections as in case of Sentry for example
   stickyBalancing: false
@@ -116,11 +135,22 @@ haproxy:
   ## Custom config-haproxy.cfg files used to override default settings. If this file is
   ## specified then the config-haproxy.cfg above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # extraConfig: |-
-      # Define configuration here
+    # Define configuration here
 
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+  lifecycle: {}
+
+## PodSecurityPolicy configuration
+## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+##
+podSecurityPolicy:
+  ## Specifies whether a PodSecurityPolicy should be created
+  ##
+  create: false
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -161,12 +191,13 @@ redis:
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
-
+  livenessProbe:
+    initialDelaySeconds: 15
 
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
 
   resources: {}
   #  requests:
@@ -174,6 +205,10 @@ redis:
   #    cpu: 100m
   #  limits:
   #    memory: 700Mi
+
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+  lifecycle: {}
 
 ## Sentinel specific configuration options
 sentinel:
@@ -193,7 +228,7 @@ sentinel:
   ## Custom sentinel.conf files used to override default settings. If this file is
   ## specified then the sentinel.config above will be ignored.
   # customConfig: |-
-      # Define configuration here
+    # Define configuration here
 
   resources: {}
   #  requests:
@@ -201,6 +236,10 @@ sentinel:
   #    cpu: 100m
   #  limits:
   #    memory: 200Mi
+
+  ## Container lifecycle hooks
+  ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+  lifecycle: {}
 
 securityContext:
   runAsUser: 1000
@@ -319,6 +358,13 @@ exporter:
     # Set timeout for scrape
     # timeout: 10s
 
+  # prometheus exporter SCANS redis db which can take some time
+  # allow different probe settings to not let container crashloop
+  livenessProbe:
+    initialDelaySeconds: 15
+    timeoutSeconds: 3
+    periodSeconds: 15
+
 podDisruptionBudget: {}
   # maxUnavailable: 1
   # minAvailable: 1
@@ -347,8 +393,6 @@ persistentVolume:
     - ReadWriteOnce
   size: 10Gi
   annotations: {}
-  # reclaimPolicy per https://kubernetes.io/docs/concepts/storage/persistent-volumes/#reclaiming
-  reclaimPolicy: ""
 init:
   resources: {}
 
@@ -365,3 +409,21 @@ hostPath:
   chown: true
 
 emptyDir: {}
+
+# restore init container is executed if restore.[s3|ssh].source is not false
+# restore init container creates /data/dump.rdb_ from original if exists
+# restore init container overrides /data/dump.rdb
+# secrets are stored into environment of init container - stored encoded on k8s
+# REQUIRED for s3 restore: AWS 'access_key' and 'secret_key'
+# EXAMPLE source for s3 restore: 's3://bucket/dump.rdb'
+# REQUIRED for ssh restore: 'key' should be in one line including CR i.e. '-----BEGIN RSA PRIVATE KEY-----\n...\n...\n...\n-----END RSA PRIVATE KEY-----'
+# EXAMPLE source for ssh restore: 'user@server:/path/dump.rdb'
+restore:
+  timeout: 600
+  s3:
+    source: false
+    access_key: ""
+    secret_key: ""
+  ssh:
+    source: false
+    key: ""
