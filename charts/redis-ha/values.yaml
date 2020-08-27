@@ -16,6 +16,13 @@ imagePullSecrets: []
 ## replicas number for each component
 replicas: 3
 
+## read-only replicas
+## indexed slaves get never promoted to be master
+## index starts with 0 - which is master on init
+## i.e. "8,9" means 8th and 9th slave will be replica with replica-priority=0
+## see also: https://redis.io/topics/sentinel
+ro_replicas: ""
+
 ## Kubernetes priorityClass name for the redis-ha-server pod
 # priorityClassName: ""
 
