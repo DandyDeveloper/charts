@@ -349,7 +349,7 @@ exporter:
     # timeout: 10s
 
   # prometheus exporter SCANS redis db which can take some time
-  # allow different prove settings to not let container crashloop
+  # allow different probe settings to not let container crashloop
   livenessProbe:
     initialDelaySeconds: 15
     timeoutSeconds: 3
