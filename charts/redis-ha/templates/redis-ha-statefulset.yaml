@@ -311,9 +311,9 @@ spec:
           httpGet:
             path: {{ .Values.exporter.scrapePath }}
             port: {{ .Values.exporter.port }}
-          initialDelaySeconds: 15
-          timeoutSeconds: 5
-          periodSeconds: 15
+          initialDelaySeconds: {{ .Values.exporter.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.exporter.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.exporter.livenessProbe.periodSeconds }}
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
         ports:
