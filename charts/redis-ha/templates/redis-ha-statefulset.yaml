@@ -1,3 +1,6 @@
+{{- $regexRestoreS3 := "^s3://.+|^S3://.+" -}}
+{{- $regexRestoreSSH := "^.+@.+:.+" -}}
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -155,6 +158,61 @@ spec:
           readOnly: true
         - name: data
           mountPath: /data
+{{ if regexFind $regexRestoreS3 (toString .Values.restore.s3.source) }}
+      - name: restore-s3
+        image: s3cmd/s3cmd:latest
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.init.resources | indent 10 }}
+        command:
+        - sh
+        args:
+        - "-c"
+        - "timeout -t {{ .Values.restore.timeout }} \
+             s3cmd get --force '{{ .Values.restore.s3.source }}' /data/dump.rdb_ \
+           && test -s /data/dump.rdb_ \
+           && if test -s /data/dump.rdb; \
+              then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
+           && mv -v /data/dump.rdb_ /data/dump.rdb"
+        envFrom:
+        - secretRef:
+            name: {{ include "redis-ha.fullname" . }}-secret
+        volumeMounts:
+        - name: data
+          mountPath: /data
+{{- end }}
+{{ if regexFind $regexRestoreSSH (toString .Values.restore.ssh.source) }}
+      - name: restore-ssh
+        image: lgatica/openssh-client:latest
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.init.resources | indent 10 }}
+        command:
+        - sh
+        args:
+        - "-c"
+        - "rm -f key && echo -e \"${SSH_KEY}\" >key \
+           && chmod 400 key \
+           && timeout {{ .Values.restore.timeout }} \
+                scp -i key \
+                    -o StrictHostKeyChecking=no \
+                    -o UserKnownHostsFile=/dev/null \
+                    '{{ .Values.restore.ssh.source }}' \
+                    /data/dump.rdb_ \
+           && test -s /data/dump.rdb_ \
+           && if test -s /data/dump.rdb; \
+              then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
+           && mv -v /data/dump.rdb_ /data/dump.rdb"
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+        envFrom:
+        - secretRef:
+            name: {{ include "redis-ha.fullname" . }}-secret
+        volumeMounts:
+        - name: data
+          mountPath: /data
+{{- end }}
       containers:
       - name: redis
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
