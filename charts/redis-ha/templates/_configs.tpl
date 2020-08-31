@@ -37,7 +37,9 @@
 {{- define "config-init.sh" }}
     echo "$(date) Start..."
     HOSTNAME="$(hostname)"
+    {{- if .Values.ro_replicas }}
     RO_REPLICAS="{{ .Values.ro_replicas }}"
+    {{- end }}
     INDEX="${HOSTNAME##*-}"
     MASTER=''
     MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
