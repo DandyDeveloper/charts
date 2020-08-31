@@ -197,6 +197,12 @@
         fi
     }
 
+    redis_ro_update() {
+        echo "Updating read-only redis config.."
+        echo "  redis.conf set 'replica-priority 0'"
+        echo "replica-priority 0" >> ${REDIS_CONF}
+    }
+
     getent_hosts() {
         index=${1:-${INDEX}}
         service="${SERVICE}-announce-${index}"
@@ -228,6 +234,15 @@
     else
         setup_defaults
     fi
+
+    {{- if .Values.ro_replicas }}
+    # works only if index is less than 10
+    echo "Verifying redis read-only replica.."
+    echo "  we have RO_REPLICAS='${RO_REPLICAS}' with INDEX='${INDEX}'"
+    if echo "${RO_REPLICAS}" | grep -q "${INDEX}" ; then
+        redis_ro_update
+    fi
+    {{- end }}
 
     if [ "${AUTH:-}" ]; then
         echo "Setting redis auth values.."
