@@ -9,7 +9,7 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     app: {{ template "redis-ha.fullname" . }}
     {{- range $key, $value := .Values.configmap.labels }}
-    {{ $key }}: {{ $value }}
+    {{ $key }}: {{ $value | toString }}
     {{- end }}
 data:
   redis.conf: |

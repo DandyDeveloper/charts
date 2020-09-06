@@ -22,9 +22,9 @@ spec:
         app: {{ template "redis-ha.name" . }}-haproxy
         release: {{ .Release.Name }}
         {{- range $key, $value := .Values.haproxy.labels }}
-        {{ $key }}: {{ $value }}
+        {{ $key }}: {{ $value | toString }}
         {{- end }}
-    annotations:
+      annotations:
       {{- if .Values.haproxy.metrics.enabled }}
         prometheus.io/port: "{{ .Values.haproxy.metrics.port }}"
         prometheus.io/scrape: "true"
