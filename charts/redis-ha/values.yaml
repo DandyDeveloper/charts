@@ -102,7 +102,7 @@ haproxy:
     enabled: false
     # prometheus port & scrape path
     port: 9101
-    portName: exporter-port
+    portName: http-exporter-port
     scrapePath: /metrics
 
     serviceMonitor:
