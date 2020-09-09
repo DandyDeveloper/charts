@@ -36,7 +36,7 @@ spec:
         app: {{ template "redis-ha.name" . }}
         {{ template "redis-ha.fullname" . }}: replica
         {{- range $key, $value := .Values.labels }}
-        {{ $key }}: {{ $value }}
+        {{ $key }}: {{ $value | toString }}
         {{- end }}
     spec:
       {{- if .Values.schedulerName }}
