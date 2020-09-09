@@ -16,16 +16,16 @@ spec:
   type: ClusterIP
   clusterIP: None
   ports:
-  - name: server
+  - name: tcp-server
     port: {{ .Values.redis.port }}
     protocol: TCP
     targetPort: redis
-  - name: sentinel
+  - name: tcp-sentinel
     port: {{ .Values.sentinel.port }}
     protocol: TCP
     targetPort: sentinel
 {{- if .Values.exporter.enabled }}
-  - name: exporter-port
+  - name: http-exporter-port
     port: {{ .Values.exporter.port }}
     protocol: TCP
     targetPort: exporter-port
