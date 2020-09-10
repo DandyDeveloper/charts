@@ -20,16 +20,16 @@ spec:
   publishNotReadyAddresses: true
   type: ClusterIP
   ports:
-  - name: server
+  - name: tcp-server
     port: {{ $root.Values.redis.port }}
     protocol: TCP
     targetPort: redis
-  - name: sentinel
+  - name: tcp-sentinel
     port: {{ $root.Values.sentinel.port }}
     protocol: TCP
     targetPort: sentinel
   {{- if $root.Values.exporter.enabled }}
-  - name: exporter
+  - name: http-exporter
     port: {{ $root.Values.exporter.port }}
     protocol: TCP
     targetPort: exporter-port

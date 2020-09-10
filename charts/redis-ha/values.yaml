@@ -29,6 +29,10 @@ ro_replicas: ""
 ## Custom labels for the redis pod
 labels: {}
 
+configmap:
+  ## Custom labels for the redis configmap
+  labels: {}
+
 ## Pods Service Account
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:
@@ -56,6 +60,9 @@ haproxy:
     repository: haproxy
     tag: 2.0.4
     pullPolicy: IfNotPresent
+
+  ## Custom labels for the haproxy pod
+  labels: {}
 
   ## Reference to one or more secrets to be used when pulling images
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -95,7 +102,7 @@ haproxy:
     enabled: false
     # prometheus port & scrape path
     port: 9101
-    portName: exporter-port
+    portName: http-exporter-port
     scrapePath: /metrics
 
     serviceMonitor:
