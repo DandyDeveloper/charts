@@ -21,7 +21,7 @@ spec:
   type: ClusterIP
   ports:
   {{- if ne (int $root.Values.redis.port) 0 }}
-  - name: server
+  - name: tcp-server
     port: {{ $root.Values.redis.port }}
     protocol: TCP
     targetPort: redis
@@ -33,7 +33,7 @@ spec:
     targetPort: redis-tls
   {{- end }}
   {{- if ne (int $root.Values.sentinel.port) 0 }}
-  - name: sentinel
+  - name: tcp-sentinel
     port: {{ $root.Values.sentinel.port }}
     protocol: TCP
     targetPort: sentinel
@@ -45,7 +45,7 @@ spec:
     targetPort: sentinel-tls
   {{- end }}
   {{- if $root.Values.exporter.enabled }}
-  - name: exporter
+  - name: http-exporter
     port: {{ $root.Values.exporter.port }}
     protocol: TCP
     targetPort: exporter-port

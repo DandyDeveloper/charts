@@ -20,8 +20,8 @@ This chart bootstraps a [Redis](https://redis.io) highly available master/slave 
 
 ## Prerequisites
 
-- Kubernetes 1.8+ with Beta APIs enabled
-- PV provisioner support in the underlying infrastructure
+* Kubernetes 1.8+ with Beta APIs enabled
+* PV provisioner support in the underlying infrastructure
 
 ## Upgrading the Chart
 
@@ -113,6 +113,8 @@ The following table lists the configurable parameters of the Redis chart and the
 | `additionalAffinities`    | Additional affinities to add to the Redis server pods.                                                                                                                                                   | `{}`                                                                                       |
 | `securityContext`         | Security context to be added to the Redis server pods.                                                                                                                                                   | `{runAsUser: 1000, fsGroup: 1000, runAsNonRoot: true}`                                     |
 | `affinity`                | Override all other affinity settings with a string.                                                                                                                                                      | `""`                                                                                       |
+| `labels`                  | Labels for the Redis pod.                                                                                                                                                                                | `{}`                                                                                       |
+| `configmap.labels`        | Labels for the Redis configmap.                                                                                                                                                                          | `{}`                                                                                       |
 | `persistentVolume.size`          | Size for the volume                                                                                                                                                                               | 10Gi                                                                                       |
 | `persistentVolume.annotations`   | Annotations for the volume                                                                                                                                                                        | `{}`                                                                                       |
 | `emptyDir`                | Configuration of `emptyDir`, used only if persistentVolume is disabled and no hostPath specified                                                                                                                                  | `{}`                                                                                       |
@@ -138,9 +140,10 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.imagePullSecrets`| Reference to one or more secrets to be used when pulling haproxy images                                                                                                                                  | []                                                                                         |
 | `haproxy.annotations`     | HAProxy template annotations                                                                                                                                                                             | `{}`                                                                                       |
 | `haproxy.customConfig`    | Allows for custom config-haproxy.cfg file to be applied. If this is used then default config will be overwriten                                                                                          |``|
-| `haproxy.extraConfig`     | Allows to place any additional configuration section to add to the default config-haproxy.cfg                                                                                                            |``                                                                                         |
+| `haproxy.extraConfig`     | Allows to place any additional configuration section to add to the default config-haproxy.cfg                                                                                                            |``|
 | `haproxy.resources`       | HAProxy resources                                                                                                                                                                                        | `{}`                                                                                       |
 | `haproxy.emptyDir`        | Configuration of `emptyDir`                                                                                                                                  | `{}`                                                                                       |
+| `haproxy.labels`          | Labels for the HAProxy pod                                                                                                                                  | `{}`                                                                                       |
 | `haproxy.podSecurityPolicy.create` | Specifies whether a PodSecurityPolicy should be created     | `false`                                                                                                                                   |
 | `haproxy.service.type`    | HAProxy service type "ClusterIP", "LoadBalancer" or "NodePort"                                                                                                                                           | `ClusterIP`                                                                                |
 | `haproxy.service.nodePort`    | HAProxy service nodePort value (haproxy.service.type must be NodePort)                                                                                                                               | not set                                                                                    |
@@ -150,7 +153,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.hapreadport.port`    | Haproxy port for read only redis slaves                                                                                                                                                              | `6380`                                                                                     |
 | `haproxy.metrics.enabled`     | HAProxy enable prometheus metric scraping                                                                                                                                                            | `false`                                                                                    |
 | `haproxy.metrics.port`        | HAProxy prometheus metrics scraping port                                                                                                                                                             | `9101`                                                                                     |
-| `haproxy.metrics.portName`    | HAProxy metrics scraping port name                                                                                                                                                                   | `exporter-port`                                                                            |
+| `haproxy.metrics.portName`    | HAProxy metrics scraping port name                                                                                                                                                                   | `http-exporter-port`                                                                       |
 | `haproxy.metrics.scrapePath`  | HAProxy prometheus metrics scraping port                                                                                                                                                             | `/metrics`                                                                                 |
 | `haproxy.metrics.serviceMonitor.enabled`       | Use servicemonitor from prometheus operator for HAProxy metrics                                                                                                                     | `false`                                                                                    |
 | `haproxy.metrics.serviceMonitor.namespace`     | Namespace the service monitor for HAProxy metrics is created in                                                                                                                     | `default`                                                                                  |
@@ -187,10 +190,10 @@ The following table lists the configurable parameters of the Redis chart and the
 | `tls.dhParamsFile`        | Name of Diffie-Hellman (DH) key exchange parameters file                                                                                                                                                 |``                                                                                      |
 | `tls.caCertFile`          | Name of CA certificate file                                                                                                                                                                              | `ca.crt`                                                                                      |
 | `restore.s3.source`       | Restore init container - AWS S3 location of dump - i.e. s3://bucket/dump.rdb                                                                                                                             | `false`                                                                                    |
-| `restore.s3.access_key`   | Restore init container - AWS AWS_ACCESS_KEY_ID to access restore.s3.source                                                                                                                               | ``|
-| `restore.s3.secret_key`   | Restore init container - AWS AWS_SECRET_ACCESS_KEY to access restore.s3.source                                                                                                                           |``                                                                                         |
+| `restore.s3.access_key`   | Restore init container - AWS AWS_ACCESS_KEY_ID to access restore.s3.source                                                                                                                               |``|
+| `restore.s3.secret_key`   | Restore init container - AWS AWS_SECRET_ACCESS_KEY to access restore.s3.source                                                                                                                           |``|
 | `restore.ssh.source`      | Restore init container - SSH scp location of dump - i.e. user@server:/path/dump.rdb                                                                                                                      | `false`                                                                                    |
-| `restore.ssh.key`         | Restore init container - SSH private key to scp restore.ssh.source to init container. Key should be in one line separated with \n. i.e. -----BEGIN RSA PRIVATE KEY-----\n...\n...\n-----END RSA PRIVATE KEY----- | ``                                                                                 |
+| `restore.ssh.key`         | Restore init container - SSH private key to scp restore.ssh.source to init container. Key should be in one line separated with \n. i.e. -----BEGIN RSA PRIVATE KEY-----\n...\n...\n-----END RSA PRIVATE KEY----- |``                                                                                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
@@ -229,7 +232,7 @@ Note:
 
 1. Some config options should be renamed by redis version，e.g.:
 
-   ```
+   ```yml
    # In redis 5.x，see https://raw.githubusercontent.com/antirez/redis/5.0/redis.conf
    min-replicas-to-write: 1
    min-replicas-max-lag: 5
@@ -252,7 +255,7 @@ If more control is needed from either the redis or sentinel config then an entir
 Redis may require some changes in the kernel of the host machine to work as expected, in particular increasing the `somaxconn` value and disabling transparent huge pages.
 To do so, you can set up a privileged initContainer with the `sysctlImage` config values, for example:
 
-```
+```yml
 sysctlImage:
   enabled: true
   mountHostSys: true
