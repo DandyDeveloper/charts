@@ -75,7 +75,6 @@
     RO_REPLICAS="{{ .Values.ro_replicas }}"
     {{- end }}
     INDEX="${HOSTNAME##*-}"
-    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
     SENTINEL_PORT={{ .Values.sentinel.port }}
     MASTER=''
     MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
@@ -86,7 +85,6 @@
     SENTINEL_CONF=/data/conf/sentinel.conf
     SENTINEL_TLS_PORT={{ .Values.sentinel.tlsPort }}
     SERVICE={{ template "redis-ha.fullname" . }}
-    MASTER_PING_SUCCESSFUL=false
     TLS_REPLICATION={{ default false .Values.sentinel.tlsReplication }}
     set -eu
 
@@ -96,7 +94,7 @@
             redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
             grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
         else
-            redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} ${TLS_CLIENT_OPTION}{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
+            redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
             grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
         fi    
     set -e
@@ -201,7 +199,7 @@
         if [ "$REDIS_PORT" -ne 0 ]; then
             redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}" ping
         else
-            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} ${TLS_CLIENT_OPTION}{{ end }} ping
+            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} ping
         fi
     set -e
     }
@@ -245,7 +243,7 @@
             else
                 echo "  on sentinel (${SERVICE}:${SENTINEL_TLS_PORT}), sentinel grp (${MASTER_GROUP})"
                 echo "  $(date).."
-                if redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} ${TLS_CLIENT_OPTION}{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
+                if redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
                     echo "  $(date) Failover returned with 'NOGOODSLAVE'"
                     echo "Setting defaults for this pod.."
                     setup_defaults
