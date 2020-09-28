@@ -75,6 +75,8 @@
     RO_REPLICAS="{{ .Values.ro_replicas }}"
     {{- end }}
     INDEX="${HOSTNAME##*-}"
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    SENTINEL_PORT={{ .Values.sentinel.port }}
     MASTER=''
     MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
     QUORUM="{{ .Values.sentinel.quorum }}"
@@ -90,8 +92,13 @@
 
     sentinel_get_master() {
     set +e
-        redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
+        if [ "$SENTINEL_PORT" -ne 0 ]; then
+            redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
             grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+        else
+            redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} ${TLS_CLIENT_OPTION}{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
+            grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+        fi    
     set -e
     }
 
@@ -142,13 +149,14 @@
 
     redis_update() {
         echo "Updating redis config.."
-        echo "  we are slave of redis master (${1}:${REDIS_PORT})"
         if [ "$TLS_REPLICATION" = true ]; then
-        	echo "slaveof $1 $REDIS_TLS_PORT" >> "$REDIS_CONF"
-        	echo "slave-announce-port $REDIS_TLS_PORT" >> $REDIS_CONF
+            echo "  we are slave of redis master (${1}:${REDIS_TLS_PORT})"
+            echo "slaveof $1 $REDIS_TLS_PORT" >> "$REDIS_CONF"
+            echo "slave-announce-port $REDIS_TLS_PORT" >> $REDIS_CONF
         else
-          echo "slaveof ${1} ${REDIS_PORT}" >> "${REDIS_CONF}"
-          echo "slave-announce-port ${REDIS_PORT}" >> ${REDIS_CONF}
+            echo "  we are slave of redis master (${1}:${REDIS_PORT})"
+            echo "slaveof ${1} ${REDIS_PORT}" >> "${REDIS_CONF}"
+            echo "slave-announce-port ${REDIS_PORT}" >> ${REDIS_CONF}
         fi
         echo "slave-announce-ip ${ANNOUNCE_IP}" >> ${REDIS_CONF}
     }
@@ -190,7 +198,11 @@
 
     redis_ping() {
     set +e
-        redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}" ping
+        if [ "$REDIS_PORT" -ne 0 ]; then
+            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}" ping
+        else
+            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} ${TLS_CLIENT_OPTION}{{ end }} ping
+        fi
     set -e
     }
 
@@ -211,23 +223,44 @@
 
     find_master() {
         echo "Verifying redis master.."
-        echo "  ping (${MASTER}:${REDIS_PORT})"
+        if [ "$REDIS_PORT" -ne 0 ]; then
+            echo "  ping (${MASTER}:${REDIS_PORT})"
+        else
+            echo "  ping (${MASTER}:${REDIS_TLS_PORT})"
+        fi
         echo "  $(date).."
         if [ "$(redis_ping_retry 3)" != "PONG" ]; then
             echo "  $(date) Can't ping redis master (${MASTER})"
             echo "Attempting to force failover (sentinel failover).."
-            echo "  on sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
-            echo "  $(date).."
-            if redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
-                echo "  $(date) Failover returned with 'NOGOODSLAVE'"
-                echo "Setting defaults for this pod.."
-                setup_defaults
-                return 0
-            fi
+            
+            if [ "$SENTINEL_PORT" -ne 0 ]; then
+                echo "  on sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
+                echo "  $(date).."
+                if redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
+                    echo "  $(date) Failover returned with 'NOGOODSLAVE'"
+                    echo "Setting defaults for this pod.."
+                    setup_defaults
+                    return 0
+                fi
+            else
+                echo "  on sentinel (${SERVICE}:${SENTINEL_TLS_PORT}), sentinel grp (${MASTER_GROUP})"
+                echo "  $(date).."
+                if redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} ${TLS_CLIENT_OPTION}{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
+                    echo "  $(date) Failover returned with 'NOGOODSLAVE'"
+                    echo "Setting defaults for this pod.."
+                    setup_defaults
+                    return 0
+                fi
+            fi    
+                       
             echo "Hold on for 10sec"
             sleep 10
             echo "We should get redis master's ip now. Asking (get-master-addr-by-name).."
-            echo "  sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
+            if [ "$SENTINEL_PORT" -ne 0 ]; then
+                echo "  sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
+            else
+                echo "  sentinel (${SERVICE}:${SENTINEL_TLS_PORT}), sentinel grp (${MASTER_GROUP})"
+            fi
             echo "  $(date).."
             MASTER="$(sentinel_get_master)"
             if [ "${MASTER}" ]; then
