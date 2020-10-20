@@ -1,4 +1,4 @@
-Redis can be accessed via port {{ .Values.redis.port }} and Sentinel can be accessed via port {{ .Values.sentinel.port }} on the following DNS name from within your cluster:
+Redis can be accessed via {{ if ne (int .Values.redis.port) 0 }}port {{ .Values.redis.port }}{{ end }}  {{ if .Values.redis.tlsPort }} tls-port {{ .Values.redis.tlsPort }}{{ end }} and Sentinel can be accessed via {{ if ne (int .Values.sentinel.port) 0 }}port {{ .Values.sentinel.port }}{{ end }}  {{ if .Values.sentinel.tlsPort }} tls-port {{ .Values.sentinel.tlsPort }}{{ end }}  on the following DNS name from within your cluster:
 {{ template "redis-ha.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
 
 To connect to your Redis server:
