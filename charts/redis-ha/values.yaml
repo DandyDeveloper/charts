@@ -3,7 +3,7 @@
 ##
 image:
   repository: redis
-  tag: 6.0.3-alpine
+  tag: 6.0.7-alpine
   pullPolicy: IfNotPresent
 
 ## Reference to one or more secrets to be used when pulling images
