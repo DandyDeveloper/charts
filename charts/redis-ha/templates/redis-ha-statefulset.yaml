@@ -22,7 +22,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) | sha256sum }}
+        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "redis_liveness.sh" .) (include "sentinel_liveness.sh" .) | sha256sum }}
       {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 8 }}
       {{- end }}
@@ -70,19 +70,21 @@ spec:
               topologyKey: kubernetes.io/hostname
     {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app: {{ template "redis-ha.name" . }}
-                  release: {{ .Release.Name }}
-                  {{ template "redis-ha.fullname" . }}: replica
-              topologyKey: kubernetes.io/hostname
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "redis-ha.name" . }}
+                    release: {{ .Release.Name }}
+                    {{ template "redis-ha.fullname" . }}: replica
+                topologyKey: kubernetes.io/hostname
     {{- end }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app:  {{ template "redis-ha.name" . }}
+                    app: {{ template "redis-ha.name" . }}
                     release: {{ .Release.Name }}
                     {{ template "redis-ha.fullname" . }}: replica
                 topologyKey: failure-domain.beta.kubernetes.io/zone
@@ -153,12 +155,27 @@ spec:
             {{- end }}
               key: {{ .Values.authKey }}
 {{- end }}
+{{- if .Values.sentinel.auth }}
+        - name: SENTINELAUTH
+          valueFrom:
+            secretKeyRef:
+            {{- if .Values.sentinel.existingSecret }}
+              name: {{ .Values.sentinel.existingSecret }}
+            {{- else }}
+              name: {{ template "redis-ha.fullname" . }}-sentinel
+            {{- end }}
+              key: {{ .Values.sentinel.authKey }}
+{{- end }}
         volumeMounts:
         - name: config
           mountPath: /readonly-config
           readOnly: true
         - name: data
           mountPath: /data
+        {{- if .Values.redis.tlsPort }}
+        - mountPath: /tls-certs
+          name: tls-certs
+        {{- end}}
 {{ if regexFind $regexRestoreS3 (toString .Values.restore.s3.source) }}
       - name: restore-s3
         image: s3cmd/s3cmd:latest
@@ -235,17 +252,36 @@ spec:
               key: {{ .Values.authKey }}
         {{- end }}
         livenessProbe:
-          tcpSocket:
-            port: {{ .Values.redis.port }}
           initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.redis.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.redis.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.redis.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.redis.livenessProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/redis_liveness.sh {{ .Values.redis.livenessProbe.timeoutSeconds }}
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
+        {{- if ne (int .Values.redis.port) 0 }}
         - name: redis
           containerPort: {{ .Values.redis.port }}
+        {{- end }}
+        {{- if .Values.redis.tlsPort }}
+        - name: redis-tls
+          containerPort: {{ .Values.redis.tlsPort }}
+        {{- end }} 
         volumeMounts:
         - mountPath: /data
           name: data
+        {{- if .Values.redis.tlsPort }}
+        - mountPath: /tls-certs
+          name: tls-certs
+        {{- end}}
+        - mountPath: /health
+          name: health
         lifecycle:
 {{ toYaml .Values.redis.lifecycle | indent 10 }}
       - name: sentinel
@@ -267,18 +303,48 @@ spec:
             {{- end }}
               key: {{ .Values.authKey }}
 {{- end }}
+{{- if .Values.sentinel.auth }}
+        - name: SENTINELAUTH
+          valueFrom:
+            secretKeyRef:
+            {{- if .Values.sentinel.existingSecret }}
+              name: {{ .Values.sentinel.existingSecret }}
+            {{- else }}
+              name: {{ template "redis-ha.fullname" . }}-sentinel
+            {{- end }}
+              key: {{ .Values.sentinel.authKey }}
+{{- end }}
         livenessProbe:
-          tcpSocket:
-            port: {{ .Values.sentinel.port }}
-          initialDelaySeconds: 15
+          initialDelaySeconds: {{ .Values.sentinel.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.sentinel.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.sentinel.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.sentinel.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.sentinel.livenessProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/sentinel_liveness.sh {{ .Values.sentinel.livenessProbe.timeoutSeconds }}
         resources:
 {{ toYaml .Values.sentinel.resources | indent 10 }}
         ports:
+        {{- if ne (int .Values.sentinel.port) 0 }}
           - name: sentinel
             containerPort: {{ .Values.sentinel.port }}
+        {{- end }}
+        {{- if .Values.sentinel.tlsPort }}
+          - name: sentinel-tls
+            containerPort: {{ .Values.sentinel.tlsPort }}
+        {{- end }}   
         volumeMounts:
         - mountPath: /data
           name: data
+        {{- if .Values.redis.tlsPort }}
+        - mountPath: /tls-certs
+          name: tls-certs
+        {{- end }} 
+        - mountPath: /health
+          name: health
         lifecycle:
 {{ toYaml .Values.sentinel.lifecycle | indent 10 }}
 {{- if .Values.exporter.enabled }}
@@ -291,7 +357,11 @@ spec:
         {{- end }}
         env:
           - name: REDIS_ADDR
+          {{- if .Values.exporter.sslEnabled }}
+            value: rediss://{{ default "localhost" .Values.exporter.address }}:{{ .Values.redis.tlsPort }}
+          {{- else }}
             value: redis://{{ default "localhost" .Values.exporter.address }}:{{ .Values.redis.port }}
+          {{- end }}
         {{- if .Values.auth }}
           - name: REDIS_PASSWORD
             valueFrom:
@@ -307,6 +377,12 @@ spec:
           - name: REDIS_EXPORTER_SCRIPT
             value: /script/script.lua
         {{- end }}
+        {{- if .Values.exporter.sslEnabled }}
+          - name: REDIS_EXPORTER_TLS_CLIENT_KEY_FILE
+            value: /tls-certs/{{ .Values.tls.keyFile }}
+          - name: REDIS_EXPORTER_TLS_CLIENT_CERT_FILE
+            value: /tls-certs/{{ .Values.tls.certFile }}
+        {{- end }}
         livenessProbe:
           httpGet:
             path: {{ .Values.exporter.scrapePath }}
@@ -319,11 +395,15 @@ spec:
         ports:
           - name: exporter-port
             containerPort: {{ .Values.exporter.port }}
-        {{- if .Values.exporter.script }}
         volumeMounts:
+          {{- if .Values.exporter.script }}
           - mountPath: /script
             name: script-mount
-        {{- end }}
+          {{- end }}
+          {{- if .Values.exporter.sslEnabled }}
+          - mountPath: /tls-certs
+            name: tls-certs
+          {{- end }}
 {{- end }}
 {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
@@ -345,6 +425,19 @@ spec:
             - key: script
               path: script.lua
       {{- end }}
+      {{- if .Values.redis.tlsPort }}
+      - name: tls-certs
+        secret:
+          {{- if .Values.tls.secretName }}
+          secretName: {{ .Values.tls.secretName }}
+          {{- else }}
+          secretName: {{ template "redis-ha.fullname" . }}-tls-secret
+          {{- end }}
+      {{- end }}
+      - name: health
+        configMap:
+          name: {{ template "redis-ha.fullname" . }}-health-configmap
+          defaultMode: 0755
 {{- if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
   - metadata:
