@@ -6,6 +6,21 @@
 {{- else }}
     dir "/data"
     port {{ .Values.redis.port }}
+    {{- if .Values.sentinel.tlsPort }}
+    tls-port {{ .Values.redis.tlsPort }}
+    tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
+    tls-key-file /tls-certs/{{ .Values.tls.keyFile }}
+    {{- if .Values.tls.dhParamsFile }}
+    tls-dh-params-file /tls-certs/{{ .Values.tls.dhParamsFile }}
+    {{- end }}
+    {{- if .Values.tls.caCertFile }}
+    tls-ca-cert-file /tls-certs/{{ .Values.tls.caCertFile }}
+    {{- end }}
+    {{- if eq (default "yes" .Values.redis.authClients) "no"}}
+    tls-auth-clients no
+    {{- end }}
+    tls-replication {{ if .Values.redis.tlsReplication }}yes{{ else }}no{{ end }}
+    {{- end }}
     {{- range $key, $value := .Values.redis.config }}
     {{ $key }} {{ $value }}
     {{- end }}
@@ -21,6 +36,22 @@
 {{ tpl .Values.sentinel.customConfig . | indent 4 }}
 {{- else }}
     dir "/data"
+    port {{ .Values.sentinel.port }}
+    {{- if .Values.sentinel.tlsPort }}
+    tls-port {{ .Values.sentinel.tlsPort }}
+    tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
+    tls-key-file /tls-certs/{{ .Values.tls.keyFile }}
+    {{- if .Values.tls.dhParamsFile }}
+    tls-dh-params-file /tls-certs/{{ .Values.tls.dhParamsFile }}
+    {{- end }}
+    {{- if .Values.tls.caCertFile }}
+    tls-ca-cert-file /tls-certs/{{ .Values.tls.caCertFile }}
+    {{- end }}
+    {{- if eq (default "yes" .Values.sentinel.authClients) "no"}}
+    tls-auth-clients no
+    {{- end }}
+    tls-replication {{ if .Values.sentinel.tlsReplication }}yes{{ else }}no{{ end }}
+    {{- end }}
     {{- range $key, $value := .Values.sentinel.config }}
     {{- if eq "maxclients" $key  }}
         {{ $key }} {{ $value }}
@@ -30,6 +61,9 @@
     {{- end }}
 {{- if .Values.auth }}
     sentinel auth-pass {{ template "redis-ha.masterGroupName" . }} replace-default-auth
+{{- if .Values.sentinel.auth }}
+    requirepass replace-default-sentinel-auth
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -41,20 +75,29 @@
     RO_REPLICAS="{{ .Values.ro_replicas }}"
     {{- end }}
     INDEX="${HOSTNAME##*-}"
+    SENTINEL_PORT={{ .Values.sentinel.port }}
     MASTER=''
     MASTER_GROUP="{{ template "redis-ha.masterGroupName" . }}"
     QUORUM="{{ .Values.sentinel.quorum }}"
     REDIS_CONF=/data/conf/redis.conf
     REDIS_PORT={{ .Values.redis.port }}
+    REDIS_TLS_PORT={{ .Values.redis.tlsPort }}
     SENTINEL_CONF=/data/conf/sentinel.conf
-    SENTINEL_PORT={{ .Values.sentinel.port }}
+    SENTINEL_TLS_PORT={{ .Values.sentinel.tlsPort }}
     SERVICE={{ template "redis-ha.fullname" . }}
+    SENTINEL_TLS_REPLICATION_ENABLED={{ default false .Values.sentinel.tlsReplication }}
+    REDIS_TLS_REPLICATION_ENABLED={{ default false .Values.redis.tlsReplication }}
     set -eu
 
     sentinel_get_master() {
     set +e
-        redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
+        if [ "$SENTINEL_PORT" -eq 0 ]; then
+            redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
             grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+        else
+            redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
+            grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+        fi
     set -e
     }
 
@@ -74,7 +117,7 @@
 
     identify_master() {
         echo "Identifying redis master (get-master-addr-by-name).."
-        echo "  using sentinel ({{ template "redis-ha.fullname" . }}:{{ .Values.sentinel.port }}), sentinel group name ({{ .Values.redis.masterGroupName }})"
+        echo "  using sentinel ({{ template "redis-ha.fullname" . }}), sentinel group name ({{ .Values.redis.masterGroupName }})"
         echo "  $(date).."
         MASTER="$(sentinel_get_master_retry 3)"
         if [ -n "${MASTER}" ]; then
@@ -88,19 +131,37 @@
         echo "Updating sentinel config.."
         echo "  evaluating sentinel id (\${SENTINEL_ID_${INDEX}})"
         eval MY_SENTINEL_ID="\$SENTINEL_ID_${INDEX}"
-        echo "  sentinel id (${MY_SENTINEL_ID}), sentinel grp (${MASTER_GROUP}), redis master (${1}:${REDIS_PORT}), quorum (${QUORUM}), announce (${ANNOUNCE_IP}:${SENTINEL_PORT})"
+        echo "  sentinel id (${MY_SENTINEL_ID}), sentinel grp (${MASTER_GROUP}), quorum (${QUORUM})"
         sed -i "1s/^/sentinel myid ${MY_SENTINEL_ID}\\n/" "${SENTINEL_CONF}"
-        sed -i "2s/^/sentinel monitor ${MASTER_GROUP} ${1} ${REDIS_PORT} ${QUORUM} \\n/" "${SENTINEL_CONF}"
+        if [ "$SENTINEL_TLS_REPLICATION_ENABLED" = true ]; then
+            echo "  redis master (${1}:${REDIS_TLS_PORT})"
+            sed -i "2s/^/sentinel monitor ${MASTER_GROUP} ${1} ${REDIS_TLS_PORT} ${QUORUM} \\n/" "${SENTINEL_CONF}"
+        else
+            echo "  redis master (${1}:${REDIS_PORT})"
+            sed -i "2s/^/sentinel monitor ${MASTER_GROUP} ${1} ${REDIS_PORT} ${QUORUM} \\n/" "${SENTINEL_CONF}"
+        fi
         echo "sentinel announce-ip ${ANNOUNCE_IP}" >> ${SENTINEL_CONF}
-        echo "sentinel announce-port ${SENTINEL_PORT}" >> ${SENTINEL_CONF}
+        if [ "$SENTINEL_PORT" -eq 0 ]; then
+            echo "  announce (${ANNOUNCE_IP}:${SENTINEL_TLS_PORT})"
+            echo "sentinel announce-port ${SENTINEL_TLS_PORT}" >> ${SENTINEL_CONF}
+        else
+            echo "  announce (${ANNOUNCE_IP}:${SENTINEL_PORT})"
+            echo "sentinel announce-port ${SENTINEL_PORT}" >> ${SENTINEL_CONF}
+        fi
     }
 
     redis_update() {
         echo "Updating redis config.."
-        echo "  we are slave of redis master (${1}:${REDIS_PORT})"
-        echo "slaveof ${1} ${REDIS_PORT}" >> "${REDIS_CONF}"
+        if [ "$REDIS_TLS_REPLICATION_ENABLED" = true ]; then
+            echo "  we are slave of redis master (${1}:${REDIS_TLS_PORT})"
+            echo "slaveof ${1} ${REDIS_TLS_PORT}" >> "${REDIS_CONF}"
+            echo "slave-announce-port ${REDIS_TLS_PORT}" >> ${REDIS_CONF}
+        else
+            echo "  we are slave of redis master (${1}:${REDIS_PORT})"
+            echo "slaveof ${1} ${REDIS_PORT}" >> "${REDIS_CONF}"
+            echo "slave-announce-port ${REDIS_PORT}" >> ${REDIS_CONF}
+        fi
         echo "slave-announce-ip ${ANNOUNCE_IP}" >> ${REDIS_CONF}
-        echo "slave-announce-port ${REDIS_PORT}" >> ${REDIS_CONF}
     }
 
     copy_config() {
@@ -140,7 +201,11 @@
 
     redis_ping() {
     set +e
-        redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}" ping
+        if [ "$REDIS_PORT" -eq 0 ]; then
+            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} ping
+        else
+            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}"{{ end }} -p "${REDIS_PORT}" ping
+        fi
     set -e
     }
 
@@ -161,23 +226,44 @@
 
     find_master() {
         echo "Verifying redis master.."
-        echo "  ping (${MASTER}:${REDIS_PORT})"
+        if [ "$REDIS_PORT" -eq 0 ]; then
+            echo "  ping (${MASTER}:${REDIS_TLS_PORT})"
+        else
+            echo "  ping (${MASTER}:${REDIS_PORT})"
+        fi
         echo "  $(date).."
         if [ "$(redis_ping_retry 3)" != "PONG" ]; then
             echo "  $(date) Can't ping redis master (${MASTER})"
             echo "Attempting to force failover (sentinel failover).."
-            echo "  on sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
-            echo "  $(date).."
-            if redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
-                echo "  $(date) Failover returned with 'NOGOODSLAVE'"
-                echo "Setting defaults for this pod.."
-                setup_defaults
-                return 0
-            fi
+            
+            if [ "$SENTINEL_PORT" -eq 0 ]; then
+                echo "  on sentinel (${SERVICE}:${SENTINEL_TLS_PORT}), sentinel grp (${MASTER_GROUP})"
+                echo "  $(date).."
+                if redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
+                    echo "  $(date) Failover returned with 'NOGOODSLAVE'"
+                    echo "Setting defaults for this pod.."
+                    setup_defaults
+                    return 0
+                fi
+            else
+                echo "  on sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
+                echo "  $(date).."
+                if redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}"{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
+                    echo "  $(date) Failover returned with 'NOGOODSLAVE'"
+                    echo "Setting defaults for this pod.."
+                    setup_defaults
+                    return 0
+                fi
+            fi    
+                       
             echo "Hold on for 10sec"
             sleep 10
             echo "We should get redis master's ip now. Asking (get-master-addr-by-name).."
-            echo "  sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
+            if [ "$SENTINEL_PORT" -eq 0 ]; then
+                echo "  sentinel (${SERVICE}:${SENTINEL_TLS_PORT}), sentinel grp (${MASTER_GROUP})"
+            else
+                echo "  sentinel (${SERVICE}:${SENTINEL_PORT}), sentinel grp (${MASTER_GROUP})"
+            fi
             echo "  $(date).."
             MASTER="$(sentinel_get_master)"
             if [ "${MASTER}" ]; then
@@ -248,6 +334,12 @@
         echo "Setting redis auth values.."
         ESCAPED_AUTH=$(echo "${AUTH}" | sed -e 's/[\/&]/\\&/g');
         sed -i "s/replace-default-auth/${ESCAPED_AUTH}/" "${REDIS_CONF}" "${SENTINEL_CONF}"
+    fi
+    
+    if [ "${SENTINELAUTH:-}" ]; then
+        echo "Setting sentinel auth values"
+        ESCAPED_AUTH_SENTINEL=$(echo "$SENTINELAUTH" | sed -e 's/[\/&]/\\&/g');
+        sed -i "s/replace-default-sentinel-auth/${ESCAPED_AUTH_SENTINEL}/" "$SENTINEL_CONF"
     fi
 
     echo "$(date) Ready..."
@@ -391,3 +483,50 @@
     fi
     {{- end }}
 {{- end }}
+
+{{- define "redis_liveness.sh" }}
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "${AUTH}" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if ne (int .Values.redis.port) 0 }}
+        -p {{ .Values.redis.port }} \
+      {{- else }}
+        -p {{ .Values.redis.tlsPort }} ${TLS_CLIENT_OPTION} \
+      {{- end}}
+        ping
+    )
+    if [ "$response" != "PONG" ]; then
+      echo "$response"
+      exit 1
+    fi
+    echo "response=$response"
+{{- end }}
+
+{{- define "sentinel_liveness.sh" }}
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "${SENTINELAUTH}" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if ne (int .Values.sentinel.port) 0 }}
+        -p {{ .Values.sentinel.port }} \
+      {{- else }}
+        -p {{ .Values.sentinel.tlsPort }} ${TLS_CLIENT_OPTION} \
+      {{- end}}
+        ping
+    )
+    if [ "$response" != "PONG" ]; then
+      echo "$response"
+      exit 1
+    fi
+    echo "response=$response"
+{{- end }}
+
