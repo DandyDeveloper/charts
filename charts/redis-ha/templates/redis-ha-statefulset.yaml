@@ -382,6 +382,8 @@ spec:
             value: /tls-certs/{{ .Values.tls.keyFile }}
           - name: REDIS_EXPORTER_TLS_CLIENT_CERT_FILE
             value: /tls-certs/{{ .Values.tls.certFile }}
+          - name: REDIS_EXPORTER_TLS_CA_CERT_FILE
+            value: /tls-certs/{{ .Values.tls.caCertFile }}
         {{- end }}
         livenessProbe:
           httpGet:
