@@ -233,6 +233,10 @@ redis:
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
 
+  ## annotations for the redis statefulset itself (not the individual redis, sentinel, metrics pods)
+  statefulset:
+    annotations: {}
+
 ## Sentinel specific configuration options
 sentinel:
   port: 26379

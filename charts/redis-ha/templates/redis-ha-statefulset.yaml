@@ -9,6 +9,8 @@ metadata:
   labels:
     {{ template "redis-ha.fullname" . }}: replica
 {{ include "labels.standard" . | indent 4 }}
+  annotations:
+{{ toYaml .Values.redis.statefulset.annotations | indent 2 }}
 spec:
   selector:
     matchLabels:
