@@ -235,7 +235,7 @@
         if [ "$(redis_ping_retry 3)" != "PONG" ]; then
             echo "  $(date) Can't ping redis master (${MASTER})"
             echo "Attempting to force failover (sentinel failover).."
-            
+
             if [ "$SENTINEL_PORT" -eq 0 ]; then
                 echo "  on sentinel (${SERVICE}:${SENTINEL_TLS_PORT}), sentinel grp (${MASTER_GROUP})"
                 echo "  $(date).."
@@ -254,8 +254,8 @@
                     setup_defaults
                     return 0
                 fi
-            fi    
-                       
+            fi
+
             echo "Hold on for 10sec"
             sleep 10
             echo "We should get redis master's ip now. Asking (get-master-addr-by-name).."
@@ -335,7 +335,7 @@
         ESCAPED_AUTH=$(echo "${AUTH}" | sed -e 's/[\/&]/\\&/g');
         sed -i "s/replace-default-auth/${ESCAPED_AUTH}/" "${REDIS_CONF}" "${SENTINEL_CONF}"
     fi
-    
+
     if [ "${SENTINELAUTH:-}" ]; then
         echo "Setting sentinel auth values"
         ESCAPED_AUTH_SENTINEL=$(echo "$SENTINELAUTH" | sed -e 's/[\/&]/\\&/g');
@@ -500,7 +500,7 @@
       {{- end}}
         ping
     )
-    if [ "$response" != "PONG" ]; then
+    if [ "$response" != "PONG" ] && [ "${response:0:7}" != "LOADING" ] ; then
       echo "$response"
       exit 1
     fi
