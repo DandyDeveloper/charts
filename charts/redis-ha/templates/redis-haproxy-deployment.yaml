@@ -21,6 +21,9 @@ spec:
       labels:
         app: {{ template "redis-ha.name" . }}-haproxy
         release: {{ .Release.Name }}
+        {{- range $key, $value := .Values.haproxy.labels }}
+        {{ $key }}: {{ $value | toString }}
+        {{- end }}
       annotations:
       {{- if .Values.haproxy.metrics.enabled }}
         prometheus.io/port: "{{ .Values.haproxy.metrics.port }}"
@@ -59,18 +62,20 @@ spec:
               topologyKey: kubernetes.io/hostname
     {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app: {{ template "redis-ha.name" . }}-haproxy
-                  release: {{ .Release.Name }}
-              topologyKey: kubernetes.io/hostname
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "redis-ha.name" . }}-haproxy
+                    release: {{ .Release.Name }}
+                topologyKey: kubernetes.io/hostname
     {{- end }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app:  {{ template "redis-ha.name" . }}-haproxy
+                    app: {{ template "redis-ha.name" . }}-haproxy
                     release: {{ .Release.Name }}
                 topologyKey: failure-domain.beta.kubernetes.io/zone
     {{- end }}
@@ -135,6 +140,8 @@ spec:
           mountPath: /usr/local/etc/haproxy
         - name: shared-socket
           mountPath: /run/haproxy
+        lifecycle:
+{{ toYaml .Values.haproxy.lifecycle | indent 10 }}
 {{- if .Values.haproxy.priorityClassName }}
       priorityClassName: {{ .Values.haproxy.priorityClassName }}
 {{- end }}

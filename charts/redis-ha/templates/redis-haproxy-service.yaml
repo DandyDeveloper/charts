@@ -17,7 +17,7 @@ spec:
   loadBalancerIP: {{ .Values.haproxy.service.loadBalancerIP }}
   {{- end }}
   ports:
-  - name: haproxy
+  - name: tcp-haproxy
     port: {{ .Values.redis.port }}
     protocol: TCP
     targetPort: redis
@@ -25,7 +25,7 @@ spec:
     nodePort: {{ .Values.haproxy.service.nodePort }}
   {{- end }}
 {{- if .Values.haproxy.readOnly.enabled }}
-  - name: haproxyreadonly
+  - name: tcp-haproxyreadonly
     port: {{ .Values.haproxy.readOnly.port }}
     protocol: TCP
     targetPort: {{ .Values.haproxy.readOnly.port }}
