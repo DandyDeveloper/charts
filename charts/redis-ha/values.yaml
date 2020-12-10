@@ -288,7 +288,7 @@ sentinel:
     ## 'sentinel xxx mymaster xxx' will go here.
     otherConfig:
       maxclients: 10000
-      
+
   ## Custom sentinel.conf files used to override default settings. If this file is
   ## specified then the sentinel.config above will be ignored.
   # customConfig: |-
