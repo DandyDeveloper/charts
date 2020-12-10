@@ -101,6 +101,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.authKey`        | The key holding the sentinel password in an existing secret.                                                                                                                                             | `sentinel-password`                                                                        |
 | `sentinel.quorum`         | Minimum number of servers necessary to maintain quorum                                                                                                                                                   | `2`                                                                                        |
 | `sentinel.config`         | Valid sentinel config options in this section will be applied as config options to each sentinel (see below)                                                                                             | see values.yaml                                                                            |
+| `sentinel.config.otherConfig` | Sentinel configuration that are not expressed in the format similar to 'sentinel xxx mymaster xxx' will go here.                                                                                             | see values.yaml                                                                            |
 | `sentinel.customConfig`   | Allows for custom sentinel.conf files to be applied. If this is used then `sentinel.config` is ignored                                                                                                   |``|
 | `sentinel.resources`      | CPU/Memory for sentinel node resource requests/limits                                                                                                                                                    | `{}`                                                                                       |
 | `sentinel.lifecycle`         | Container Lifecycle Hooks for sentinel container                                                                                                                                              | `{}`                                                                                       |
@@ -259,6 +260,20 @@ Sentinel options supported must be in the the `sentinel <option> <master-group-n
 ```yml
     down-after-milliseconds: 30000
 ```
+Sentinel options that are not expressed in the format similar to 'sentinel xxx mymaster xxx' can be defined in `sentinel.config.otherConfig`. For example:
+
+```yml
+    otherConfig:
+      maxclients: 10000
+      tcp-backlog: 1024
+```
+
+would show up in sentinel.conf as follows:
+
+```
+maxclients 10000
+tcp-backlog 1024
+```      
 
 If more control is needed from either the redis or sentinel config then an entire config can be defined under `redis.customConfig` or `sentinel.customConfig`. Please note that these values will override any configuration options under their respective section. For example, if you define `sentinel.customConfig` then the `sentinel.config` is ignored.
 

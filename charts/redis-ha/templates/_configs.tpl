@@ -57,8 +57,10 @@
     tls-replication {{ if .Values.sentinel.tlsReplication }}yes{{ else }}no{{ end }}
     {{- end }}
     {{- range $key, $value := .Values.sentinel.config }}
-    {{- if eq "maxclients" $key  }}
-        {{ $key }} {{ $value }}
+    {{- if eq "otherConfig" $key  }}
+    {{- range $childKey, $childValue := . }}
+        {{ $childKey }} {{ $childValue }}
+    {{- end }}
     {{- else }}
         sentinel {{ $key }} {{ template "redis-ha.masterGroupName" $ }} {{ $value }}
     {{- end }}
