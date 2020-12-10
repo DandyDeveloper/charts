@@ -217,7 +217,7 @@ redis:
     rdbcompression: "yes"
     rdbchecksum: "yes"
     ## Redis configuration with same key can be defined below
-    ## If same configuration is defined in redis.config then that will be added to configurtaion as well in addition to the configuration mentioned in multipleLineConfig 
+    ## If same configuration is defined in redis.config then that will be added to configurtaion as well in addition to the configuration mentioned in multipleLineConfig
     # multipleLineConfig: |-
       # save 100 60
       # save 200 15
@@ -284,7 +284,7 @@ sentinel:
     ## Failover timeout value in milliseconds
     failover-timeout: 180000
     parallel-syncs: 5
-    ## Sentinel configuration that are not expressed in the format similar to 
+    ## Sentinel configuration that are not expressed in the format similar to
     ## 'sentinel xxx mymaster xxx' will go here.
     otherConfig:
       maxclients: 10000
