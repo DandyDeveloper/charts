@@ -22,7 +22,11 @@
     tls-replication {{ if .Values.redis.tlsReplication }}yes{{ else }}no{{ end }}
     {{- end }}
     {{- range $key, $value := .Values.redis.config }}
+    {{- if eq "multipleLineConfig" $key  }}
+    {{ $value | indent 4 }}
+    {{- else }}
     {{ $key }} {{ $value }}
+    {{- end }}
     {{- end }}
 {{- if .Values.auth }}
     requirepass replace-default-auth

@@ -216,6 +216,12 @@ redis:
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
+    ## Redis configuration with same key can be defined below
+    ## If same configuration is defined in redis.config then that will be added to configurtaion as well in addition to the configuration mentioned in multipleLineConfig 
+    # multipleLineConfig: |-
+      # save 100 60
+      # save 200 15
+      # save 500 10
 
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.
