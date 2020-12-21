@@ -9,6 +9,8 @@ metadata:
   labels:
     {{ template "redis-ha.fullname" . }}: replica
 {{ include "labels.standard" . | indent 4 }}
+  annotations:
+{{ toYaml .Values.redis.annotations | indent 4 }}
 spec:
   selector:
     matchLabels:
@@ -261,7 +263,7 @@ spec:
             command:
               - sh
               - -c
-              - /health/redis_liveness.sh {{ .Values.redis.livenessProbe.timeoutSeconds }}
+              - /health/redis_liveness.sh
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
@@ -324,7 +326,7 @@ spec:
             command:
               - sh
               - -c
-              - /health/sentinel_liveness.sh {{ .Values.sentinel.livenessProbe.timeoutSeconds }}
+              - /health/sentinel_liveness.sh
         resources:
 {{ toYaml .Values.sentinel.resources | indent 10 }}
         ports:

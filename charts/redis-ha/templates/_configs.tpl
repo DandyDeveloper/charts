@@ -117,7 +117,7 @@
 
     identify_master() {
         echo "Identifying redis master (get-master-addr-by-name).."
-        echo "  using sentinel ({{ template "redis-ha.fullname" . }}), sentinel group name ({{ .Values.redis.masterGroupName }})"
+        echo "  using sentinel ({{ template "redis-ha.fullname" . }}), sentinel group name ({{ template "redis-ha.masterGroupName" . }})"
         echo "  $(date).."
         MASTER="$(sentinel_get_master_retry 3)"
         if [ -n "${MASTER}" ]; then
@@ -485,9 +485,10 @@
 {{- end }}
 
 {{- define "redis_liveness.sh" }}
+    {{- if not (ne (int .Values.sentinel.port) 0) }}
     TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    {{- end }}
     response=$(
-      timeout -s 3 $1 \
       redis-cli \
       {{- if .Values.auth }}
         -a "${AUTH}" --no-auth-warning \
@@ -508,9 +509,10 @@
 {{- end }}
 
 {{- define "sentinel_liveness.sh" }}
+    {{- if not (ne (int .Values.sentinel.port) 0) }}
     TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    {{- end }}
     response=$(
-      timeout -s 3 $1 \
       redis-cli \
       {{- if .Values.auth }}
         -a "${SENTINELAUTH}" --no-auth-warning \
