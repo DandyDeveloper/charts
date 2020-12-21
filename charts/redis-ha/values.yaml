@@ -50,7 +50,7 @@ serviceAccount:
 ## Recommend for externally exposed Redis clusters.
 ## ref: https://cbonte.github.io/haproxy-dconv/1.9/intro.html
 haproxy:
-  enabled: false
+  enabled: true
   # Enable if you want a dedicated port in haproxy for redis-slaves
   readOnly:
     enabled: false
@@ -70,7 +70,8 @@ haproxy:
   imagePullSecrets: []
   # - name: "image-pull-secret"
 
-  annotations: {}
+  annotations: 
+    abc: xyz
   resources: {}
   emptyDir: {}
 
