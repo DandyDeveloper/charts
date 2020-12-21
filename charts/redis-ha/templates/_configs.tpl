@@ -117,7 +117,7 @@
 
     identify_master() {
         echo "Identifying redis master (get-master-addr-by-name).."
-        echo "  using sentinel ({{ template "redis-ha.fullname" . }}), sentinel group name ({{ .Values.redis.masterGroupName }})"
+        echo "  using sentinel ({{ template "redis-ha.fullname" . }}), sentinel group name ({{ template "redis-ha.masterGroupName" . }})"
         echo "  $(date).."
         MASTER="$(sentinel_get_master_retry 3)"
         if [ -n "${MASTER}" ]; then
