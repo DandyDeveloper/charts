@@ -125,6 +125,8 @@ haproxy:
     server: 330s
     client: 330s
     check: 2s
+  checkInterval: 1s
+
   securityContext:
     runAsUser: 1000
     fsGroup: 1000
