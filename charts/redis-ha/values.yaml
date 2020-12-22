@@ -354,14 +354,14 @@ affinity: |
 
 # Prometheus exporter specific configuration options
 exporter:
-  enabled: true
+  enabled: false
   image: oliver006/redis_exporter
   tag: v1.13.1
   pullPolicy: IfNotPresent
 
   # prometheus port & scrape path
   port: 9121
-  portName: "exporter-port"
+  portName: exporter-port
   scrapePath: /metrics
 
   # Address/Host for Redis instance. Default: localhost
