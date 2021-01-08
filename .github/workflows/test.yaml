@@ -18,22 +18,36 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+
     - name: Shellcheck
       uses: ludeeus/action-shellcheck@0.1.0
+
+    - name: Setup chart-testing
+      uses: helm/chart-testing-action@v2.0.1
+
+    - name: Run chart-testing (list-changed)
+      id: list-changed
+      run: |
+        changed=$(ct list-changed)
+        if [[ -n "$changed" ]]; then
+          echo "::set-output name=changed::true"
+        fi
+
     - name: Install kind
       uses: helm/kind-action@v1.0.0
       with:
         node_image: "kindest/node:${{ matrix.kubernetesVersion }}"
         config: .ci/kind-config.yaml
         install_local_path_provisioner: true
+
     - name: Verify kind
       run: |
         kubectl cluster-info
         kubectl get nodes -o wide
         kubectl get pods -n kube-system
-    - name: Setup chart-testing
-      uses: helm/chart-testing-action@v2.0.1
+
     - name: Run chart-testing linting (lint)
       run: ct lint --config .ci/ct-config.yaml
+
     - name: Run chart-testing (install)
-      uses: ct install --config .ci/ct-config.yaml
+      run: ct install --config .ci/ct-config.yaml
