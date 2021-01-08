@@ -34,10 +34,6 @@ jobs:
     - name: Setup chart-testing
       uses: helm/chart-testing-action@v2.0.1
     - name: Run chart-testing linting (lint)
-      run: ct lint
-      with:
-        config: .ci/ct-config.yaml
+      run: ct lint --config .ci/ct-config.yaml
     - name: Run chart-testing (install)
-      uses: ct install
-      with:
-        config: .ci/ct-config.yaml
+      uses: ct install --config .ci/ct-config.yaml
