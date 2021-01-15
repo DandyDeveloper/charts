@@ -122,8 +122,8 @@ haproxy:
     resources: {}
   timeout:
     connect: 4s
-    server: 30s
-    client: 30s
+    server: 330s
+    client: 330s
     check: 2s
   securityContext:
     runAsUser: 1000
@@ -361,6 +361,7 @@ exporter:
 
   # prometheus port & scrape path
   port: 9121
+  portName: exporter-port
   scrapePath: /metrics
 
   # Address/Host for Redis instance. Default: localhost

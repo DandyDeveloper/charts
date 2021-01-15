@@ -397,7 +397,7 @@ spec:
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
         ports:
-          - name: exporter-port
+          - name: {{ .Values.exporter.portName }}
             containerPort: {{ .Values.exporter.port }}
         volumeMounts:
           {{- if .Values.exporter.script }}
