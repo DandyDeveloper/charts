@@ -20,7 +20,7 @@ spec:
   replicas: {{ .Values.replicas }}
   podManagementPolicy: OrderedReady
   updateStrategy:
-    type: RollingUpdate
+    type: {{ .Values.redis.updateStrategy.type }}
   template:
     metadata:
       annotations:

@@ -236,6 +236,11 @@ redis:
   ## annotations for the redis statefulset
   annotations: {}
 
+  ## updateStrategy for Redis StatefulSet
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+  updateStrategy:
+    type: RollingUpdate
+
 ## Sentinel specific configuration options
 sentinel:
   port: 26379
