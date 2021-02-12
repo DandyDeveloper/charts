@@ -202,6 +202,14 @@ redis:
     successThreshold: 1
     failureThreshold: 5
 
+  # readiness probe parameters for redis container
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 15
+    successThreshold: 1
+    failureThreshold: 5
+
   config:
     ## Additional redis conf options can be added below
     ## For all available options see http://download.redis.io/redis-stable/redis.conf
