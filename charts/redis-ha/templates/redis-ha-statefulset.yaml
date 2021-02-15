@@ -81,15 +81,6 @@ spec:
                     {{ template "redis-ha.fullname" . }}: replica
                 topologyKey: kubernetes.io/hostname
     {{- end }}
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app: {{ template "redis-ha.name" . }}
-                    release: {{ .Release.Name }}
-                    {{ template "redis-ha.fullname" . }}: replica
-                topologyKey: failure-domain.beta.kubernetes.io/zone
     {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
