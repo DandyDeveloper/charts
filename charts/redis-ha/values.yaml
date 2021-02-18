@@ -194,6 +194,10 @@ redis:
   ## It is possible to disable client side certificates authentication when "authClients" is set to "no"
   # authClients: "no"
 
+  ## Increase terminationGracePeriodSeconds to allow writing large RDB snapshots. (k8s default is 30s)
+  ## https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced
+  terminationGracePeriodSeconds: 60
+
   # liveness probe parameters for redis container
   livenessProbe:
     initialDelaySeconds: 30

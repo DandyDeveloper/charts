@@ -41,6 +41,9 @@ spec:
         {{ $key }}: {{ $value | toString }}
         {{- end }}
     spec:
+      {{- if .Values.redis.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.redis.terminationGracePeriodSeconds }}
+      {{- end }}
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
