@@ -117,6 +117,12 @@ spec:
             port: 8888
           initialDelaySeconds: 5
           periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8888
+          initialDelaySeconds: 5
+          periodSeconds: 3
         ports:
         - name: redis
           containerPort: {{ default "6379" .Values.redis.port }}
@@ -145,9 +151,9 @@ spec:
         configMap:
           name: {{ template "redis-ha.fullname" . }}-configmap
       - name: shared-socket
-        emptyDir: 
+        emptyDir:
 {{ toYaml .Values.haproxy.emptyDir | indent 10 }}
       - name: data
-        emptyDir: 
+        emptyDir:
 {{ toYaml .Values.haproxy.emptyDir | indent 10 }}
 {{- end }}
