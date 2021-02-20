@@ -41,6 +41,9 @@ spec:
         {{ $key }}: {{ $value | toString }}
         {{- end }}
     spec:
+      {{- if .Values.redis.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.redis.terminationGracePeriodSeconds }}
+      {{- end }}
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
@@ -81,15 +84,6 @@ spec:
                     {{ template "redis-ha.fullname" . }}: replica
                 topologyKey: kubernetes.io/hostname
     {{- end }}
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app: {{ template "redis-ha.name" . }}
-                    release: {{ .Release.Name }}
-                    {{ template "redis-ha.fullname" . }}: replica
-                topologyKey: failure-domain.beta.kubernetes.io/zone
     {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
@@ -264,6 +258,17 @@ spec:
               - sh
               - -c
               - /health/redis_liveness.sh
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.redis.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.redis.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.redis.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.redis.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.redis.readinessProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/redis_liveness.sh
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
@@ -274,7 +279,7 @@ spec:
         {{- if .Values.redis.tlsPort }}
         - name: redis-tls
           containerPort: {{ .Values.redis.tlsPort }}
-        {{- end }} 
+        {{- end }}
         volumeMounts:
         - mountPath: /data
           name: data
@@ -337,14 +342,14 @@ spec:
         {{- if .Values.sentinel.tlsPort }}
           - name: sentinel-tls
             containerPort: {{ .Values.sentinel.tlsPort }}
-        {{- end }}   
+        {{- end }}
         volumeMounts:
         - mountPath: /data
           name: data
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
           name: tls-certs
-        {{- end }} 
+        {{- end }}
         - mountPath: /health
           name: health
         lifecycle:
