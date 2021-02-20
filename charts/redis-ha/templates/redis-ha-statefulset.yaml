@@ -24,7 +24,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "redis_liveness.sh" .) (include "sentinel_liveness.sh" .) | sha256sum }}
+        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) | sha256sum }}
       {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 8 }}
       {{- end }}
@@ -268,7 +268,7 @@ spec:
             command:
               - sh
               - -c
-              - /health/redis_liveness.sh
+              - /health/redis_readiness.sh
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:

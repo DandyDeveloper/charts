@@ -11,5 +11,7 @@ metadata:
 data:
   redis_liveness.sh: |
 {{- include "redis_liveness.sh" . }}
+  redis_readiness.sh: |
+{{- include "redis_readiness.sh" . }}
   sentinel_liveness.sh: |
 {{- include "sentinel_liveness.sh" . }}
