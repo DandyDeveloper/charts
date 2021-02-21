@@ -285,7 +285,7 @@ sentinel:
     failureThreshold: 5
 
   # readiness probe parameters for sentinel container
-  readiness:
+  readinessProbe:
     initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 15
