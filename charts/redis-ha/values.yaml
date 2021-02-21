@@ -165,6 +165,10 @@ podSecurityPolicy:
 rbac:
   create: true
 
+# NOT RECOMMENDED: Additional container in which you can execute arbitrary commands to update sysctl parameters
+# You can now use securityContext.sysctls to leverage this capability
+# Ref: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
+##
 sysctlImage:
   enabled: false
   command: []
@@ -324,6 +328,13 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
+
+  ## Assuming your kubelet allows it, you can the following instructions to configure
+  ## specific sysctl parameters
+  ##
+  # sysctls:
+  # - name: net.core.somaxconn
+  #   value: '10000'
 
 ## Node labels, affinity, and tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector

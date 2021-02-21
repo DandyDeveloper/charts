@@ -24,11 +24,11 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "redis_liveness.sh" .) (include "sentinel_liveness.sh" .) | sha256sum }}
+        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) | sha256sum }}
       {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 8 }}
       {{- end }}
-      {{- if .Values.exporter.enabled }}
+      {{- if and (.Values.exporter.enabled) (not .Values.exporter.serviceMonitor.enabled) }}
         prometheus.io/port: "{{ .Values.exporter.port }}"
         prometheus.io/scrape: "true"
         prometheus.io/path: {{ .Values.exporter.scrapePath }}
@@ -268,7 +268,7 @@ spec:
             command:
               - sh
               - -c
-              - /health/redis_liveness.sh
+              - /health/redis_readiness.sh
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
