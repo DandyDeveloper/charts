@@ -332,6 +332,17 @@ spec:
               - sh
               - -c
               - /health/sentinel_liveness.sh
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.sentinel.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.sentinel.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.sentinel.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.sentinel.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.sentinel.readinessProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/sentinel_liveness.sh
         resources:
 {{ toYaml .Values.sentinel.resources | indent 10 }}
         ports:
@@ -399,6 +410,13 @@ spec:
           initialDelaySeconds: {{ .Values.exporter.livenessProbe.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.exporter.livenessProbe.timeoutSeconds }}
           periodSeconds: {{ .Values.exporter.livenessProbe.periodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.exporter.scrapePath }}
+            port: {{ .Values.exporter.port }}
+          initialDelaySeconds: {{ .Values.exporter.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.exporter.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.exporter.readinessProbe.periodSeconds }}
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
         ports:
