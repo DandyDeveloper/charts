@@ -290,6 +290,14 @@ sentinel:
     successThreshold: 1
     failureThreshold: 5
 
+  # readiness probe parameters for sentinel container
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 15
+    successThreshold: 3
+    failureThreshold: 5
+
   quorum: 2
   config:
     ## Additional sentinel conf options can be added below. Only options that
@@ -452,6 +460,12 @@ exporter:
     initialDelaySeconds: 15
     timeoutSeconds: 3
     periodSeconds: 15
+
+  readinessProbe:
+    initialDelaySeconds: 15
+    timeoutSeconds: 3
+    periodSeconds: 15
+    successThreshold: 2
 
 podDisruptionBudget: {}
   # maxUnavailable: 1
