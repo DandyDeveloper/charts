@@ -539,6 +539,7 @@ restore:
     source: false
     access_key: ""
     secret_key: ""
+    region: ""
   ssh:
     source: false
     key: ""
