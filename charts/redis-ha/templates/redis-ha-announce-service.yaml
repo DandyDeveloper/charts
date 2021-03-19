@@ -48,7 +48,7 @@ spec:
   - name: http-exporter
     port: {{ $root.Values.exporter.port }}
     protocol: TCP
-    targetPort: exporter-port
+    targetPort: {{ $root.Values.exporter.portName }}
   {{- end }}
   selector:
     release: {{ $root.Release.Name }}

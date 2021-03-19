@@ -21,11 +21,12 @@ spec:
       labels:
         app: {{ template "redis-ha.name" . }}-haproxy
         release: {{ .Release.Name }}
+        revision: "{{ .Release.Revision }}"
         {{- range $key, $value := .Values.haproxy.labels }}
         {{ $key }}: {{ $value | toString }}
         {{- end }}
       annotations:
-      {{- if .Values.haproxy.metrics.enabled }}
+      {{- if and (.Values.haproxy.metrics.enabled) (not .Values.haproxy.metrics.serviceMonitor.enabled)  }}
         prometheus.io/port: "{{ .Values.haproxy.metrics.port }}"
         prometheus.io/scrape: "true"
         prometheus.io/path: "{{ .Values.haproxy.metrics.scrapePath }}"
@@ -59,6 +60,7 @@ spec:
                 matchLabels:
                   app: {{ template "redis-ha.name" . }}-haproxy
                   release: {{ .Release.Name }}
+                  revision: "{{ .Release.Revision }}"
               topologyKey: kubernetes.io/hostname
     {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -68,16 +70,9 @@ spec:
                   matchLabels:
                     app: {{ template "redis-ha.name" . }}-haproxy
                     release: {{ .Release.Name }}
+                    revision: "{{ .Release.Revision }}"
                 topologyKey: kubernetes.io/hostname
     {{- end }}
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app: {{ template "redis-ha.name" . }}-haproxy
-                    release: {{ .Release.Name }}
-                topologyKey: failure-domain.beta.kubernetes.io/zone
     {{- end }}
       initContainers:
       - name: config-init
@@ -122,6 +117,12 @@ spec:
             port: 8888
           initialDelaySeconds: 5
           periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8888
+          initialDelaySeconds: 5
+          periodSeconds: 3
         ports:
         - name: redis
           containerPort: {{ default "6379" .Values.redis.port }}
@@ -150,9 +151,9 @@ spec:
         configMap:
           name: {{ template "redis-ha.fullname" . }}-configmap
       - name: shared-socket
-        emptyDir: 
+        emptyDir:
 {{ toYaml .Values.haproxy.emptyDir | indent 10 }}
       - name: data
-        emptyDir: 
+        emptyDir:
 {{ toYaml .Values.haproxy.emptyDir | indent 10 }}
 {{- end }}

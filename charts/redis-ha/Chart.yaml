@@ -6,19 +6,16 @@ keywords:
 - redis
 - keyvalue
 - database
-version: 4.10.6
+version: 4.12.10
 appVersion: 6.0.7
-description: Highly available Kubernetes implementation of Redis
+description: This Helm chart provides a highly available Redis implementation with a master/slave configuration and uses Sentinel sidecars for failover management
 icon: https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Redis_Logo.svg/1200px-Redis_Logo.svg.png
 maintainers:
 - email: salimsalaues@gmail.com
   name: ssalaues
 - email: aaron.layfield@gmail.com
   name: dandydeveloper
-details:
-  This Helm chart provides a highly available Redis implementation with a master/slave configuration
-  and uses Sentinel sidecars for failover management
 sources:
 - https://redis.io/download
-- https://github.com/scality/Zenko/tree/development/1.0/kubernetes/zenko/charts/redis-ha
+- https://github.com/DandyDeveloper/charts/blob/master/charts/redis-ha
 - https://github.com/oliver006/redis_exporter

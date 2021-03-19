@@ -122,8 +122,8 @@ haproxy:
     resources: {}
   timeout:
     connect: 4s
-    server: 30s
-    client: 30s
+    server: 330s
+    client: 330s
     check: 2s
   securityContext:
     runAsUser: 1000
@@ -165,6 +165,10 @@ podSecurityPolicy:
 rbac:
   create: true
 
+# NOT RECOMMENDED: Additional container in which you can execute arbitrary commands to update sysctl parameters
+# You can now use securityContext.sysctls to leverage this capability
+# Ref: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
+##
 sysctlImage:
   enabled: false
   command: []
@@ -194,8 +198,19 @@ redis:
   ## It is possible to disable client side certificates authentication when "authClients" is set to "no"
   # authClients: "no"
 
+  ## Increase terminationGracePeriodSeconds to allow writing large RDB snapshots. (k8s default is 30s)
+  ## https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced
+  terminationGracePeriodSeconds: 60
+
   # liveness probe parameters for redis container
   livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 15
+    successThreshold: 1
+    failureThreshold: 5
+
+  readinessProbe:
     initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 15
@@ -242,6 +257,11 @@ redis:
   ## annotations for the redis statefulset
   annotations: {}
 
+  ## updateStrategy for Redis StatefulSet
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+  updateStrategy:
+    type: RollingUpdate
+
 ## Sentinel specific configuration options
 sentinel:
   port: 26379
@@ -272,6 +292,14 @@ sentinel:
     periodSeconds: 15
     timeoutSeconds: 15
     successThreshold: 1
+    failureThreshold: 5
+
+  # readiness probe parameters for sentinel container
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 15
+    successThreshold: 3
     failureThreshold: 5
 
   quorum: 2
@@ -309,6 +337,13 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
+
+  ## Assuming your kubelet allows it, you can the following instructions to configure
+  ## specific sysctl parameters
+  ##
+  # sysctls:
+  # - name: net.core.somaxconn
+  #   value: '10000'
 
 ## Node labels, affinity, and tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
@@ -365,11 +400,12 @@ affinity: |
 exporter:
   enabled: false
   image: oliver006/redis_exporter
-  tag: v1.13.1
+  tag: v1.15.1
   pullPolicy: IfNotPresent
 
   # prometheus port & scrape path
   port: 9121
+  portName: exporter-port
   scrapePath: /metrics
 
   # Address/Host for Redis instance. Default: localhost
@@ -431,6 +467,12 @@ exporter:
     initialDelaySeconds: 15
     timeoutSeconds: 3
     periodSeconds: 15
+
+  readinessProbe:
+    initialDelaySeconds: 15
+    timeoutSeconds: 3
+    periodSeconds: 15
+    successThreshold: 2
 
 podDisruptionBudget: {}
   # maxUnavailable: 1
