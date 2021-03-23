@@ -109,7 +109,7 @@ haproxy:
       # When set true then use a ServiceMonitor to configure scraping
       enabled: false
       # Set the namespace the ServiceMonitor should be deployed
-      # namespace: monitoring
+      # namespace: "monitoring"
       # Set how frequently Prometheus should scrape
       # interval: 30s
       # Set path to redis-exporter telemtery-path
@@ -442,7 +442,7 @@ exporter:
     # When set true then use a ServiceMonitor to configure scraping
     enabled: false
     # Set the namespace the ServiceMonitor should be deployed
-    # namespace: monitoring
+    # namespace: "monitoring"
     # Set how frequently Prometheus should scrape
     # interval: 30s
     # Set path to redis-exporter telemtery-path
