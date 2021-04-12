@@ -16,6 +16,9 @@ spec:
   {{- if and (eq .Values.haproxy.service.type "LoadBalancer") .Values.haproxy.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.haproxy.service.loadBalancerIP }}
   {{- end }}
+  {{- if and (eq .Values.haproxy.service.type "LoadBalancer") .Values.haproxy.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{ toYaml .Values.haproxy.service.loadBalancerSourceRanges | nindent 2 }}
+  {{- end }}
   ports:
   - name: tcp-haproxy
     port: {{ .Values.redis.port }}
