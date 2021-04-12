@@ -7,9 +7,9 @@ metadata:
 {{ toYaml .Values.exporter.serviceMonitor.labels | indent 4}}
 {{- end }}
   name: {{ template "redis-ha.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | quote }}
 {{- if .Values.exporter.serviceMonitor.namespace }}
-  namespace: {{ .Values.exporter.serviceMonitor.namespace }}
+  namespace: {{ .Values.exporter.serviceMonitor.namespace | quote }}
 {{- end }}
 spec:
   endpoints:
@@ -26,7 +26,7 @@ spec:
   jobLabel: {{ template "redis-ha.fullname" . }}
   namespaceSelector:
     matchNames:
-    - {{ .Release.Namespace }}
+    - {{ .Release.Namespace | quote }}
   selector:
     matchLabels:
       app: {{ template "redis-ha.name" . }}

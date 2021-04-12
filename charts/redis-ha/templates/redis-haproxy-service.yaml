@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ template "redis-ha.fullname" . }}-haproxy
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
     component: {{ template "redis-ha.fullname" . }}-haproxy
@@ -18,6 +18,9 @@ spec:
   {{- end }}
   {{- if and (eq .Values.haproxy.service.type "LoadBalancer") .Values.haproxy.service.externalTrafficPolicy }}
   externalTrafficPolicy: {{ .Values.haproxy.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if and (eq .Values.haproxy.service.type "LoadBalancer") .Values.haproxy.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{ toYaml .Values.haproxy.service.loadBalancerSourceRanges | nindent 2 }}
   {{- end }}
   ports:
   - name: tcp-haproxy
