@@ -86,6 +86,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.readinessProbe.failureThreshold`    | Failure threshold for readiness probe                                                                                                                                                     | `5`                                                                                        |
 | `redis.masterGroupName`   | Redis convention for naming the cluster group: must match `^[\\w-\\.]+$` and can be templated                                                                                                            | `mymaster`                                                                                 |
 | `redis.config`            | Any valid redis config options in this section will be applied to each server (see below)                                                                                                                | see values.yaml                                                                            |
+| `redis.config.multipleLineConfig`          | Any valid redis config options which starts with same word (key) can be added here. If same configuration is defined in redis.config then that will be added to config in addition to the configuration mentioned here                                                                |``|
 | `redis.customConfig`      | Allows for custom redis.conf files to be applied. If this is used then `redis.config` is ignored                                                                                                         |``|
 | `redis.resources`         | CPU/Memory for master/slave nodes resource requests/limits                                                                                                                                               | `{}`                                                                                       |
 | `redis.lifecycle`         | Container Lifecycle Hooks for redis container                                                                                                                                              | `{}`                                                                                       |
@@ -111,6 +112,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.authKey`        | The key holding the sentinel password in an existing secret.                                                                                                                                             | `sentinel-password`                                                                        |
 | `sentinel.quorum`         | Minimum number of servers necessary to maintain quorum                                                                                                                                                   | `2`                                                                                        |
 | `sentinel.config`         | Valid sentinel config options in this section will be applied as config options to each sentinel (see below)                                                                                             | see values.yaml                                                                            |
+| `sentinel.config.otherConfig` | Sentinel configuration that are not expressed in the format similar to 'sentinel xxx mymaster xxx' will go here.                                                                                             | see values.yaml                                                                            |
 | `sentinel.customConfig`   | Allows for custom sentinel.conf files to be applied. If this is used then `sentinel.config` is ignored                                                                                                   |``|
 | `sentinel.resources`      | CPU/Memory for sentinel node resource requests/limits                                                                                                                                                    | `{}`                                                                                       |
 | `sentinel.lifecycle`         | Container Lifecycle Hooks for sentinel container                                                                                                                                              | `{}`                                                                                       |
@@ -241,6 +243,16 @@ For example `repl-timeout 60` would be added to the `redis.config` section of th
 ```yml
     repl-timeout: "60"
 ```
+One can use `redis.config.multipleLineConfig` to include redis configuration that starts with same words. For example in redis.conf, one can have multiple configuration lines for `save` which can be added to `redis.config.multipleLineConfig` as follows:
+
+```yml
+    multipleLineConfig: |-
+      save 100 60
+      save 200 15
+      save 500 5
+```
+
+If you mention the same configuration option in `redis.config` as in `redis.config.multipleLineConfig` then both the config lines will be included in redis.conf.
 
 Note:
 
@@ -261,6 +273,20 @@ Sentinel options supported must be in the the `sentinel <option> <master-group-n
 ```yml
     down-after-milliseconds: 30000
 ```
+Sentinel options that are not expressed in the format similar to 'sentinel xxx mymaster xxx' can be defined in `sentinel.config.otherConfig`. For example:
+
+```yml
+    otherConfig:
+      maxclients: 10000
+      tcp-backlog: 1024
+```
+
+would show up in sentinel.conf as follows:
+
+```
+maxclients 10000
+tcp-backlog 1024
+```      
 
 If more control is needed from either the redis or sentinel config then an entire config can be defined under `redis.customConfig` or `sentinel.customConfig`. Please note that these values will override any configuration options under their respective section. For example, if you define `sentinel.customConfig` then the `sentinel.config` is ignored.
 

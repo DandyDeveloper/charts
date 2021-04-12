@@ -231,6 +231,12 @@ redis:
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
+    ## Redis configuration with same key can be defined below
+    ## If same configuration is defined in redis.config then that will be added to configurtaion as well in addition to the configuration mentioned in multipleLineConfig
+    # multipleLineConfig: |-
+      # save 100 60
+      # save 200 15
+      # save 500 10
 
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.
@@ -299,14 +305,17 @@ sentinel:
   quorum: 2
   config:
     ## Additional sentinel conf options can be added below. Only options that
-    ## are expressed in the format simialar to 'sentinel xxx mymaster xxx' will
-    ## be properly templated expect maxclients option.
+    ## are expressed in the format similar to 'sentinel xxx mymaster xxx' will
+    ## be properly templated.
     ## For available options see http://download.redis.io/redis-stable/sentinel.conf
     down-after-milliseconds: 10000
     ## Failover timeout value in milliseconds
     failover-timeout: 180000
     parallel-syncs: 5
-    maxclients: 10000
+    ## Sentinel configuration that are not expressed in the format similar to
+    ## 'sentinel xxx mymaster xxx' will go here.
+    otherConfig:
+      maxclients: 10000
 
   ## Custom sentinel.conf files used to override default settings. If this file is
   ## specified then the sentinel.config above will be ignored.
