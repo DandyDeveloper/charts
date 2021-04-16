@@ -37,6 +37,9 @@
 {{- else }}
     dir "/data"
     port {{ .Values.sentinel.port }}
+    {{- if .Values.sentinel.bind }}
+    bind {{ .Values.sentinel.bind }}
+    {{- end }}
     {{- if .Values.sentinel.tlsPort }}
     tls-port {{ .Values.sentinel.tlsPort }}
     tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
