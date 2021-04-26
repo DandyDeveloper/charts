@@ -210,6 +210,9 @@ The following table lists the configurable parameters of the Redis chart and the
 | `restore.s3.region`       | Restore init container - AWS AWS_REGION to access restore.s3.source                                                                                                                                      |``|
 | `restore.ssh.source`      | Restore init container - SSH scp location of dump - i.e. user@server:/path/dump.rdb                                                                                                                      | `false`                                                                                    |
 | `restore.ssh.key`         | Restore init container - SSH private key to scp restore.ssh.source to init container. Key should be in one line separated with \n. i.e. -----BEGIN RSA PRIVATE KEY-----\n...\n...\n-----END RSA PRIVATE KEY----- |``                                                                                 |
+| `networkPolicy.enabled`   | Enable generation of a NetworkPolicy  | `false` |
+| `networkPolicy.clientLabels`  | Pod labels for pods that should be allowed to connect to the Redis deployment | `[]` (everyone can connect) |
+| `networkPolicy.kubeDNSLabels` | Pod labels for Kube DNS | `[]` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
