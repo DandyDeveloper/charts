@@ -1,0 +1,108 @@
+
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "redis-ha.fullname" . }}-pdb
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  podSelector:
+    matchLabels:
+      release: {{ .Release.Name }}
+      app: {{ template "redis-ha.name" . }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: 
+  {{- if .Values.networkPolicy.clientLabels }}
+    - from: 
+      - podSelector:
+          matchLabels:
+            {{- range $key, $val := .Values.networkPolicy.clientLabels }}
+            {{ $key }}: {{ $val | quote }}
+            {{- end }}
+{{- else }}
+    - from: []
+{{- end }}
+      ports:
+{{- if ne (int .Values.redis.port) 0 }}
+        - port: {{ .Values.redis.port }}
+          protocol: TCP
+{{- end }}
+{{- if .Values.redis.tlsPort }}
+        - port: {{ .Values.redis.tlsPort }}
+          protocol: TCP
+{{- end }}
+{{- if ne (int .Values.sentinel.port) 0 }}
+        - port: {{ .Values.sentinel.port }}
+          protocol: TCP
+{{- end }}
+{{- if .Values.sentinel.tlsPort }}
+        - port: {{ .Values.sentinel.tlsPort }}
+          protocol: TCP
+{{- end }}
+    - from:
+      - podSelector:
+          matchLabels:
+            release: {{ .Release.Name }}
+            app: {{ template "redis-ha.name" . }}
+      ports:
+{{- if ne (int .Values.redis.port) 0 }}
+        - port: {{ .Values.redis.port }}
+          protocol: TCP
+{{- end }}
+{{- if .Values.redis.tlsPort }}
+        - port: {{ .Values.redis.tlsPort }}
+          protocol: TCP
+{{- end }}
+{{- if ne (int .Values.sentinel.port) 0 }}
+        - port: {{ .Values.sentinel.port }}
+          protocol: TCP
+{{- end }}
+{{- if .Values.sentinel.tlsPort }}
+        - port: {{ .Values.sentinel.tlsPort }}
+          protocol: TCP
+{{- end }}
+{{- if .Values.exporter.enabled }}
+    - from: []
+      ports:
+      - port: {{ .Values.exporter.port }}
+        protocol: TCP
+{{- end }}
+  egress:
+    - to:
+      - podSelector:
+          matchLabels:
+            release: {{ .Release.Name }}
+            app: {{ template "redis-ha.name" . }}
+      ports:
+{{- if ne (int .Values.redis.port) 0 }}
+        - port: {{ .Values.redis.port }}
+          protocol: TCP
+{{- end }}
+{{- if .Values.redis.tlsPort }}
+        - port: {{ .Values.redis.tlsPort }}
+          protocol: TCP
+{{- end }}
+{{- if ne (int .Values.sentinel.port) 0 }}
+        - port: {{ .Values.sentinel.port }}
+          protocol: TCP
+{{- end }}
+{{- if .Values.sentinel.tlsPort }}
+        - port: {{ .Values.sentinel.tlsPort }}
+          protocol: TCP
+{{- end }}   
+{{- if .Values.networkPolicy.kubeDNSLabels }}
+    - to: 
+      - podSelector:
+          matchLabels:
+            {{- range $key, $val := .Values.networkPolicy.kubeDNSLabels }}
+            {{ $key }}: {{ $val | quote }}
+            {{- end }}
+{{- else }}
+    - to: []
+{{- end }}
+      ports:
+        - port: 53
+          protocol: UDP
+{{- end }}   

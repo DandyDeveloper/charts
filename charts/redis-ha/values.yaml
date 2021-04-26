@@ -547,3 +547,12 @@ restore:
   ssh:
     source: false
     key: ""
+
+networkPolicy:
+  # Enable the network policies for the Redis cluster
+  enabled: false
+  # Labels that clients should be allowed to connect have
+  clientLabels: []
+  # Labels for the Kube DNS
+  kubeDNSLabels: []
+
