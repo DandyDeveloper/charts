@@ -551,8 +551,8 @@ restore:
 networkPolicy:
   # Enable the network policies for the Redis cluster
   enabled: false
-  # Labels that clients should be allowed to connect have
-  clientLabels: []
-  # Labels for the Kube DNS
-  kubeDNSLabels: []
+  # Selector clients should be allowed to connect have
+  clientSelector: []      
+  # Selector for the DNS service
+  dnsSelector: []
 

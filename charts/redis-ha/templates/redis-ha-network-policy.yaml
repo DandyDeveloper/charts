@@ -3,7 +3,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ template "redis-ha.fullname" . }}-pdb
+  name: {{ template "redis-ha.fullname" . }}-network-policy
   namespace: {{ .Release.Namespace | quote }}
 spec:
   podSelector:
@@ -14,16 +14,8 @@ spec:
     - Ingress
     - Egress
   ingress: 
-  {{- if .Values.networkPolicy.clientLabels }}
     - from: 
-      - podSelector:
-          matchLabels:
-            {{- range $key, $val := .Values.networkPolicy.clientLabels }}
-            {{ $key }}: {{ $val | quote }}
-            {{- end }}
-{{- else }}
-    - from: []
-{{- end }}
+{{ toYaml .Values.networkPolicy.clientSelector | indent 8 }}
       ports:
 {{- if ne (int .Values.redis.port) 0 }}
         - port: {{ .Values.redis.port }}
@@ -92,16 +84,8 @@ spec:
         - port: {{ .Values.sentinel.tlsPort }}
           protocol: TCP
 {{- end }}   
-{{- if .Values.networkPolicy.kubeDNSLabels }}
     - to: 
-      - podSelector:
-          matchLabels:
-            {{- range $key, $val := .Values.networkPolicy.kubeDNSLabels }}
-            {{ $key }}: {{ $val | quote }}
-            {{- end }}
-{{- else }}
-    - to: []
-{{- end }}
+{{ toYaml .Values.networkPolicy.dnsSelector | indent 8 }}
       ports:
         - port: 53
           protocol: UDP
