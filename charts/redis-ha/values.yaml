@@ -550,3 +550,12 @@ restore:
   ssh:
     source: false
     key: ""
+
+networkPolicy:
+  # Enable the network policies for the Redis cluster
+  enabled: false
+  # Selector clients should be allowed to connect have
+  clientSelector: []      
+  # Selector for the DNS service
+  dnsSelector: []
+
