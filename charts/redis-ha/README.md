@@ -213,6 +213,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `restore.ssh.key`         | Restore init container - SSH private key to scp restore.ssh.source to init container. Key should be in one line separated with \n. i.e. -----BEGIN RSA PRIVATE KEY-----\n...\n...\n-----END RSA PRIVATE KEY----- |``                                                                                 |
 | `additionalContainers`    | Additional containers to include in StatefulSet                                                                                                                                                          |`[]`|
 | `additionalInitContainers`| Additional init containers to include in StatefulSet                                                                                                                                                     |`[]`|
+| `additionalVolumes`       | Additional volumes to include in StatefulSet                                                                                                                                                             |`[]`|
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 

@@ -471,6 +471,9 @@ spec:
         configMap:
           name: {{ template "redis-ha.fullname" . }}-health-configmap
           defaultMode: 0755
+{{- if .Values.additionalVolumes }}
+{{- toYaml .Values.additionalVolumes | nindent 6 }}
+{{- end -}}
 {{- if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
   - metadata:

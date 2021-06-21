@@ -557,3 +557,6 @@ additionalInitContainers: []
 additionalContainers: []
 #  - name: additional
 #    image: alpine
+additionalVolumes: []
+#  - name: empty
+#    emptyDir: {}
