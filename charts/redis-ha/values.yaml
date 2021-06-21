@@ -550,3 +550,10 @@ restore:
   ssh:
     source: false
     key: ""
+
+additionalInitContainers: []
+#  - name: additionalInit
+#    image: alpine
+additionalContainers: []
+#  - name: additional
+#    image: alpine
