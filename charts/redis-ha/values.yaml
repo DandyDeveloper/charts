@@ -82,6 +82,15 @@ haproxy:
     ##
     create: false
 
+  ## Pod Disruption Budget
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ##
+  podDisruptionBudget: {}
+    # Use only one of the two
+    # maxAvailable: 1
+    # minAvailable: 1
+
+
   ## Enable sticky sessions to Redis nodes via HAProxy
   ## Very useful for long-living connections as in case of Sentry for example
   stickyBalancing: false
@@ -473,6 +482,7 @@ exporter:
     successThreshold: 2
 
 podDisruptionBudget: {}
+  # Use only one of the two
   # maxUnavailable: 1
   # minAvailable: 1
 
