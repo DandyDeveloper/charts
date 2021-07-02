@@ -551,12 +551,12 @@ restore:
     source: false
     key: ""
 
-additionalInitContainers: []
-#  - name: additionalInit
+extraInitContainers: []
+#  - name: extraInit
 #    image: alpine
-additionalContainers: []
-#  - name: additional
+extraContainers: []
+#  - name: extra
 #    image: alpine
-additionalVolumes: []
+extraVolumes: []
 #  - name: empty
 #    emptyDir: {}

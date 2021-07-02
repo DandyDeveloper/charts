@@ -227,8 +227,8 @@ spec:
         - name: data
           mountPath: /data
 {{- end }}
-{{- if .Values.additionalInitContainers }}
-{{- toYaml .Values.additionalInitContainers | nindent 6 }}
+{{- if .Values.extraInitContainers }}
+{{- toYaml .Values.extraInitContainers | nindent 6 }}
 {{- end }}
       containers:
       - name: redis
@@ -435,8 +435,8 @@ spec:
             name: tls-certs
           {{- end }}
 {{- end }}
-{{- if .Values.additionalContainers }}
-{{- toYaml .Values.additionalContainers | nindent 6 }}
+{{- if .Values.extraContainers }}
+{{- toYaml .Values.extraContainers | nindent 6 }}
 {{- end -}}
 {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
@@ -471,8 +471,8 @@ spec:
         configMap:
           name: {{ template "redis-ha.fullname" . }}-health-configmap
           defaultMode: 0755
-{{- if .Values.additionalVolumes }}
-{{- toYaml .Values.additionalVolumes | nindent 6 }}
+{{- if .Values.extraVolumes }}
+{{- toYaml .Values.extraVolumes | nindent 6 }}
 {{- end -}}
 {{- if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
