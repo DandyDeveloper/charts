@@ -292,6 +292,9 @@ spec:
         {{- end}}
         - mountPath: /health
           name: health
+{{- if .Values.redis.extraVolumeMounts }}
+{{- toYaml .Values.redis.extraVolumeMounts | nindent 8 }}
+{{- end }}
         lifecycle:
 {{ toYaml .Values.redis.lifecycle | indent 10 }}
       - name: sentinel
@@ -366,6 +369,9 @@ spec:
         {{- end }}
         - mountPath: /health
           name: health
+{{- if .Values.sentinel.extraVolumeMounts }}
+{{- toYaml .Values.sentinel.extraVolumeMounts | nindent 8 }}
+{{- end }}
         lifecycle:
 {{ toYaml .Values.sentinel.lifecycle | indent 10 }}
 {{- if .Values.exporter.enabled }}
