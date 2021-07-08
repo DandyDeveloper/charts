@@ -269,6 +269,11 @@ redis:
   updateStrategy:
     type: RollingUpdate
 
+  ## additional volumeMounts for Redis container
+  extraVolumeMounts: []
+  #  - name: empty
+  #    mountPath: /empty
+
 ## Sentinel specific configuration options
 sentinel:
   port: 26379
@@ -339,6 +344,11 @@ sentinel:
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
+
+  ## additional volumeMounts for Sentinel container
+  extraVolumeMounts: []
+  #  - name: empty
+  #    mountPath: /empty
 
 securityContext:
   runAsUser: 1000
@@ -560,3 +570,13 @@ restore:
   ssh:
     source: false
     key: ""
+
+extraInitContainers: []
+#  - name: extraInit
+#    image: alpine
+extraContainers: []
+#  - name: extra
+#    image: alpine
+extraVolumes: []
+#  - name: empty
+#    emptyDir: {}
