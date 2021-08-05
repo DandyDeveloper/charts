@@ -491,6 +491,7 @@ auth: false
 # redisPassword:
 
 ## Use existing secret containing key `authKey` (ignores redisPassword)
+## Can also store AWS S3 or SSH secrets in this secret
 # existingSecret:
 
 ## Defines the key holding the redis password in existing secret.
@@ -546,14 +547,20 @@ tls:
 # restore init container creates /data/dump.rdb_ from original if exists
 # restore init container overrides /data/dump.rdb
 # secrets are stored into environment of init container - stored encoded on k8s
-# REQUIRED for s3 restore: AWS 'access_key' and 'secret_key'
+# REQUIRED for s3 restore: AWS 'access_key' and 'secret_key' or stored in existingSecret
 # EXAMPLE source for s3 restore: 's3://bucket/dump.rdb'
 # REQUIRED for ssh restore: 'key' should be in one line including CR i.e. '-----BEGIN RSA PRIVATE KEY-----\n...\n...\n...\n-----END RSA PRIVATE KEY-----'
 # EXAMPLE source for ssh restore: 'user@server:/path/dump.rdb'
 restore:
   timeout: 600
+  # Set existingSecret to true to use secret specified in existingSecret above
+  existingSecret: false
   s3:
     source: false
+    # If using existingSecret, that secret must contain:
+    # AWS_SECRET_ACCESS_KEY: <YOUR_ACCESS_KEY:>
+    # AWS_ACCESS_KEY_ID: <YOUR_KEY_ID>
+    # If not set the key and ID as strings below:
     access_key: ""
     secret_key: ""
     region: ""
