@@ -16,6 +16,10 @@ imagePullSecrets: []
 ## replicas number for each component
 replicas: 3
 
+## Customize the statefulset pod management policy:
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#pod-management-policies
+podManagementPolicy: OrderedReady
+
 ## read-only replicas
 ## indexed slaves get never promoted to be master
 ## index starts with 0 - which is master on init
