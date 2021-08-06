@@ -296,3 +296,5 @@ When HAProxy is enabled, it will attempt to connect to each announce-service of 
 It will fail if announce-service IP is not available fast enough (10 seconds max by announce-service).
 A such case could happen if the orchestator is pending the nomination of redis pods.
 Risk is limited because announce-service is using `publishNotReadyAddresses: true`, although, in such case, HAProxy pod will be rescheduled afterward by the orchestrator.
+
+PodDisruptionBudgets are not configured by default, you may need to set the `haproxy.podDisruptionBudget` parameter in values.yaml to enable it.
