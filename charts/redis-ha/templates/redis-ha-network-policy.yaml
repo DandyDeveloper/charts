@@ -36,9 +36,9 @@ spec:
           protocol: TCP
 {{-  range $rule := .Values.networkPolicy.egressRules }}
     - to:
-{{ toYaml $rule.selectors | indent 9 }}
+{{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
       ports:
-{{ toYaml $rule.ports | indent 9 }}
+{{ toYaml $rule.ports | indent 7 }}
 {{- end }}
   ingress:
     - from:
@@ -53,10 +53,10 @@ spec:
           protocol: TCP
 {{-  range $rule := .Values.networkPolicy.ingressRules }}
     - from:
-{{ toYaml $rule.selectors | indent 7 }}
+{{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
       ports:
 {{- if $rule.ports }}
-{{ toYaml $rule.ports | indent 9 }}
+{{ toYaml $rule.ports | indent 7 }}
 {{- else }}
         - port: {{ $root.Values.redis.port }}
           protocol: TCP

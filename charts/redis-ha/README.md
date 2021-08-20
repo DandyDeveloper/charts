@@ -314,6 +314,7 @@ This is a requirement for Redis Pods to come up successfully.
 
 You will need to define `ingressRules` to permit your application connectivity to Redis.
 The `selectors` block should be in the format of a [label selector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors).
+Templating is also supported in the selectors.
 See such a configuration below.
 
 ```yaml
@@ -325,7 +326,9 @@ networkPolicy: true
             name: my-redis-client-namespace
         podSelector:
           matchLabels:
-            application: redis-client
+            # template example
+            app: |-
+              {{- .App.Name }}
       ## ports block is optional (defaults to below), define the block to override the defaults
       # ports:
       #   - port: 6379
