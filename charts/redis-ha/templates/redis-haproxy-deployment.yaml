@@ -97,6 +97,7 @@ spec:
 {{ toYaml .Values.haproxy.securityContext | indent 8 }}
       containers:
       - name: haproxy
+        serviceAccountName: {{ .Values.haproxy.serviceAccountName }}
         image: {{ .Values.haproxy.image.repository }}:{{ .Values.haproxy.image.tag }}
         imagePullPolicy: {{ .Values.haproxy.image.pullPolicy }}
     {{- if or .Values.auth .Values.sentinel.auth}}

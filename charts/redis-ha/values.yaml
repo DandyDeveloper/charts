@@ -72,7 +72,7 @@ haproxy:
     repository: haproxy
     tag: 2.0.4
     pullPolicy: IfNotPresent
-
+  serviceAccountName: default
   ## Custom labels for the haproxy pod
   labels: {}
 
