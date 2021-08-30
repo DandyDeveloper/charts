@@ -11,7 +11,7 @@ metadata:
 {{- if .Values.exporter.serviceMonitor.namespace }}
   namespace: {{ .Values.exporter.serviceMonitor.namespace | quote }}
 {{- end }}
-  {{- range $key, $value := .Values.additionalLabels }}
+  {{- range $key, $value := .Values.extraLabels }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
 spec:

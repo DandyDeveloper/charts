@@ -8,7 +8,7 @@ metadata:
 {{- if .Values.exporter.enabled }}
     exporter: enabled
 {{- end }}
-    {{- range $key, $value := .Values.additionalLabels }}
+    {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
   annotations:

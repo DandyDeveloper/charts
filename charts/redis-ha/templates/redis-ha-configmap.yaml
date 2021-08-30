@@ -11,7 +11,7 @@ metadata:
     {{- range $key, $value := .Values.configmap.labels }}
     {{ $key }}: {{ $value | toString }}
     {{- end }}
-    {{- range $key, $value := .Values.additionalLabels }}
+    {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 data:

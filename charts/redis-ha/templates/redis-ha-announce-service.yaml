@@ -11,7 +11,7 @@ metadata:
   namespace: {{ $namespace | quote}}
   labels:
 {{ include "labels.standard" $root | indent 4 }}
-    {{- range $key, $value := $root.Values.additionalLabels }}
+    {{- range $key, $value := $root.Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
   annotations:

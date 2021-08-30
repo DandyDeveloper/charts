@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
-    {{- range $key, $value := .Values.additionalLabels }}
+    {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
@@ -28,7 +28,7 @@ spec:
         {{- range $key, $value := .Values.haproxy.labels }}
         {{ $key }}: {{ $value | toString }}
         {{- end }}
-        {{- range $key, $value := .Values.additionalLabels }}
+        {{- range $key, $value := .Values.extraLabels }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
       annotations:
