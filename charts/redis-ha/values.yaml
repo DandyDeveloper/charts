@@ -614,6 +614,6 @@ networkPolicy:
     #       protocol: TCP
     #     - port: 26379
     #       protocol: TCP
-        
+
   ## user can define egress rules too, uses the same structure as ingressRules
-  egressRules: [] 
+  egressRules: []
