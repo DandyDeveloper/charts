@@ -593,13 +593,13 @@ prometheusRule:
   # prometheusRule.namespace -- Namespace which Prometheus is running in.
   namespace:
   # prometheusRule.interval -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
-  interval:
+  interval: 10s
   # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
   rules: []
     # Example:
     # - alert: RedisPodDown
     #   expr: |
-    #     redis_up{job="{{ include "redis-ha.fullname" }}"} == 0
+    #     redis_up{job="{{ include "redis-ha.fullname" . }}"} == 0
     #   for: 5m
     #   labels:
     #     severity: critical
