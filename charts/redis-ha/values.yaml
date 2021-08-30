@@ -16,6 +16,10 @@ imagePullSecrets: []
 ## replicas number for each component
 replicas: 3
 
+## Customize the statefulset pod management policy:
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#pod-management-policies
+podManagementPolicy: OrderedReady
+
 ## read-only replicas
 ## indexed slaves get never promoted to be master
 ## index starts with 0 - which is master on init
@@ -81,6 +85,15 @@ haproxy:
     ## Specifies whether a PodSecurityPolicy should be created
     ##
     create: false
+
+  ## Pod Disruption Budget
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ##
+  podDisruptionBudget: {}
+    # Use only one of the two
+    # maxAvailable: 1
+    # minAvailable: 1
+
 
   ## Enable sticky sessions to Redis nodes via HAProxy
   ## Very useful for long-living connections as in case of Sentry for example
@@ -260,9 +273,17 @@ redis:
   updateStrategy:
     type: RollingUpdate
 
+  ## additional volumeMounts for Redis container
+  extraVolumeMounts: []
+  #  - name: empty
+  #    mountPath: /empty
+
 ## Sentinel specific configuration options
 sentinel:
   port: 26379
+
+  ## Configure the 'bind' directive to bind to a list of network interfaces
+  # bind: 0.0.0.0
 
   ## Configures sentinel with tls-port parameter
   # tlsPort: 26385
@@ -327,6 +348,11 @@ sentinel:
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
+
+  ## additional volumeMounts for Sentinel container
+  extraVolumeMounts: []
+  #  - name: empty
+  #    mountPath: /empty
 
 securityContext:
   runAsUser: 1000
@@ -470,6 +496,7 @@ exporter:
     successThreshold: 2
 
 podDisruptionBudget: {}
+  # Use only one of the two
   # maxUnavailable: 1
   # minAvailable: 1
 
@@ -478,6 +505,7 @@ auth: false
 # redisPassword:
 
 ## Use existing secret containing key `authKey` (ignores redisPassword)
+## Can also store AWS S3 or SSH secrets in this secret
 # existingSecret:
 
 ## Defines the key holding the redis password in existing secret.
@@ -533,14 +561,20 @@ tls:
 # restore init container creates /data/dump.rdb_ from original if exists
 # restore init container overrides /data/dump.rdb
 # secrets are stored into environment of init container - stored encoded on k8s
-# REQUIRED for s3 restore: AWS 'access_key' and 'secret_key'
+# REQUIRED for s3 restore: AWS 'access_key' and 'secret_key' or stored in existingSecret
 # EXAMPLE source for s3 restore: 's3://bucket/dump.rdb'
 # REQUIRED for ssh restore: 'key' should be in one line including CR i.e. '-----BEGIN RSA PRIVATE KEY-----\n...\n...\n...\n-----END RSA PRIVATE KEY-----'
 # EXAMPLE source for ssh restore: 'user@server:/path/dump.rdb'
 restore:
   timeout: 600
+  # Set existingSecret to true to use secret specified in existingSecret above
+  existingSecret: false
   s3:
     source: false
+    # If using existingSecret, that secret must contain:
+    # AWS_SECRET_ACCESS_KEY: <YOUR_ACCESS_KEY:>
+    # AWS_ACCESS_KEY_ID: <YOUR_KEY_ID>
+    # If not set the key and ID as strings below:
     access_key: ""
     secret_key: ""
     region: ""
@@ -572,3 +606,39 @@ prometheusRule:
     #   annotations:
     #     description: Redis pod {{ "{{ $labels.pod }}" }} is down
     #     summary: Redis pod {{ "{{ $labels.pod }}" }} is down
+
+extraInitContainers: []
+#  - name: extraInit
+#    image: alpine
+extraContainers: []
+#  - name: extra
+#    image: alpine
+extraVolumes: []
+#  - name: empty
+#    emptyDir: {}
+
+networkPolicy:
+  ## whether NetworkPolicy for Redis StatefulSets should be created
+  ## when enabled, inter-Redis connectivity is created
+  enabled: false
+  annotations: {}
+  labels: {}
+  ## user defines ingress rules that Redis should permit into
+  ## uses the format defined in https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+  ingressRules: []
+    # - selectors:
+    #   - namespaceSelector:
+    #       matchLabels:
+    #         name: my-redis-client-namespace
+    #     podSelector:
+    #       matchLabels:
+    #         application: redis-client
+    ## if ports is not defined then it defaults to the ports defined for enabled services (redis, sentinel)
+    #   ports:
+    #     - port: 6379
+    #       protocol: TCP
+    #     - port: 26379
+    #       protocol: TCP
+
+  ## user can define egress rules too, uses the same structure as ingressRules
+  egressRules: []

@@ -84,18 +84,6 @@ spec:
         - sh
         args:
         - /readonly/haproxy_init.sh
-{{- if .Values.auth }}
-        env:
-        - name: AUTH
-          valueFrom:
-            secretKeyRef:
-            {{- if .Values.existingSecret }}
-              name: {{ .Values.existingSecret }}
-            {{- else }}
-              name: {{ template "redis-ha.fullname" . }}
-            {{- end }}
-              key: {{ .Values.authKey }}
-{{- end }}
         volumeMounts:
         - name: config-volume
           mountPath: /readonly
@@ -111,6 +99,31 @@ spec:
       - name: haproxy
         image: {{ .Values.haproxy.image.repository }}:{{ .Values.haproxy.image.tag }}
         imagePullPolicy: {{ .Values.haproxy.image.pullPolicy }}
+    {{- if or .Values.auth .Values.sentinel.auth}}
+        env:
+      {{- if .Values.auth }}
+        - name: AUTH
+          valueFrom:
+            secretKeyRef:
+            {{- if .Values.existingSecret }}
+              name: {{ .Values.existingSecret }}
+            {{- else }}
+              name: {{ template "redis-ha.fullname" . }}
+            {{- end }}
+              key: {{ .Values.authKey }}
+      {{- end }}
+      {{- if .Values.sentinel.auth }}
+        - name: SENTINELAUTH
+          valueFrom:
+            secretKeyRef:
+            {{- if .Values.sentinel.existingSecret }}
+              name: {{ .Values.sentinel.existingSecret }}
+            {{- else }}
+              name: {{ template "redis-ha.fullname" . }}-sentinel
+            {{- end }}
+              key: {{ .Values.sentinel.authKey }}
+      {{- end }}
+    {{- end }}
         livenessProbe:
           httpGet:
             path: /healthz

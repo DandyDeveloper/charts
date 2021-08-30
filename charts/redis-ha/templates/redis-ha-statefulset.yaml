@@ -18,7 +18,7 @@ spec:
       app: {{ template "redis-ha.name" . }}
   serviceName: {{ template "redis-ha.fullname" . }}
   replicas: {{ .Values.replicas }}
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
   updateStrategy:
     type: {{ .Values.redis.updateStrategy.type }}
   template:
@@ -139,7 +139,7 @@ spec:
 {{- range $i := until $replicas }}
         - name: SENTINEL_ID_{{ $i }}
           value: {{ printf "%s\n%s\nindex: %d" (include "redis-ha.name" $) ($.Release.Name) $i | sha256sum | trunc 40 }}
-{{ end -}}
+{{- end }}
 {{- if .Values.auth }}
         - name: AUTH
           valueFrom:
@@ -190,7 +190,11 @@ spec:
            && mv -v /data/dump.rdb_ /data/dump.rdb"
         envFrom:
         - secretRef:
+          {{- if .Values.restore.existingSecret }}
+            name: {{ .Values.existingSecret }}
+          {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
+          {{- end }}
         volumeMounts:
         - name: data
           mountPath: /data
@@ -222,10 +226,17 @@ spec:
           runAsUser: 0
         envFrom:
         - secretRef:
+          {{- if .Values.restore.existingSecret }}
+            name: {{ .Values.existingSecret }}
+          {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
+          {{- end }}
         volumeMounts:
         - name: data
           mountPath: /data
+{{- end }}
+{{- if .Values.extraInitContainers }}
+{{- toYaml .Values.extraInitContainers | nindent 6 }}
 {{- end }}
       containers:
       - name: redis
@@ -289,6 +300,9 @@ spec:
         {{- end}}
         - mountPath: /health
           name: health
+{{- if .Values.redis.extraVolumeMounts }}
+{{- toYaml .Values.redis.extraVolumeMounts | nindent 8 }}
+{{- end }}
         lifecycle:
 {{ toYaml .Values.redis.lifecycle | indent 10 }}
       - name: sentinel
@@ -298,8 +312,9 @@ spec:
           - redis-sentinel
         args:
           - /data/conf/sentinel.conf
-{{- if .Values.auth }}
+{{- if or .Values.auth .Values.sentinel.auth}}
         env:
+  {{- if .Values.auth }}
         - name: AUTH
           valueFrom:
             secretKeyRef:
@@ -309,8 +324,8 @@ spec:
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
               key: {{ .Values.authKey }}
-{{- end }}
-{{- if .Values.sentinel.auth }}
+  {{- end }}
+  {{- if .Values.sentinel.auth }}
         - name: SENTINELAUTH
           valueFrom:
             secretKeyRef:
@@ -320,6 +335,7 @@ spec:
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
               key: {{ .Values.sentinel.authKey }}
+  {{- end }}
 {{- end }}
         livenessProbe:
           initialDelaySeconds: {{ .Values.sentinel.livenessProbe.initialDelaySeconds }}
@@ -363,6 +379,9 @@ spec:
         {{- end }}
         - mountPath: /health
           name: health
+{{- if .Values.sentinel.extraVolumeMounts }}
+{{- toYaml .Values.sentinel.extraVolumeMounts | nindent 8 }}
+{{- end }}
         lifecycle:
 {{ toYaml .Values.sentinel.lifecycle | indent 10 }}
 {{- if .Values.exporter.enabled }}
@@ -432,6 +451,9 @@ spec:
             name: tls-certs
           {{- end }}
 {{- end }}
+{{- if .Values.extraContainers }}
+{{- toYaml .Values.extraContainers | nindent 6 }}
+{{- end -}}
 {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
 {{- end }}
@@ -465,6 +487,9 @@ spec:
         configMap:
           name: {{ template "redis-ha.fullname" . }}-health-configmap
           defaultMode: 0755
+{{- if .Values.extraVolumes }}
+{{- toYaml .Values.extraVolumes | nindent 6 }}
+{{- end -}}
 {{- if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
   - metadata:

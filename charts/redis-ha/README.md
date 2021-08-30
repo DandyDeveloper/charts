@@ -64,6 +64,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `imagePullSecrets`        | Reference to one or more secrets to be used when pulling redis images                                                                                                                                    | []                                                                                         |
 | `tag`                     | Redis tag                                                                                                                                                                                                | `6.0.3-alpine`                                                                             |
 | `replicas`                | Number of redis master/slave pods                                                                                                                                                                        | `3`                                                                                        |
+| `podManagementPolicy`                | The statefulset pod management policy                                                                                                                                                                        | `OrderedReady`                                                                                        |
 | `ro_replicas`             | Comma separated list of slaves which never get promoted to be master. Count starts with 0. Allowed values 1-9. i.e. 3,4 - 3th and 4th redis slave never make it to be master, where master is index 0.   | ``|
 | `serviceAccount.create`   | Specifies whether a ServiceAccount should be created                                                                                                                                                     | `true`                                                                                     |
 | `serviceAccount.name`     | The name of the ServiceAccount to create                                                                                                                                                                 | Generated using the redis-ha.fullname template                                             |
@@ -91,7 +92,9 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.lifecycle`         | Container Lifecycle Hooks for redis container                                                                                                                                              | `{}`                                                                                       |
 | `redis.annotations`       | Annotations for the redis statefulset                                                                                                                                                                    | `{}`                                                                                       |
 | `redis.updateStategy.type`| Update strategy for redis statefulSet                                                                                                                                                                    | `RollingUpdate`                                                                            |
+| `redis.extraVolumeMounts` | Extra volume mounts for Redis container                                                                                                                                                                  | `[]`                                                                            |
 | `sentinel.port`           | Port to access the sentinel service                                                                                                                                                                      | `26379`                                                                                    |
+| `sentinel.bind`           | Configure the 'bind' directive to bind to a list of network interfaces                                                                                                                                                                       | ``                                                                                    |
 | `sentinel.tlsPort`        | TLS Port to access the sentinel service                                                                                                                                                                  |``|
 | `sentinel.tlsReplication` | Configures sentinel with tls-replication parameter, if true sets "tls-replication yes" in sentinel.conf                                                                                                  |``|
 | `sentinel.authClients`    | It is possible to disable client side certificates authentication when "authClients" is set to "no"                                                                                                      |``|
@@ -114,6 +117,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.customConfig`   | Allows for custom sentinel.conf files to be applied. If this is used then `sentinel.config` is ignored                                                                                                   |``|
 | `sentinel.resources`      | CPU/Memory for sentinel node resource requests/limits                                                                                                                                                    | `{}`                                                                                       |
 | `sentinel.lifecycle`         | Container Lifecycle Hooks for sentinel container                                                                                                                                              | `{}`                                                                                       |
+| `sentinel.extraVolumeMounts` | Extra volume mounts for Sentinel container                                                                                                                                                            | `[]`                                                                            |
 | `init.resources`          | CPU/Memory for init Container node resource requests/limits                                                                                                                                              | `{}`                                                                                       |
 | `auth`                    | Enables or disables redis AUTH (Requires `redisPassword` to be set)                                                                                                                                      | `false`                                                                                    |
 | `redisPassword`           | A password that configures a `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`)                                                                                            |``|
@@ -205,11 +209,22 @@ The following table lists the configurable parameters of the Redis chart and the
 | `tls.dhParamsFile`        | Name of Diffie-Hellman (DH) key exchange parameters file                                                                                                                                                 |``                                                                                      |
 | `tls.caCertFile`          | Name of CA certificate file                                                                                                                                                                              | `ca.crt`                                                                                      |
 | `restore.s3.source`       | Restore init container - AWS S3 location of dump - i.e. s3://bucket/dump.rdb                                                                                                                             | `false`                                                                                    |
+| `restore.existingSecret`       | Set to true to use existingSecret for the AWS S3 or SSH credentials                                                                                                                            | `false`                                                                                    |
 | `restore.s3.access_key`   | Restore init container - AWS AWS_ACCESS_KEY_ID to access restore.s3.source                                                                                                                               |``|
 | `restore.s3.secret_key`   | Restore init container - AWS AWS_SECRET_ACCESS_KEY to access restore.s3.source                                                                                                                           |``|
 | `restore.s3.region`       | Restore init container - AWS AWS_REGION to access restore.s3.source                                                                                                                                      |``|
 | `restore.ssh.source`      | Restore init container - SSH scp location of dump - i.e. user@server:/path/dump.rdb                                                                                                                      | `false`                                                                                    |
 | `restore.ssh.key`         | Restore init container - SSH private key to scp restore.ssh.source to init container. Key should be in one line separated with \n. i.e. -----BEGIN RSA PRIVATE KEY-----\n...\n...\n-----END RSA PRIVATE KEY----- |``                                                                                 |
+| `extraContainers`         | Extra containers to include in StatefulSet                                                                                                                                                               |`[]`|
+| `extraInitContainers`     | Extra init containers to include in StatefulSet                                                                                                                                                          |`[]`|
+| `extraVolumes`            | Extra volumes to include in StatefulSet                                                                                                                                                                  |`[]`|
+| `networkPolicy.enabled`                   | Create NetworkPolicy for Redis StatefulSet pods                                                                                                                                          |`false`|
+| `networkPolicy.labels`                    | Labels for NetworkPolicy                                                                                                                                                                 |`{}`|
+| `networkPolicy.annotations`               | Annotations for NetworkPolicy                                                                                                                                                            |`{}`|
+| `networkPolicy.ingressRules[].selectors`  | Label selector query to define resources for this ingress rule                                                                                                                           |`[]`|
+| `networkPolicy.ingressRules[].ports`      | The destination ports for the ingress rule                                                                                                                                               |`[{port: redis.port, protocol: TCP}, {port: sentinel.port, protocol: TCP}]`|
+| `networkPolicy.egressRules[].selectors`   | Label selector query to define resources for this egress rule                                                                                                                            |`[]`|
+| `networkPolicy.egressRules[].ports`       | The destination ports for the egress rule                                                                                                                                                |``|
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
@@ -289,3 +304,37 @@ When HAProxy is enabled, it will attempt to connect to each announce-service of 
 It will fail if announce-service IP is not available fast enough (10 seconds max by announce-service).
 A such case could happen if the orchestator is pending the nomination of redis pods.
 Risk is limited because announce-service is using `publishNotReadyAddresses: true`, although, in such case, HAProxy pod will be rescheduled afterward by the orchestrator.
+
+PodDisruptionBudgets are not configured by default, you may need to set the `haproxy.podDisruptionBudget` parameter in values.yaml to enable it.
+
+## Network policies
+
+If `networkPolicy.enabled` is set to `true`, then a `NetworkPolicy` resource is created with default rules to allow inter-Redis and Sentinel connectivity.
+This is a requirement for Redis Pods to come up successfully.
+
+You will need to define `ingressRules` to permit your application connectivity to Redis.
+The `selectors` block should be in the format of a [label selector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors).
+Templating is also supported in the selectors.
+See such a configuration below.
+
+```yaml
+networkPolicy: true
+  ingressRules:
+    - selectors:
+      - namespaceSelector:
+          matchLabels:
+            name: my-redis-client-namespace
+        podSelector:
+          matchLabels:
+            # template example
+            app: |-
+              {{- .App.Name }}
+      ## ports block is optional (defaults to below), define the block to override the defaults
+      # ports:
+      #   - port: 6379
+      #     protocol: TCP
+      #   - port: 26379
+      #     protocol: TCP
+```
+
+Should your Pod require additional egress rules, define them in a `egressRules` key which is structured identically to an `ingressRules` key.
