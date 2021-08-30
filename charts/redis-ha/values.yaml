@@ -3,7 +3,7 @@
 ##
 image:
   repository: redis
-  tag: 6.0.7-alpine
+  tag: 6.2.5-alpine
   pullPolicy: IfNotPresent
 
 ## Reference to one or more secrets to be used when pulling images
@@ -62,7 +62,7 @@ haproxy:
   replicas: 3
   image:
     repository: haproxy
-    tag: 2.0.4
+    tag: 2.4.2
     pullPolicy: IfNotPresent
 
   ## Custom labels for the haproxy pod
@@ -422,7 +422,7 @@ affinity: |
 exporter:
   enabled: false
   image: oliver006/redis_exporter
-  tag: v1.15.1
+  tag: v1.24.0
   pullPolicy: IfNotPresent
 
   # prometheus port & scrape path
@@ -583,6 +583,31 @@ restore:
     source: false
     key: ""
 
+## Custom PrometheusRule to be defined
+## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
+## ref: https://github.com/coreos/prometheus-operator#customresourcedefinitions
+prometheusRule:
+  # prometheusRule.enabled -- If true, creates a Prometheus Operator PrometheusRule.
+  enabled: false
+  # prometheusRule.additionalLabels -- Additional labels to be set in metadata.
+  additionalLabels: {}
+  # prometheusRule.namespace -- Namespace which Prometheus is running in.
+  namespace:
+  # prometheusRule.interval -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
+  interval: 10s
+  # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
+  rules: []
+    # Example:
+    # - alert: RedisPodDown
+    #   expr: |
+    #     redis_up{job="{{ include "redis-ha.fullname" . }}"} == 0
+    #   for: 5m
+    #   labels:
+    #     severity: critical
+    #   annotations:
+    #     description: Redis pod {{ "{{ $labels.pod }}" }} is down
+    #     summary: Redis pod {{ "{{ $labels.pod }}" }} is down
+
 extraInitContainers: []
 #  - name: extraInit
 #    image: alpine
@@ -592,3 +617,29 @@ extraContainers: []
 extraVolumes: []
 #  - name: empty
 #    emptyDir: {}
+
+networkPolicy:
+  ## whether NetworkPolicy for Redis StatefulSets should be created
+  ## when enabled, inter-Redis connectivity is created
+  enabled: false
+  annotations: {}
+  labels: {}
+  ## user defines ingress rules that Redis should permit into
+  ## uses the format defined in https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+  ingressRules: []
+    # - selectors:
+    #   - namespaceSelector:
+    #       matchLabels:
+    #         name: my-redis-client-namespace
+    #     podSelector:
+    #       matchLabels:
+    #         application: redis-client
+    ## if ports is not defined then it defaults to the ports defined for enabled services (redis, sentinel)
+    #   ports:
+    #     - port: 6379
+    #       protocol: TCP
+    #     - port: 26379
+    #       protocol: TCP
+
+  ## user can define egress rules too, uses the same structure as ingressRules
+  egressRules: []
