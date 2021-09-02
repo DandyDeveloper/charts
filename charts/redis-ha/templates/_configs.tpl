@@ -310,8 +310,6 @@
     SERVICE={{ template "redis-ha.fullname" . }}
     SENTINEL_TLS_REPLICATION_ENABLED={{ default false .Values.sentinel.tlsReplication }}
     REDIS_TLS_REPLICATION_ENABLED={{ default false .Values.redis.tlsReplication }}
-    ROLE=''
-    REDIS_MASTER=''
 {{- end }}
 
 {{- define "config-init.sh" }}
@@ -367,6 +365,9 @@
 
 {{- define "fix-split-brain.sh" }}
     {{- include "vars.sh" . }}
+
+    ROLE=''
+    REDIS_MASTER=''
 
     set -eu
 
