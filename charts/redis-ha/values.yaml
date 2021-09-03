@@ -647,5 +647,6 @@ networkPolicy:
   ## user can define egress rules too, uses the same structure as ingressRules
   egressRules: []
 
-split_brain_detection:
+splitBrainDetection:
   interval: 60
+  resources: {}

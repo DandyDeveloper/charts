@@ -408,7 +408,7 @@
     identify_announce_ip
 
     while true; do
-        sleep {{ .Values.split_brain_detection.interval }}
+        sleep {{ .Values.splitBrainDetection.interval }}
 
         # where is redis master
         identify_master
