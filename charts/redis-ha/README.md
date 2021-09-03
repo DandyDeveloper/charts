@@ -227,7 +227,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `networkPolicy.ingressRules[].ports`      | The destination ports for the ingress rule                                                                                                                                               |`[{port: redis.port, protocol: TCP}, {port: sentinel.port, protocol: TCP}]`|
 | `networkPolicy.egressRules[].selectors`   | Label selector query to define resources for this egress rule                                                                                                                            |`[]`|
 | `networkPolicy.egressRules[].ports`       | The destination ports for the egress rule                                                                                                                                                |``|
-| `split_brain_detection.interval`          | Interval between redis sentinel and server split brain checks (in seconds)                                                                                                               |`60`|
+| `splitBrainDetection.interval`          | Interval between redis sentinel and server split brain checks (in seconds)                                                                                                               |`60`|
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
@@ -348,7 +348,7 @@ Under not entirely known yet circumstances redis sentinel and its corresponding 
 
 The proposed solution is currently implemented as a sidecar container that runs a bash script with the following logic:
 
-1. Every `split_brain_detection.interval` seconds a master (as known by sentinel) is determined
+1. Every `splitBrainDetection.interval` seconds a master (as known by sentinel) is determined
 1. If it is the current node: ensure the redis server's role is master as well.
 1. If it is not the current node: ensure the redis server also replicates from the same node.
 

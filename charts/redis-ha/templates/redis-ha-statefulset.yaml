@@ -426,6 +426,8 @@ spec:
             {{- end }}
               key: {{ .Values.sentinel.authKey }}
 {{- end }}
+        resources: 
+          {{- toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         volumeMounts:
         - name: config
           mountPath: /readonly-config
