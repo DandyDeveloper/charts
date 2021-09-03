@@ -618,6 +618,9 @@ extraVolumes: []
 #  - name: empty
 #    emptyDir: {}
 
+# Labels added here are applied to all created resources
+extraLabels: {}
+
 networkPolicy:
   ## whether NetworkPolicy for Redis StatefulSets should be created
   ## when enabled, inter-Redis connectivity is created
