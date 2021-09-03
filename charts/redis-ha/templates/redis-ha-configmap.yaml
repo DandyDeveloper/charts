@@ -11,6 +11,9 @@ metadata:
     {{- range $key, $value := .Values.configmap.labels }}
     {{ $key }}: {{ $value | toString }}
     {{- end }}
+    {{- range $key, $value := .Values.extraLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 data:
   redis.conf: |
 {{- include "config-redis.conf" . }}
@@ -20,6 +23,10 @@ data:
 
   init.sh: |
 {{- include "config-init.sh" . }}
+
+  fix-split-brain.sh: |
+{{- include "fix-split-brain.sh" . }}
+
 {{ if .Values.haproxy.enabled }}
   haproxy.cfg: |
 {{- include "config-haproxy.cfg" . }}
