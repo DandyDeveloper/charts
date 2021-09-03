@@ -227,6 +227,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `networkPolicy.ingressRules[].ports`      | The destination ports for the ingress rule                                                                                                                                               |`[{port: redis.port, protocol: TCP}, {port: sentinel.port, protocol: TCP}]`|
 | `networkPolicy.egressRules[].selectors`   | Label selector query to define resources for this egress rule                                                                                                                            |`[]`|
 | `networkPolicy.egressRules[].ports`       | The destination ports for the egress rule                                                                                                                                                |``|
+| `split_brain_detection.interval`          | Interval between redis sentinel and server split brain checks (in seconds)                                                                                                               |`60`|
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
@@ -340,3 +341,15 @@ networkPolicy: true
 ```
 
 Should your Pod require additional egress rules, define them in a `egressRules` key which is structured identically to an `ingressRules` key.
+
+## Sentinel and redis server split brain detection
+
+Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Majority of original discussion on the problem has happened at the <https://github.com/DandyDeveloper/charts/issues/121>.
+
+The proposed solution is currently implemented as a sidecar container that runs a bash script with the following logic:
+
+1. Every `split_brain_detection.interval` seconds a master (as known by sentinel) is determined
+1. If it is the current node: ensure the redis server's role is master as well.
+1. If it is not the current node: ensure the redis server also replicates from the same node.
+
+If any of the checks above fails - the redis server reinitialisation happens (it regenerates configs the same way it's done during the pod init), and then the redis server is instructed to shutdown. Then kubernetes restarts the container immediately.
