@@ -1,0 +1,28 @@
+annotations:
+  artifacthub.io/images: |
+    - name: consul
+      image: hashicorp/consul:1.10.0
+    - name: consul-k8s-control-plane
+      image: hashicorp/consul-k8s-control-plane:0.33.0
+    - name: envoy
+      image: envoyproxy/envoy-alpine:v1.18.3
+  artifacthub.io/license: MPL-2.0
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://www.consul.io/docs/k8s
+    - name: hashicorp/consul
+      url: https://github.com/hashicorp/consul
+    - name: hashicorp/consul-k8s
+      url: https://github.com/hashicorp/consul-k8s
+  artifacthub.io/prerelease: "false"
+apiVersion: v2
+appVersion: 1.10.0
+description: Official HashiCorp Consul Chart
+home: https://www.consul.io
+icon: https://raw.githubusercontent.com/hashicorp/consul-helm/master/assets/icon.png
+kubeVersion: '>=1.17.0-0'
+name: consul
+sources:
+- https://github.com/hashicorp/consul
+- https://github.com/hashicorp/consul-k8s
+version: 0.33.0

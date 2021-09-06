@@ -1,0 +1,3 @@
+Grafana Agent has now been deployed to all nodes matching your nodeSelect / tolerations.
+
+Pods should be visible from {{ .Release.Namespace }} and scraping metrics via the defined Prometheus config that has been provided.

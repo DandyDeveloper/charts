@@ -1,0 +1,41 @@
+{{- $prometheusConfigs := tpl .Values.config.prometheusConfigs . -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "grafana-agent.fullname" . }}
+data:
+  agent.yml: | 
+    prometheus:
+      global:
+        scrape_interval: {{ .Values.config.scrapeInterval }}
+        {{- if .Values.config.externalLabels }}
+        external_labels:
+          {{ toYaml .Values.config.externalLabels }}
+        {{- end }}
+      wal_directory: {{ .Values.walDir }} 
+      {{- if .Values.scrapingServiceMode.enabled }}
+      scraping_service:
+        enabled: true
+        dangerous_allow_reading_files: true
+        kvstore:
+          store: consul
+          consul:
+            host: grafana-agent-consul-server:8500
+        lifecycler:
+          ring:
+            replication_factor: 2
+            kvstore:
+              store: consul
+              consul:
+                host: grafana-agent-consul-server:8500
+      {{- end }}
+      {{ if not .Values.scrapingServiceMode.enabled -}}
+      configs:
+        - {{- $prometheusConfigs | indent 10 }}
+      {{- end }}
+    server:
+      log_level: info
+{{- if .Values.scrapingServiceMode.enabled }}
+  {{ include "grafana-agent.scrapingConfigFilename" . }}: |
+    {{- $prometheusConfigs | nindent 4 }}
+{{- end }}
