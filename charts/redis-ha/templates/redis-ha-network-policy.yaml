@@ -58,6 +58,18 @@ spec:
           protocol: TCP
         - port: {{ .Values.sentinel.port }}
           protocol: TCP
+{{- if .Values.haproxy.enabled }}
+    - from:
+        - podSelector:
+            matchLabels:
+              release: {{ .Release.Name }}
+              app: {{ template "redis-ha.name" . }}-haproxy
+      ports:
+        - port: {{ .Values.redis.port }}
+          protocol: TCP
+        - port: {{ .Values.sentinel.port }}
+          protocol: TCP
+{{- end }}
 {{-  range $rule := .Values.networkPolicy.ingressRules }}
     - from:
 {{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
