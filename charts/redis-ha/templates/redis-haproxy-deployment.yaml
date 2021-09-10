@@ -43,9 +43,11 @@ spec:
       {{- end }}
     spec:
       # Needed when using unmodified rbac-setup.yml
-      {{ if .Values.haproxy.serviceAccount.create }}
+      {{- if .Values.haproxy.serviceAccount.create }}
       serviceAccountName: {{ template "redis-ha.serviceAccountName" . }}-haproxy
-      {{ end }}
+      {{- else }}
+      serviceAccountName: {{ template "redis-ha.serviceAccountName" . }}
+      {{- end }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       tolerations:
@@ -101,7 +103,6 @@ spec:
       {{- end }}
       securityContext:
 {{ toYaml .Values.haproxy.securityContext | indent 8 }}
-      serviceAccount: {{ .Values.haproxy.serviceAccountName }}
       containers:
       - name: haproxy
         image: {{ .Values.haproxy.image.repository }}:{{ .Values.haproxy.image.tag }}
