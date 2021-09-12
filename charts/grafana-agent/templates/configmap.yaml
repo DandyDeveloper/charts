@@ -1,18 +1,21 @@
-{{- $prometheusConfigs := tpl .Values.config.prometheusConfigs . -}}
+{{- $prometheusConfigs := tpl .Values.config.prometheus.configs . -}}
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: {{ include "grafana-agent.fullname" . }}
 data:
-  agent.yml: | 
+  agent.yml: |
+    server:
+      log_level: info
+    {{- if .Values.config.prometheus.enabled }}
     prometheus:
       global:
-        scrape_interval: {{ .Values.config.scrapeInterval }}
-        {{- if .Values.config.externalLabels }}
+        scrape_interval: {{ .Values.config.prometheus.scrapeInterval }}
+        {{- if .Values.config.prometheus.externalLabels }}
         external_labels:
-          {{ toYaml .Values.config.externalLabels }}
+          {{ toYaml .Values.config.prometheus.externalLabels }}
         {{- end }}
-      wal_directory: {{ .Values.walDir }} 
+      wal_directory: {{ .Values.config.prometheus.walDir }} 
       {{- if .Values.scrapingServiceMode.enabled }}
       scraping_service:
         enabled: true
@@ -29,13 +32,18 @@ data:
               consul:
                 host: grafana-agent-consul-server:8500
       {{- end }}
-      {{ if not .Values.scrapingServiceMode.enabled -}}
+    {{ if not .Values.scrapingServiceMode.enabled -}}
       configs:
-        - {{- $prometheusConfigs | indent 10 }}
+      - {{- $prometheusConfigs | indent 8 }}
+    {{- end }}
+    {{- end }}
+    tempo: 
+      {{- if .Values.config.tempo.enabled }}
+      configs:
+        {{- .Values.config.tempo.configs | nindent 8 }}
       {{- end }}
-    server:
-      log_level: info
-{{- if .Values.scrapingServiceMode.enabled }}
+
+  {{- if .Values.scrapingServiceMode.enabled }}
   {{ include "grafana-agent.scrapingConfigFilename" . }}: |
     {{- $prometheusConfigs | nindent 4 }}
-{{- end }}
+  {{- end }}

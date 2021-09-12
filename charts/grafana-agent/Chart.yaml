@@ -2,15 +2,10 @@ apiVersion: v2
 name: grafana-agent
 description: Deploy an instance of the Grafana agent on all appropriate nodes for scraping Prometheus metrics. 
 type: application
-version: 0.17.0
-appVersion: "v0.17.0"
+version: 0.18.2
+appVersion: "v0.18.2"
 dependencies:
 - name: consul
   version: 0.33.0
   repository: https://helm.releases.hashicorp.com
   condition: scrapingServiceMode.enabled
-- name: cortex-tenant
-  version: 1.3.6
-  repository: https://harbor.eencloud.com/chartrepo/infrastructure
-  alias: cortexTenant
-  condition: cortexTenant.enabled

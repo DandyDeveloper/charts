@@ -15,6 +15,8 @@ fullnameOverride: ""
 # Delcares # of replicas for Grafana Agent deployment
 replicaCount: 3
 
+updateStrategy: Recreate
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -24,8 +26,7 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: 
-  sidecar.istio.io/inject: "false"
+podAnnotations: {}
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -58,267 +59,72 @@ tolerations:
 
 affinity: {}
 
-walDir: /var/lib/agent/data
-
-remoteWrite:
-  url: http://grafana-agent-cortex-tenant/push
-  auth: 
-    # username: ""
-    # password: ""
-
 # Currently only supports Prometheus 'configs'. 
 # Other telemetary options will be added overtime. 
 config:
-  scrapeInterval: 15s
-  externalLabels:
-    kubernetes_cluster_name: test
-  prometheusConfigs: |
-    host_filter: true
-    name: agent
-    remote_write:
-      - url: {{ .Values.remoteWrite.url }}
-        {{- if .Values.remoteWrite.auth }}
-        basic_auth:
-            password: {{ .Values.remoteWrite.auth.password }}
-            username: {{ .Values.remoteWrite.auth.username }}
-        {{- end }}        
-    scrape_configs:
-      - job_name: kubernetes-pods
-        kubernetes_sd_configs:
-          - role: pod
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        relabel_configs:
-          - action: drop
-            regex: "false"
-            source_labels:
-              - __meta_kubernetes_pod_annotation_prometheus_io_scrape
-          - action: replace
-            regex: (https?)
-            replacement: $1
-            source_labels:
-              - __meta_kubernetes_pod_annotation_prometheus_io_scheme
-            target_label: __scheme__
-          - action: replace
-            regex: (.+)
-            replacement: $1
-            source_labels:
-              - __meta_kubernetes_pod_annotation_prometheus_io_path
-            target_label: __metrics_path__
-          - action: replace
-            regex: (.+?)(\:\d+)?;(\d+)
-            replacement: $1:$3
-            source_labels:
-              - __address__
-              - __meta_kubernetes_pod_annotation_prometheus_io_port
-            target_label: __address__
-          - action: replace
-            replacement: $1
-            separator: /
-            source_labels:
-              - __meta_kubernetes_namespace
-              - __meta_kubernetes_pod_label_app_kubernetes_io_name
-            target_label: job
-          - action: replace
-            source_labels:
-              - __meta_kubernetes_namespace
-            target_label: namespace
-          - action: replace
-            source_labels:
-              - __meta_kubernetes_pod_name
-            target_label: pod
-          - action: replace
-            source_labels:
-              - __meta_kubernetes_pod_container_name
-            target_label: container
-          - action: replace
-            separator: ':'
-            source_labels:
-              - __meta_kubernetes_pod_name
-              - __meta_kubernetes_pod_container_name
-              - __meta_kubernetes_pod_container_port_name
-            target_label: instance
-          - action: labelmap
-            regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
-            replacement: __param_$1
-          - action: drop
-            regex: Succeeded|Failed
-            source_labels:
-              - __meta_kubernetes_pod_phase
-          - action: labelmap
-            regex: __meta_kubernetes_pod_label_(.+)
-          - source_labels: [__meta_kubernetes_namespace]
-            action: replace
-            target_label: kubernetes_namespace
-          - source_labels: [__meta_kubernetes_pod_name]
-            action: replace
-            target_label: kubernetes_pod_name
-          - source_labels: [__meta_kubernetes_pod_node_name]
-            action: replace
-            target_label: kubernetes_pod_node_name
-          - source_labels: [ __name__ ]
-            regex: 'archiver_esn_tagflow_bytes_rcvd'
-            action: drop
-          - source_labels: [ __name__ ]
-            regex: 'archiver_esn_streams_gauge'
-            action: drop
-          - source_labels: [ __name__ ]
-            regex: 'archiver_esn_streams_stats_count'
-            action: drop
-          - source_labels: [ __name__ ]
-            regex: 'archiver_esn_streams_packet_gauge'
-            action: drop
-      - job_name: kube-system/kubelet
-        kubernetes_sd_configs:
-          - role: node
-        relabel_configs:
-          - replacement: kubernetes.default.svc.cluster.local:443
-            target_label: __address__
-          - replacement: https
-            target_label: __scheme__
-          - regex: (.+)
-            replacement: /api/v1/nodes/${1}/proxy/metrics
-            source_labels:
-              - __meta_kubernetes_node_name
-            target_label: __metrics_path__
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        tls_config:
-            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      - job_name: cadvisor
-        kubernetes_sd_configs:
-          - role: node
-        relabel_configs:
-          - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
-          - replacement: kubernetes.default.svc:443
-            target_label: __address__
-          - regex: (.+)
-            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
-            source_labels:
-            - __meta_kubernetes_node_name
-            target_label: __metrics_path__
-          - action: replace
-            replacement: $1
-            source_labels:
-            - instance
-            target_label: kubernetes_node
-        scheme: https
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        tls_config:
-            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-            insecure_skip_verify: false
-      - job_name: kubernetes-service-endpoints
-        kubernetes_sd_configs:
-          - role: endpoints
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        relabel_configs:
-          - action: keep
-            regex: true
-            source_labels:
-            - __meta_kubernetes_service_annotation_prometheus_io_scrape
-          - action: replace
-            regex: (https?)
-            source_labels:
-            - __meta_kubernetes_service_annotation_prometheus_io_scheme
-            target_label: __scheme__
-          - action: replace
-            regex: (.+)
-            source_labels:
-            - __meta_kubernetes_service_annotation_prometheus_io_path
-            target_label: __metrics_path__
-          - action: replace
-            regex: ([^:]+)(?::\d+)?;(\d+)
-            replacement: $1:$2
-            source_labels:
-            - __address__
-            - __meta_kubernetes_service_annotation_prometheus_io_port
-            target_label: __address__
-          - action: labelmap
-            regex: __meta_kubernetes_service_label_(.+)
-          - action: replace
-            source_labels:
-            - __meta_kubernetes_namespace
-            target_label: kubernetes_namespace
-          - action: replace
-            source_labels:
-            - __meta_kubernetes_service_name
-            target_label: kubernetes_name
-          - action: replace
-            source_labels:
-            - __meta_kubernetes_pod_node_name
-            target_label: kubernetes_node
-      - job_name: kubernetes-services
-        metrics_path: /probe
-        params:
-          module: [http_2xx]
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-          - role: service
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
-            action: keep
-            regex: true
-          - source_labels: [__address__]
-            target_label: __param_target
-          - target_label: __address__
-            replacement: blackbox
-          - source_labels: [__param_target]
-            target_label: instance
-          - action: labelmap
-            regex: __meta_kubernetes_service_label_(.+)
-          - source_labels: [__meta_kubernetes_namespace]
-            target_label: kubernetes_namespace
-          - source_labels: [__meta_kubernetes_service_name]
-            target_label: kubernetes_name
-      - job_name: kubernetes-nodes
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-          - role: node
-        relabel_configs:
-          - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
-          - target_label: __address__
-            replacement: kubernetes.default.svc:443
-          - source_labels: [__meta_kubernetes_node_name]
-            regex: (.+)
-            target_label: __metrics_path__
-            replacement: /api/v1/nodes/${1}/proxy/metrics
-      - job_name: kubernetes-apiservers
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-        - role: endpoints
-        relabel_configs:
-        - action: keep
-          regex: default;kubernetes;https
-          source_labels:
-          - __meta_kubernetes_namespace
-          - __meta_kubernetes_service_name
-          - __meta_kubernetes_endpoint_port_name
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      - job_name: 'prometheus-pushgateway'
-        honor_labels: true
-        kubernetes_sd_configs:
-          - role: service
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
-            action: keep
-            regex: pushgateway
+  tempo:
+    enabled: true
+    configs: |
+      - name: default
+        receivers:
+          jaeger:
+            protocols:
+              thrift_http:
+        attributes:
+          actions:
+          - action: upsert
+            key: env
+            value: prod
+        remote_write:
+          - endpoint: tempo:55680
+            insecure: true
+        batch:
+          timeout: 5s
+          send_batch_size: 100
+        automatic_logging:
+          backend: loki
+          loki_name: default
+          spans: true
+          processes: true
+          roots: true
+        spanmetrics:
+          metrics_instance: test
+  prometheus: 
+    enabled: true
+    walDir: /var/lib/agent/data
+    scrapeInterval: 15s
+    externalLabels: {}
+    remoteWrite:
+      url: http://cortex.default.svc.cluster.local
+      auth: 
+        # username: ""
+        # password: ""
+    configs: |
+      name: agent
+      remote_write:
+        - url: {{ .Values.config.prometheus.remoteWrite.url }}
+          {{- if .Values.config.prometheus.remoteWrite.auth }}
+          basic_auth:
+              password: {{ .Values.config.prometheus.remoteWrite.auth.password }}
+              username: {{ .Values.config.prometheus.remoteWrite.auth.username }}
+          {{- end }}
+          headers:
+            X-Scope-OrgID: fake
+      scrape_configs:
+        - job_name: local_scrape
+          static_configs:
+            - targets: ['127.0.0.1:12345']
+              labels:
+                cluster: 'docker_compose'
+                container: 'agent'
+                pod: 'grafana-agent-local'
 
 # Enables separation of ConfigMap for Agent expectations
 # Also enables Consul for hash ring 
 scrapingServiceMode:
   enabled: true 
 
+# Only deployed when scrapingServiceMode.enabled is true
 consul:
   client:
     enabled: false
@@ -330,11 +136,3 @@ consul:
     enabled: false
   nodeSelector:
     role: server
-
-cortexTenant:
-  enabled: true
-  podAnnotations:
-    fluentbit.io/exclude: "true"
-  cortex:
-    tenant:
-      defaultTenant: "test"

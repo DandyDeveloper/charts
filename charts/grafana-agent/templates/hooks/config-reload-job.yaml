@@ -8,8 +8,8 @@ metadata:
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
+  ttlSecondsAfterFinished: 10
   template:
     spec:
       containers:
@@ -28,5 +28,4 @@ spec:
         - configMap:
             name: {{ include "grafana-agent.fullname" . }}
           name: config
-  backoffLimit: 5
 {{- end }}

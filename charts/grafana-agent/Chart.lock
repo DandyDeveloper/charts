@@ -2,8 +2,5 @@ dependencies:
 - name: consul
   repository: https://helm.releases.hashicorp.com
   version: 0.33.0
-- name: cortex-tenant
-  repository: https://harbor.eencloud.com/chartrepo/infrastructure
-  version: 1.3.6
-digest: sha256:03be8733949521638ea732fb75ca502def13d9f79890085bea72f6971f627d27
-generated: "2021-09-03T14:03:38.9939256+09:00"
+digest: sha256:25a768a7a5e0f0f8240291118d141f9c8fb0cd050e5d74f5a13cea4b17cfc92a
+generated: "2021-09-08T13:23:36.0307636+09:00"
