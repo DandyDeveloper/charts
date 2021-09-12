@@ -80,14 +80,7 @@ $ helm install \
     dandydev/grafana-agent
 ```
 
-The above command sets the Redis server within `default` namespace.
-
-Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
-
-```bash
-helm install -f values.yaml dandydev/redis-ha
-```
-
-> **Tip**: You can use the default [values.yaml](values.yaml) 
+The above command deploys a DaemonSet of the Grafana Agent in the `default` namespace.
 
 # Scraping Service Mode
+[Scraping Service mode](https://grafana.com/docs/agent/latest/scraping-service/)
