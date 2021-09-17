@@ -55,7 +55,7 @@ Create the name of the service account to use
 */}}
 {{- define "grafana-agent.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "grafana-agent.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "grafana-agent.name" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

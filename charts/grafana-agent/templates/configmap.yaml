@@ -34,7 +34,7 @@ data:
       {{- end }}
     {{ if not .Values.scrapingServiceMode.enabled -}}
       configs:
-      - {{- $prometheusConfigs | indent 8 }}
+      {{- $prometheusConfigs | indent 6 }}
     {{- end }}
     {{- end }}
     tempo: 
