@@ -63,7 +63,7 @@ spec:
             - name: config
               mountPath: /etc/agent
             - name: wal-dir
-              mountPath: {{ .Values.walDir }}
+              mountPath: {{ .Values.config.prometheus.walDir }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

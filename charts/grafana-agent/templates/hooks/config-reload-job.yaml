@@ -15,7 +15,7 @@ spec:
       containers:
       - name: agent-config-sync
         image: grafana/agentctl
-        args: 
+        args:
         - config-sync
         - /etc/agent/{{ include "grafana-agent.scrapingConfigFilename" . }}
         - --addr

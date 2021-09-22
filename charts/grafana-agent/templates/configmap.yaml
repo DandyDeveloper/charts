@@ -15,7 +15,7 @@ data:
         external_labels:
           {{ toYaml .Values.config.prometheus.externalLabels }}
         {{- end }}
-      wal_directory: {{ .Values.config.prometheus.walDir }} 
+      wal_directory: {{ .Values.config.prometheus.walDir }}
       {{- if .Values.scrapingServiceMode.enabled }}
       scraping_service:
         enabled: true
@@ -37,7 +37,7 @@ data:
       {{- $prometheusConfigs | indent 6 }}
     {{- end }}
     {{- end }}
-    tempo: 
+    tempo:
       {{- if .Values.config.tempo.enabled }}
       configs:
         {{- .Values.config.tempo.configs | nindent 8 }}

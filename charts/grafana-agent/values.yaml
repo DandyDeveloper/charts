@@ -59,8 +59,8 @@ tolerations:
 
 affinity: {}
 
-# Currently only supports Prometheus 'configs'. 
-# Other telemetary options will be added overtime. 
+# Currently only supports Prometheus 'configs'.
+# Other telemetary options will be added overtime.
 config:
   tempo:
     enabled: true
@@ -89,14 +89,14 @@ config:
           roots: true
         spanmetrics:
           metrics_instance: test
-  prometheus: 
+  prometheus:
     enabled: true
     walDir: /var/lib/agent/data
     scrapeInterval: 15s
     externalLabels: {}
     remoteWrite:
       url: http://cortex.default.svc.cluster.local
-      auth: 
+      auth:
         # username: ""
         # password: ""
     configs: |
@@ -120,9 +120,9 @@ config:
                 pod: 'grafana-agent-local'
 
 # Enables separation of ConfigMap for Agent expectations
-# Also enables Consul for hash ring 
+# Also enables Consul for hash ring
 scrapingServiceMode:
-  enabled: true 
+  enabled: true
 
 # Only deployed when scrapingServiceMode.enabled is true
 consul:
