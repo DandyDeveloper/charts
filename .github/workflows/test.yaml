@@ -59,7 +59,7 @@ jobs:
         kubectl get pods -n kube-system
 
     - name: Run chart-testing linting (lint)
-      run: ct lint --config .ci/ct-config.yaml
+      run: ct lint --config .ci/ct-config.yaml --chart-repos hashicorp=https://helm.releases.hashicorp.com
 
     - name: Run chart-testing (install)
       run: ct install --config .ci/ct-config.yaml
