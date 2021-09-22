@@ -1,6 +1,6 @@
 # Grafana Agent
 
-[Grafana Agent](https://grafana.com/docs/agent/latest/) is an alternative to Prometheus specifically crafted for remote writes. Grafana Agent removes the fluff from Prometheus to provide a more compact experience with Prometheus. 
+[Grafana Agent](https://grafana.com/docs/agent/latest/) is an alternative to Prometheus specifically crafted for remote writes. Grafana Agent removes the fluff from Prometheus to provide a more compact experience with Prometheus.
 
 ## TL;DR
 
@@ -9,7 +9,7 @@ helm repo add dandydev https://dandydeveloper.github.io/charts
 helm install dandydev/grafana-agent
 ```
 
-By default, this chart will install a DaemonSet across all nodes. Those agents will scrape the metrics from the local node and its resources. 
+By default, this chart will install a DaemonSet across all nodes. Those agents will scrape the metrics from the local node and its resources.
 
 ## Introduction
 
