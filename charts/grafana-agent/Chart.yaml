@@ -1,6 +1,6 @@
 apiVersion: v2
 name: grafana-agent
-description: Deploy an instance of the Grafana agent on all appropriate nodes for scraping Prometheus metrics. 
+description: Deploy an instance of the Grafana agent on all appropriate nodes for scraping Prometheus metrics.
 type: application
 version: 0.18.2
 appVersion: "v0.18.2"
