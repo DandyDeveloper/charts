@@ -62,6 +62,21 @@ affinity: {}
 # Currently only supports Prometheus 'configs'.
 # Other telemetary options will be added overtime.
 config:
+  loki:
+    enabled: true
+    configs: |   
+      positions_directory: /tmp/loki-positions
+      configs:
+      - name: default
+        clients:
+          - url: http://localhost:3100/loki/api/v1/push
+        scrape_configs:
+        - job_name: system
+          static_configs:
+          - targets: ['localhost']
+            labels:
+              job: varlogs
+              __path__: /var/log/*log
   tempo:
     enabled: true
     configs: |
@@ -87,8 +102,6 @@ config:
           spans: true
           processes: true
           roots: true
-        spanmetrics:
-          metrics_instance: test
   prometheus:
     enabled: true
     walDir: /var/lib/agent/data
@@ -100,29 +113,29 @@ config:
         # username: ""
         # password: ""
     configs: |
-      name: agent
-      remote_write:
-        - url: {{ .Values.config.prometheus.remoteWrite.url }}
-          {{- if .Values.config.prometheus.remoteWrite.auth }}
-          basic_auth:
-              password: {{ .Values.config.prometheus.remoteWrite.auth.password }}
-              username: {{ .Values.config.prometheus.remoteWrite.auth.username }}
-          {{- end }}
-          headers:
-            X-Scope-OrgID: fake
-      scrape_configs:
-        - job_name: local_scrape
-          static_configs:
-            - targets: ['127.0.0.1:12345']
-              labels:
-                cluster: 'docker_compose'
-                container: 'agent'
-                pod: 'grafana-agent-local'
+      - name: agent
+        remote_write:
+          - url: {{ .Values.config.prometheus.remoteWrite.url }}
+            {{- if .Values.config.prometheus.remoteWrite.auth }}
+            basic_auth:
+                password: {{ .Values.config.prometheus.remoteWrite.auth.password }}
+                username: {{ .Values.config.prometheus.remoteWrite.auth.username }}
+            {{- end }}
+            headers:
+              X-Scope-OrgID: fake
+        scrape_configs:
+          - job_name: local_scrape
+            static_configs:
+              - targets: ['127.0.0.1:12345']
+                labels:
+                  cluster: 'docker_compose'
+                  container: 'agent'
+                  pod: 'grafana-agent-local'
 
 # Enables separation of ConfigMap for Agent expectations
 # Also enables Consul for hash ring
 scrapingServiceMode:
-  enabled: true
+  enabled: false
 
 # Only deployed when scrapingServiceMode.enabled is true
 consul:

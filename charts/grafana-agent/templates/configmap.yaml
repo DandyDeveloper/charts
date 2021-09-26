@@ -33,15 +33,19 @@ data:
                 host: grafana-agent-consul-server:8500
       {{- end }}
     {{ if not .Values.scrapingServiceMode.enabled -}}
-      configs:
-      {{- $prometheusConfigs | indent 6 }}
+      {{ printf "configs:" | indent 2 }}
+        {{- $prometheusConfigs | nindent 8 }}
     {{- end }}
     {{- end }}
+    {{- if .Values.config.tempo.enabled }}
     tempo:
-      {{- if .Values.config.tempo.enabled }}
       configs:
         {{- .Values.config.tempo.configs | nindent 8 }}
-      {{- end }}
+    {{- end }}
+    {{- if .Values.config.loki.enabled }}
+    loki:
+      {{- .Values.config.loki.configs | nindent 6 }}
+    {{- end }}
 
   {{- if .Values.scrapingServiceMode.enabled }}
   {{ include "grafana-agent.scrapingConfigFilename" . }}: |
