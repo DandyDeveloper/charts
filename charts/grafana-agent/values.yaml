@@ -1,0 +1,151 @@
+# Default values for grafana-agent.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+image:
+  repository: grafana/agent
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Only relevant if scrapingMode.enabled is true
+# Delcares # of replicas for Grafana Agent deployment
+replicaCount: 3
+
+updateStrategy: Recreate
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  privileged: true
+  runAsUser: 0
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+
+affinity: {}
+
+# Currently only supports Prometheus 'configs'.
+# Other telemetary options will be added overtime.
+config:
+  loki:
+    enabled: true
+    configs: |
+      positions_directory: /tmp/loki-positions
+      configs:
+      - name: default
+        clients:
+          - url: http://localhost:3100/loki/api/v1/push
+        scrape_configs:
+        - job_name: system
+          static_configs:
+          - targets: ['localhost']
+            labels:
+              job: varlogs
+              __path__: /var/log/*log
+  tempo:
+    enabled: true
+    configs: |
+      - name: default
+        receivers:
+          jaeger:
+            protocols:
+              thrift_http:
+        attributes:
+          actions:
+          - action: upsert
+            key: env
+            value: prod
+        remote_write:
+          - endpoint: tempo:55680
+            insecure: true
+        batch:
+          timeout: 5s
+          send_batch_size: 100
+        automatic_logging:
+          backend: loki
+          loki_name: default
+          spans: true
+          processes: true
+          roots: true
+  prometheus:
+    enabled: true
+    walDir: /var/lib/agent/data
+    scrapeInterval: 15s
+    externalLabels: {}
+    remoteWrite:
+      url: http://cortex.default.svc.cluster.local
+      auth:
+        # username: ""
+        # password: ""
+    configs: |
+      - name: agent
+        remote_write:
+          - url: {{ .Values.config.prometheus.remoteWrite.url }}
+            {{- if .Values.config.prometheus.remoteWrite.auth }}
+            basic_auth:
+                password: {{ .Values.config.prometheus.remoteWrite.auth.password }}
+                username: {{ .Values.config.prometheus.remoteWrite.auth.username }}
+            {{- end }}
+            headers:
+              X-Scope-OrgID: fake
+        scrape_configs:
+          - job_name: local_scrape
+            static_configs:
+              - targets: ['127.0.0.1:12345']
+                labels:
+                  cluster: 'docker_compose'
+                  container: 'agent'
+                  pod: 'grafana-agent-local'
+
+# Enables separation of ConfigMap for Agent expectations
+# Also enables Consul for hash ring
+scrapingServiceMode:
+  enabled: false
+
+# Only deployed when scrapingServiceMode.enabled is true
+consul:
+  client:
+    enabled: false
+  dns:
+    enabled: false
+  server:
+    replica: 3
+  ui:
+    enabled: false
+  nodeSelector:
+    role: server

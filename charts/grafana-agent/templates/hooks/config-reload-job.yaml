@@ -1,0 +1,31 @@
+{{- if .Values.scrapingServiceMode.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "grafana-agent.fullname" . }}-update-config
+  labels:
+    {{- include "grafana-agent.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+spec:
+  ttlSecondsAfterFinished: 10
+  template:
+    spec:
+      containers:
+      - name: agent-config-sync
+        image: grafana/agentctl
+        args:
+        - config-sync
+        - /etc/agent/{{ include "grafana-agent.scrapingConfigFilename" . }}
+        - --addr
+        - http://grafana-agent:80
+        volumeMounts:
+          - name: config
+            mountPath: /etc/agent
+      restartPolicy: Never
+      volumes:
+        - configMap:
+            name: {{ include "grafana-agent.fullname" . }}
+          name: config
+{{- end }}

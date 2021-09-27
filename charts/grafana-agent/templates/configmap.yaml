@@ -1,0 +1,53 @@
+{{- $prometheusConfigs := tpl .Values.config.prometheus.configs . -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "grafana-agent.fullname" . }}
+data:
+  agent.yml: |
+    server:
+      log_level: info
+    {{- if .Values.config.prometheus.enabled }}
+    prometheus:
+      global:
+        scrape_interval: {{ .Values.config.prometheus.scrapeInterval }}
+        {{- if .Values.config.prometheus.externalLabels }}
+        external_labels:
+          {{ toYaml .Values.config.prometheus.externalLabels }}
+        {{- end }}
+      wal_directory: {{ .Values.config.prometheus.walDir }}
+      {{- if .Values.scrapingServiceMode.enabled }}
+      scraping_service:
+        enabled: true
+        dangerous_allow_reading_files: true
+        kvstore:
+          store: consul
+          consul:
+            host: grafana-agent-consul-server:8500
+        lifecycler:
+          ring:
+            replication_factor: 2
+            kvstore:
+              store: consul
+              consul:
+                host: grafana-agent-consul-server:8500
+      {{- end }}
+    {{ if not .Values.scrapingServiceMode.enabled -}}
+      {{ printf "configs:" | indent 2 }}
+        {{- $prometheusConfigs | nindent 8 }}
+    {{- end }}
+    {{- end }}
+    {{- if .Values.config.tempo.enabled }}
+    tempo:
+      configs:
+        {{- .Values.config.tempo.configs | nindent 8 }}
+    {{- end }}
+    {{- if .Values.config.loki.enabled }}
+    loki:
+      {{- .Values.config.loki.configs | nindent 6 }}
+    {{- end }}
+
+  {{- if .Values.scrapingServiceMode.enabled }}
+  {{ include "grafana-agent.scrapingConfigFilename" . }}: |
+    {{- $prometheusConfigs | nindent 4 }}
+  {{- end }}
