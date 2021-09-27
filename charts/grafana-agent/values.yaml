@@ -64,7 +64,7 @@ affinity: {}
 config:
   loki:
     enabled: true
-    configs: |   
+    configs: |
       positions_directory: /tmp/loki-positions
       configs:
       - name: default
