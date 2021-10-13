@@ -528,7 +528,7 @@
       {{- end }}
     {{- end }}
     {{- if .Values.haproxy.metrics.enabled }}
-    frontend metrics
+    frontend stats
       mode http
       bind *:{{ .Values.haproxy.metrics.port }}
       option http-use-htx
