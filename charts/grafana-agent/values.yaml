@@ -62,6 +62,8 @@ affinity: {}
 # Currently only supports Prometheus 'configs'.
 # Other telemetary options will be added overtime.
 config:
+  # Populate this to provide an existing config for Grafana Agent. This disables the charts configMap.
+  existingConfigMap: ""
   loki:
     enabled: true
     configs: |

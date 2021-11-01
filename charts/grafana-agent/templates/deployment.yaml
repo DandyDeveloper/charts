@@ -81,7 +81,7 @@ spec:
       {{- end }}
       volumes:
         - configMap:
-            name: {{ include "grafana-agent.fullname" . }}
+            name: {{ default (printf "%s" (include "grafana-agent.fullname" .)) .Values.config.existingConfigMap }}
           name: config
         - name: wal-dir
           emptyDir: {}
