@@ -528,11 +528,14 @@
       {{- end }}
     {{- end }}
     {{- if .Values.haproxy.metrics.enabled }}
-    frontend metrics
+    frontend stats
       mode http
       bind *:{{ .Values.haproxy.metrics.port }}
       option http-use-htx
       http-request use-service prometheus-exporter if { path {{ .Values.haproxy.metrics.scrapePath }} }
+      stats enable
+      stats uri /stats
+      stats refresh 10s
     {{- end }}
 {{- if .Values.haproxy.extraConfig }}
     # Additional configuration
