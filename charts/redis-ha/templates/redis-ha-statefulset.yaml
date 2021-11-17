@@ -286,6 +286,8 @@ spec:
               - sh
               - -c
               - /health/redis_readiness.sh
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.redis.securityContext.readOnlyRootFilesystem }}
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
@@ -365,6 +367,8 @@ spec:
               - sh
               - -c
               - /health/sentinel_liveness.sh
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.sentinel.securityContext.readOnlyRootFilesystem }}
         resources:
 {{ toYaml .Values.sentinel.resources | indent 10 }}
         ports:
@@ -491,6 +495,8 @@ spec:
           initialDelaySeconds: {{ .Values.exporter.readinessProbe.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.exporter.readinessProbe.timeoutSeconds }}
           periodSeconds: {{ .Values.exporter.readinessProbe.periodSeconds }}
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.exporter.securityContext.readOnlyRootFilesystem }}
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
         ports:
