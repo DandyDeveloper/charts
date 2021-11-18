@@ -441,7 +441,7 @@ spec:
             command:
               - sh
               - -c
-              - /health/probe_true
+              - /health/probe_true.sh
         readinessProbe:
           initialDelaySeconds: 30
           periodSeconds: 15
@@ -452,7 +452,7 @@ spec:
             command:
               - sh
               - -c
-              - /health/probe_true
+              - /health/probe_true.sh
 {{- end }}
         resources: 
           {{- toYaml .Values.splitBrainDetection.resources | nindent 10 }}
