@@ -637,3 +637,6 @@
     echo "response=$response"
 {{- end }}
 
+{{- define "probe_true.sh" }}
+    exit 0
+{{- end }}

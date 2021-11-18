@@ -662,3 +662,6 @@ networkPolicy:
 splitBrainDetection:
   interval: 60
   resources: {}
+
+  enableProbes: false
+  

@@ -27,7 +27,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) | sha256sum }}
+        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "probe_true.sh" .) | sha256sum }}
       {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 8 }}
       {{- end }}
@@ -429,6 +429,30 @@ spec:
               name: {{ template "redis-ha.fullname" . }}-sentinel
             {{- end }}
               key: {{ .Values.sentinel.authKey }}
+{{- end }}
+{{- if .Values.splitBrainDetection.enableProbes }}
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 5
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/probe_true
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 5
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/probe_true
 {{- end }}
         resources: 
           {{- toYaml .Values.splitBrainDetection.resources | nindent 10 }}
