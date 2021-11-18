@@ -664,3 +664,7 @@ splitBrainDetection:
   resources: {}
 
   enableProbes: false
+
+  # security context parameters for split-brain-fix sidecar
+  securityContext:
+    readOnlyRootFilesystem: false

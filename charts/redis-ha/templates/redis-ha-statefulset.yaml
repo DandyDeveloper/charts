@@ -453,6 +453,8 @@ spec:
               - sh
               - -c
               - /health/probe_true.sh
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.splitBrainDetection.securityContext.readOnlyRootFilesystem }}
 {{- end }}
         resources: 
           {{- toYaml .Values.splitBrainDetection.resources | nindent 10 }}
