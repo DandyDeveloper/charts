@@ -468,6 +468,8 @@ spec:
         - mountPath: /tls-certs
           name: tls-certs
         {{- end }}
+        - mountPath: /health
+          name: health
 
 {{- if .Values.exporter.enabled }}
       - name: redis-exporter
