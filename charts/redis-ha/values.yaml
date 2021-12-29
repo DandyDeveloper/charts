@@ -116,7 +116,7 @@ haproxy:
     # List of CIDR's allowed to connect to LoadBalancer
     # loadBalancerSourceRanges: []
     annotations: {}
-  serviceAccountName: default
+  serviceAccountName: redis-sa
   serviceAccount:
     create: true
   ## Official HAProxy embedded prometheus metrics settings.
