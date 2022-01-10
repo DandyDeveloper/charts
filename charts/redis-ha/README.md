@@ -362,3 +362,11 @@ The proposed solution is currently implemented as a sidecar container that runs 
 1. If it is not the current node: ensure the redis server also replicates from the same node.
 
 If any of the checks above fails - the redis server reinitialisation happens (it regenerates configs the same way it's done during the pod init), and then the redis server is instructed to shutdown. Then kubernetes restarts the container immediately.
+
+
+# Change Log
+
+##4.14.9 - **Potential breaking change. **
+Introduced the ability to change the Haproxy Deployment container pod 
+- Container port in redis-haproxy-deployment.yam has been changed. Was **redis.port** To **haproxy.containerPort**. Default value is 6379.
+- Port in redis-haproxy-service.yaml has been changed. Was **redis.port** To **haproxy.servicePort**. Default value is 6379. 
