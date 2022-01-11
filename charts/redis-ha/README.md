@@ -366,7 +366,7 @@ If any of the checks above fails - the redis server reinitialisation happens (it
 
 # Change Log
 
-##4.14.9 - **Potential breaking change. **
+## 4.14.9 - ** POTENTIAL BREAKING CHANGE. **
 Introduced the ability to change the Haproxy Deployment container pod 
 - Container port in redis-haproxy-deployment.yam has been changed. Was **redis.port** To **haproxy.containerPort**. Default value is 6379.
 - Port in redis-haproxy-service.yaml has been changed. Was **redis.port** To **haproxy.servicePort**. Default value is 6379. 
