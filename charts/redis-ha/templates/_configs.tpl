@@ -518,7 +518,7 @@
       option tcp-check
       tcp-check connect
       {{- if .Values.auth }}
-      tcp-check send AUTH\ REPLACE_AUTH_SECRET\r\n
+      tcp-check send "AUTH ${AUTH}"\r\n
       tcp-check expect string +OK
       {{- end }}
       tcp-check send PING\r\n
