@@ -4,6 +4,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: {{ template "redis-ha.fullname" . }}-network-policy
+  namespace: {{ .Release.Namespace | quote }}
 {{- if .Values.networkPolicy.annotations }}
   annotations:
     {{- range $key, $value := .Values.networkPolicy.annotations }}
