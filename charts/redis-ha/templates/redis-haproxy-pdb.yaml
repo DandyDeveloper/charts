@@ -13,6 +13,6 @@ spec:
   selector:
     matchLabels:
       release: {{ .Release.Name }}
-      app: {{ template "redis-ha.name" . }}-haproxy
+      app: {{ template "redis-ha.fullname" . }}-haproxy
 {{ toYaml .Values.haproxy.podDisruptionBudget | indent 2 }}
 {{- end -}}

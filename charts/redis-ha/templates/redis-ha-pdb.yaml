@@ -16,6 +16,6 @@ spec:
       # We want to avoid including the Test pods in the budget
       {{ template "redis-ha.fullname" . }}: replica
       release: {{ .Release.Name }}
-      app: {{ template "redis-ha.name" . }}
+      app: {{ template "redis-ha.fullname" . }}
 {{ toYaml .Values.podDisruptionBudget | indent 2 }}
 {{- end -}}

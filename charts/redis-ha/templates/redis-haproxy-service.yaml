@@ -47,5 +47,5 @@ spec:
 {{- end }}
   selector:
     release: {{ .Release.Name }}
-    app: {{ template "redis-ha.name" . }}-haproxy
+    app: {{ template "redis-ha.fullname" . }}-haproxy
 {{- end }}

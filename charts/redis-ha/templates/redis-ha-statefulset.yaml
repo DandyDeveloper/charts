@@ -18,7 +18,7 @@ spec:
   selector:
     matchLabels:
       release: {{ .Release.Name }}
-      app: {{ template "redis-ha.name" . }}
+      app: {{ template "redis-ha.fullname" . }}
   serviceName: {{ template "redis-ha.fullname" . }}
   replicas: {{ .Values.replicas }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}
@@ -38,7 +38,7 @@ spec:
       {{- end }}
       labels:
         release: {{ .Release.Name }}
-        app: {{ template "redis-ha.name" . }}
+        app: {{ template "redis-ha.fullname" . }}
         {{ template "redis-ha.fullname" . }}: replica
         {{- range $key, $value := .Values.labels }}
         {{ $key }}: {{ $value | toString }}
@@ -75,7 +75,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  app: {{ template "redis-ha.name" . }}
+                  app: {{ template "redis-ha.fullname" . }}
                   release: {{ .Release.Name }}
                   {{ template "redis-ha.fullname" . }}: replica
               topologyKey: kubernetes.io/hostname
@@ -85,7 +85,7 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app: {{ template "redis-ha.name" . }}
+                    app: {{ template "redis-ha.fullname" . }}
                     release: {{ .Release.Name }}
                     {{ template "redis-ha.fullname" . }}: replica
                 topologyKey: kubernetes.io/hostname
@@ -144,7 +144,7 @@ spec:
 {{- $replicas := int (toString .Values.replicas) -}}
 {{- range $i := until $replicas }}
         - name: SENTINEL_ID_{{ $i }}
-          value: {{ printf "%s\n%s\nindex: %d" (include "redis-ha.name" $) ($.Release.Name) $i | sha256sum | trunc 40 }}
+          value: {{ printf "%s\n%s\nindex: %d" (include "redis-ha.fullname" $) ($.Release.Name) $i | sha256sum | trunc 40 }}
 {{- end }}
 {{- if .Values.auth }}
         - name: AUTH
@@ -402,7 +402,7 @@ spec:
 {{- $replicas := int (toString .Values.replicas) -}}
 {{- range $i := until $replicas }}
         - name: SENTINEL_ID_{{ $i }}
-          value: {{ printf "%s\n%s\nindex: %d" (include "redis-ha.name" $) ($.Release.Name) $i | sha256sum | trunc 40 }}
+          value: {{ printf "%s\n%s\nindex: %d" (include "redis-ha.fullname" $) ($.Release.Name) $i | sha256sum | trunc 40 }}
 {{- end }}
 {{- if .Values.auth }}
         - name: AUTH

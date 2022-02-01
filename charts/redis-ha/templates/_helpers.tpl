@@ -4,14 +4,6 @@
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "redis-ha.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-*/}}
 {{- define "redis-ha.fullname" -}}
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
@@ -42,7 +34,7 @@ labels.standard prints the standard Helm labels.
 The standard labels are frequently used in metadata.
 */ -}}
 {{- define "labels.standard" -}}
-app: {{ template "redis-ha.name" . }}
+app: {{ template "redis-ha.fullname" . }}
 heritage: {{ .Release.Service | quote }}
 release: {{ .Release.Name | quote }}
 chart: {{ template "chartref" . }}

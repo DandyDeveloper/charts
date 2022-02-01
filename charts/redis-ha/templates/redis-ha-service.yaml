@@ -51,4 +51,4 @@ spec:
 {{- end }}
   selector:
     release: {{ .Release.Name }}
-    app: {{ template "redis-ha.name" . }}
+    app: {{ template "redis-ha.fullname" . }}

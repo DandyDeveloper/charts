@@ -30,7 +30,7 @@ spec:
     - {{ .Release.Namespace | quote }}
   selector:
     matchLabels:
-      app: {{ template "redis-ha.name" . }}
+      app: {{ template "redis-ha.fullname" . }}
       release: {{ .Release.Name }}
       component: {{ template "redis-ha.fullname" . }}-haproxy
 {{- end }}

@@ -413,7 +413,7 @@ additionalAffinities: {}
 ##     requiredDuringSchedulingIgnoredDuringExecution:
 ##       - labelSelector:
 ##           matchLabels:
-##             app: {{ template "redis-ha.name" . }}
+##             app: {{ template "redis-ha.fullname" . }}
 ##             release: {{ .Release.Name }}
 ##         topologyKey: kubernetes.io/hostname
 ##     preferredDuringSchedulingIgnoredDuringExecution:
@@ -421,7 +421,7 @@ additionalAffinities: {}
 ##         podAffinityTerm:
 ##           labelSelector:
 ##             matchLabels:
-##               app:  {{ template "redis-ha.name" . }}
+##               app:  {{ template "redis-ha.fullname" . }}
 ##               release: {{ .Release.Name }}
 ##           topologyKey: failure-domain.beta.kubernetes.io/zone
 ##
