@@ -239,6 +239,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `networkPolicy.egressRules[].selectors`   | Label selector query to define resources for this egress rule                                                                                                                            |`[]`|
 | `networkPolicy.egressRules[].ports`       | The destination ports for the egress rule                                                                                                                                                |``|
 | `splitBrainDetection.interval`          | Interval between redis sentinel and server split brain checks (in seconds)                                                                                                               |`60`|
+| `splitBrainDetection.resources`         | splitBrainDetection resources                                                                                                                                                            |`{}`|
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
