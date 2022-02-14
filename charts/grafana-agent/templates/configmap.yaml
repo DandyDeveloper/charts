@@ -7,7 +7,7 @@ metadata:
 data:
   agent.yml: |
     server:
-      log_level: info
+      log_level: {{ .Values.config.logLevel }}
     {{- if .Values.config.prometheus.enabled }}
     prometheus:
       global:
