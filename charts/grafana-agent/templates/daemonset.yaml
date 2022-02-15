@@ -64,6 +64,9 @@ spec:
               mountPath: /etc/agent
             - name: wal-dir
               mountPath: {{ .Values.config.prometheus.walDir }}
+          {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -82,4 +85,7 @@ spec:
           name: config
         - name: wal-dir
           emptyDir: {}
+        {{- with .Values.extraVolumes }}
+            {{- toYaml . | nindent 8 }}
+        {{- end }}
 {{- end }}
