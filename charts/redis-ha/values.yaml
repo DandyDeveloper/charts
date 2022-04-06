@@ -273,7 +273,10 @@ redis:
 
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
-  lifecycle: {}
+  lifecycle:
+    preStop:
+      exec:
+        command: ["/bin/sh", "/readonly-config/trigger-failover-if-master.sh"]
 
   ## annotations for the redis statefulset
   annotations: {}

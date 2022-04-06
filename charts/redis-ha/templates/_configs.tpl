@@ -363,6 +363,56 @@
     echo "$(date) Ready..."
 {{- end }}
 
+{{- define "trigger-failover-if-master.sh" }}
+    {{- if or (eq (int .Values.redis.port) 0) (eq (int .Values.sentinel.port) 0) }}
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    {{- end }}
+    get_redis_role() {
+      is_master=$(
+        redis-cli \
+        {{- if .Values.auth }}
+          -a "${AUTH}" --no-auth-warning \
+        {{- end }}
+          -h localhost \
+        {{- if (int .Values.redis.port) }}
+          -p {{ .Values.redis.port }} \
+        {{- else }}
+          -p {{ .Values.redis.tlsPort }} ${TLS_CLIENT_OPTION} \
+        {{- end}}
+          info | grep -c 'role:master' || true
+      )
+    }
+    get_redis_role
+    if [[ "$is_master" -eq 1 ]]; then
+      echo "This node is currently master, we trigger a failover."
+      {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
+      response=$(
+        redis-cli \
+        {{- if .Values.auth }}
+          -a "${SENTINELAUTH}" --no-auth-warning \
+        {{- end }}
+          -h localhost \
+        {{- if (int .Values.sentinel.port) }}
+          -p {{ .Values.sentinel.port }} \
+        {{- else }}
+          -p {{ .Values.sentinel.tlsPort }} ${TLS_CLIENT_OPTION} \
+        {{- end}}
+          SENTINEL failover {{ $masterGroupName }}
+      )
+      if [[ "$response" != "OK" ]] ; then
+        echo "$response"
+        exit 1
+      fi
+      timeout=30
+      while [[ "$is_master" -eq 1 && $timeout -gt 0 ]]; do
+        sleep 1
+        get_redis_role
+        timeout=$((timeout - 1))
+      done
+      echo "Failover successful"
+    fi
+{{- end }}
+
 {{- define "fix-split-brain.sh" }}
     {{- include "vars.sh" . }}
 
