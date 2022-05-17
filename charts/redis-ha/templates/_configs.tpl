@@ -64,9 +64,9 @@
     {{- end }}
 {{- if .Values.auth }}
     sentinel auth-pass {{ template "redis-ha.masterGroupName" . }} replace-default-auth
+{{- end }}
 {{- if .Values.sentinel.auth }}
     requirepass replace-default-sentinel-auth
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -388,7 +388,7 @@
       {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
       response=$(
         redis-cli \
-        {{- if .Values.auth }}
+        {{- if .Values.sentinel.auth }}
           -a "${SENTINELAUTH}" --no-auth-warning \
         {{- end }}
           -h localhost \
@@ -673,7 +673,7 @@
     {{- end }}
     response=$(
       redis-cli \
-      {{- if .Values.auth }}
+      {{- if .Values.sentinel.auth }}
         -a "${SENTINELAUTH}" --no-auth-warning \
       {{- end }}
         -h localhost \
