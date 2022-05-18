@@ -128,7 +128,11 @@ spec:
         - "{{ .Values.securityContext.runAsUser }}"
         - /data
         volumeMounts:
+        {{- if and .Values.persistentVolume.enabled .Values.persistentVolume.volumeName }}
+        - name: {{ .Values.persistentVolume.volumeName }}
+        {{ else }}
         - name: data
+        {{- end }}
           mountPath: /data
 {{- end }}
       - name: config-init
@@ -172,7 +176,11 @@ spec:
         - name: config
           mountPath: /readonly-config
           readOnly: true
+        {{- if and .Values.persistentVolume.enabled .Values.persistentVolume.volumeName }}
+        - name: {{ .Values.persistentVolume.volumeName }}
+        {{ else }}
         - name: data
+        {{- end }}
           mountPath: /data
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
@@ -202,7 +210,11 @@ spec:
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
         volumeMounts:
+        {{- if and .Values.persistentVolume.enabled .Values.persistentVolume.volumeName }}
+        - name: {{ .Values.persistentVolume.volumeName }}
+        {{ else }}
         - name: data
+        {{- end }}
           mountPath: /data
 {{- end }}
 {{ if regexFind $regexRestoreSSH (toString .Values.restore.ssh.source) }}
@@ -238,7 +250,11 @@ spec:
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
         volumeMounts:
+        {{- if and .Values.persistentVolume.enabled .Values.persistentVolume.volumeName }}
+        - name: {{ .Values.persistentVolume.volumeName }}
+        {{ else }}
         - name: data
+        {{- end }}
           mountPath: /data
 {{- end }}
 {{- if .Values.extraInitContainers }}
@@ -302,7 +318,11 @@ spec:
           mountPath: /readonly-config
           readOnly: true
         - mountPath: /data
+        {{- if and .Values.persistentVolume.enabled .Values.persistentVolume.volumeName }}
+          name: {{ .Values.persistentVolume.volumeName }}
+        {{ else }}
           name: data
+        {{- end }}
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
           name: tls-certs
@@ -381,7 +401,11 @@ spec:
         {{- end }}
         volumeMounts:
         - mountPath: /data
+        {{- if and .Values.persistentVolume.enabled .Values.persistentVolume.volumeName }}
+          name: {{ .Values.persistentVolume.volumeName }}
+        {{ else }}
           name: data
+        {{- end }}
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
           name: tls-certs
@@ -436,7 +460,11 @@ spec:
           mountPath: /readonly-config
           readOnly: true
         - mountPath: /data
+        {{- if and .Values.persistentVolume.enabled .Values.persistentVolume.volumeName }}
+          name: {{ .Values.persistentVolume.volumeName }}
+        {{ else }}
           name: data
+        {{- end }}
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
           name: tls-certs
@@ -549,9 +577,14 @@ spec:
 {{- toYaml .Values.extraVolumes | nindent 6 }}
 {{- end -}}
 {{- if .Values.persistentVolume.enabled }}
+  {{- if and .Values.persistentVolume.existingClaim.name .Values.persistentVolume.volumeName }}
+      - name: {{ .Values.persistentVolume.volumeName }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistentVolume.existingClaim.name }}
+  {{ else }}
   volumeClaimTemplates:
   - metadata:
-      name: data
+      name: {{ .Values.persistentVolume.volumeName }}
       annotations:
       {{- range $key, $value := .Values.persistentVolume.annotations }}
         {{ $key }}: {{ $value }}
@@ -570,6 +603,7 @@ spec:
     {{- else }}
       storageClassName: "{{ .Values.persistentVolume.storageClass }}"
     {{- end }}
+  {{- end }}
 {{- end }}
 {{- else if .Values.hostPath.path }}
       - name: data

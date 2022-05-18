@@ -526,6 +526,16 @@ authKey: auth
 
 persistentVolume:
   enabled: true
+  ## If there is an existing persistent volume (PV) and existing persistent volume claim (PVC)
+  ## that you wish to use, then this must be specified following the example below.
+  ##
+  # volumeName:  "data" # the name of the volume to be mounted
+  # existingClaim:
+  #   name: "example-pvc-name" # the name of the existing PVC
+  #   claimSize: 8Gi # the amount of space in the PVC that you want to use
+  #   accessModes:
+  #     - ReadWriteMany # since it is a shared volume, it needs this type of access mode
+
   ## redis-ha data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
   ## If set to "-", storageClassName: "", which disables dynamic provisioning
@@ -534,9 +544,11 @@ persistentVolume:
   ##   GKE, AWS & OpenStack)
   ##
   # storageClass: "-"
-  accessModes:
-    - ReadWriteOnce
-  size: 10Gi
+  
+  ## uncomment the following lines if you're not using existing PVC
+  # accessModes:
+  #   - ReadWriteOnce
+  # size: 10Gi
   annotations: {}
 init:
   resources: {}
