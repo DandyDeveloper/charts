@@ -3,7 +3,35 @@ entries:
   grafana-agent:
   - apiVersion: v2
     appVersion: v0.20.0
-    created: "2022-03-01T23:37:59.860944277Z"
+    created: "2022-05-25T00:21:52.36828062Z"
+    dependencies:
+    - condition: scrapingServiceMode.enabled
+      name: consul
+      repository: https://helm.releases.hashicorp.com
+      version: 0.33.0
+    description: Deploy an instance of the Grafana agent on all appropriate nodes
+      for scraping Prometheus metrics.
+    digest: 823dc9dc34640fab131580c53bfdd671cf2a439f3a8c69b6a3bb378ab045b742
+    home: https://grafana.com/docs/agent/latest/
+    keywords:
+    - monitoring
+    - prometheus
+    - cortex
+    maintainers:
+    - email: aaron.layfield@gmail.com
+      name: dandydeveloper
+    name: grafana-agent
+    sources:
+    - https://grafana.com/docs/agent/latest/
+    - https://github.com/DandyDeveloper/charts/blob/master/charts/grafana-agent
+    - https://github.com/hashicorp/consul
+    type: application
+    urls:
+    - grafana-agent-0.19.1.tgz
+    version: 0.19.1
+  - apiVersion: v2
+    appVersion: v0.20.0
+    created: "2022-05-25T00:21:52.357509962Z"
     dependencies:
     - condition: scrapingServiceMode.enabled
       name: consul
@@ -31,7 +59,7 @@ entries:
     version: 0.19.0
   - apiVersion: v2
     appVersion: v0.18.2
-    created: "2022-03-01T23:37:59.851499201Z"
+    created: "2022-05-25T00:21:52.348934196Z"
     dependencies:
     - condition: scrapingServiceMode.enabled
       name: consul
@@ -60,7 +88,32 @@ entries:
   redis-ha:
   - apiVersion: v2
     appVersion: 6.2.5
-    created: "2022-03-01T23:38:00.006435364Z"
+    created: "2022-05-25T00:21:52.492265135Z"
+    description: This Helm chart provides a highly available Redis implementation
+      with a master/slave configuration and uses Sentinel sidecars for failover management
+    digest: cecb4acb37c8e2a5fa2e814de6414dac94cf2454fa66989b5e44e1e2848672d9
+    home: http://redis.io/
+    icon: https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Redis_Logo.svg/1200px-Redis_Logo.svg.png
+    keywords:
+    - redis
+    - keyvalue
+    - database
+    maintainers:
+    - email: salimsalaues@gmail.com
+      name: ssalaues
+    - email: aaron.layfield@gmail.com
+      name: dandydeveloper
+    name: redis-ha
+    sources:
+    - https://redis.io/download
+    - https://github.com/DandyDeveloper/charts/blob/master/charts/redis-ha
+    - https://github.com/oliver006/redis_exporter
+    urls:
+    - redis-ha-4.15.2.tgz
+    version: 4.15.2
+  - apiVersion: v2
+    appVersion: 6.2.5
+    created: "2022-05-25T00:21:52.489657545Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: adbc688af03426236d12521aa114ec02b615fe381ce1dbbd54c961f18c161d6b
@@ -85,7 +138,7 @@ entries:
     version: 4.15.0
   - apiVersion: v2
     appVersion: 6.2.5
-    created: "2022-03-01T23:38:00.004056495Z"
+    created: "2022-05-25T00:21:52.487028755Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 9d744039a09efa887eb7a2b6f5c557ded5ba2dbe6f269315446d718f0ec0af4c
@@ -110,7 +163,7 @@ entries:
     version: 4.14.9
   - apiVersion: v2
     appVersion: 6.2.5
-    created: "2022-03-01T23:38:00.001675526Z"
+    created: "2022-05-25T00:21:52.484782464Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 4993568fd233bb193990d562d04ecc524a199f70c9772c058f33e263af123e8f
@@ -135,7 +188,7 @@ entries:
     version: 4.14.8
   - apiVersion: v2
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.999218659Z"
+    created: "2022-05-25T00:21:52.482572473Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 8ff6759f9e9e373ee91adbc56159c5e00a1a1161bb259be8f76e442a05637ff1
@@ -160,7 +213,7 @@ entries:
     version: 4.14.7
   - apiVersion: v2
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.996630293Z"
+    created: "2022-05-25T00:21:52.480304882Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 6840d708dc042aba50e1854f1b37deaffd39d82b30dc8c255497c18ea95cbf47
@@ -185,7 +238,7 @@ entries:
     version: 4.14.6
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.993563733Z"
+    created: "2022-05-25T00:21:52.477317193Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: e758e5cb57cd7613fe1189d9748af21f4ceb8110e932bfbe0dac50f6bf04361f
@@ -210,7 +263,7 @@ entries:
     version: 4.14.5
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.987278216Z"
+    created: "2022-05-25T00:21:52.475100202Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 50e020188599e2befc25231924e56c007087b925236fabf64c68726f1dea9ee8
@@ -235,7 +288,7 @@ entries:
     version: 4.14.4
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.985016545Z"
+    created: "2022-05-25T00:21:52.472876011Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: af9e0c0fd8a29bc5ef9fe988db7388457f564c369912be51af3e01f0fb8ee018
@@ -260,7 +313,7 @@ entries:
     version: 4.14.3
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.982695976Z"
+    created: "2022-05-25T00:21:52.470675119Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: d154e0dd3a164c685b0c5aca53ab60a0e5fe891568be2a8404a5d187db8a22de
@@ -285,7 +338,7 @@ entries:
     version: 4.14.2
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.980440806Z"
+    created: "2022-05-25T00:21:52.468435528Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 47511f42be8afeffa9b276f451f8e8e5300e2473626a470bfc14df0500ed5f1a
@@ -310,7 +363,7 @@ entries:
     version: 4.14.1
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.972269613Z"
+    created: "2022-05-25T00:21:52.46293985Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 93aa7c425fe8369815b1b466fa668ef65f6fe486b2a21b05793d9c43f2fb3e64
@@ -335,7 +388,7 @@ entries:
     version: 4.14.0
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.970041642Z"
+    created: "2022-05-25T00:21:52.460720058Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: d81f12d694d82e4e4f2d2a6c3c6134e82e66cf81436580e823402a53d6cf7490
@@ -360,7 +413,7 @@ entries:
     version: 4.13.1
   - apiVersion: v1
     appVersion: 6.2.5
-    created: "2022-03-01T23:37:59.967820072Z"
+    created: "2022-05-25T00:21:52.458495167Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 4ebffa2e9e63c662c6e6365ad3f5a028e826f79a38b26e80573b831f2e5b9ecf
@@ -385,7 +438,7 @@ entries:
     version: 4.13.0
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.948343528Z"
+    created: "2022-05-25T00:21:52.435210958Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: c5ee9e26f35998cf73a71a422115d125e4c97466fb1aa63041931f8be1ff0bf8
@@ -410,7 +463,7 @@ entries:
     version: 4.12.23
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.946156157Z"
+    created: "2022-05-25T00:21:52.43219147Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 38f5ecaac905e9546ad2339f9c4659e3b2c4775a3586a198d1c63f12d55e0f8c
@@ -435,7 +488,7 @@ entries:
     version: 4.12.22
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.943899786Z"
+    created: "2022-05-25T00:21:52.430123478Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 822930565cebc1fe1624d005b1fe9fb4601cb3b95d1768b8f7da1eee45215bf0
@@ -460,7 +513,7 @@ entries:
     version: 4.12.21
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.941753714Z"
+    created: "2022-05-25T00:21:52.428122286Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 3dcd7a030094a10c98d4cf8742356ba41f7ad42803be22371fc9b945db46d385
@@ -485,7 +538,7 @@ entries:
     version: 4.12.20
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.933097828Z"
+    created: "2022-05-25T00:21:52.424149201Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: c68df405ede11169772049c42e1d9d50b403146c3913b0fbcb2a57f4647133cb
@@ -510,7 +563,7 @@ entries:
     version: 4.12.19
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.931008556Z"
+    created: "2022-05-25T00:21:52.421127513Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 0cfbc3074ff5f9551a152af8ab63b7d21923a4ef858cb83732b17443a9914e43
@@ -535,7 +588,7 @@ entries:
     version: 4.12.17
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.928978582Z"
+    created: "2022-05-25T00:21:52.419119321Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 2d4b3665a88388ccbc1f88a79e674729a685edaf4dde4a6c1188ef3384eab6aa
@@ -560,7 +613,7 @@ entries:
     version: 4.12.16
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.92691161Z"
+    created: "2022-05-25T00:21:52.417092829Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 2552533bca6eff7b3ff8634c2d91e34161cbbe5bbb899c20a74a42fa2fd4123e
@@ -585,7 +638,7 @@ entries:
     version: 4.12.15
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.924402643Z"
+    created: "2022-05-25T00:21:52.415133737Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: bceb72a58e2e54e7cfdba93251de76960469bd1ac703cedfb75ce9fb19a90ed6
@@ -610,7 +663,7 @@ entries:
     version: 4.12.14
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.921841176Z"
+    created: "2022-05-25T00:21:52.413043745Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 9bf61cbc7a48ce27e9fc90bfa35c024a14f8ecd73650f4c3099ae0c3065c29ef
@@ -635,7 +688,7 @@ entries:
     version: 4.12.13
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.917645331Z"
+    created: "2022-05-25T00:21:52.410177456Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 968176b18b20dfd58952fad49743bc710b102b65accebf0189a5a65d34de3bb4
@@ -660,7 +713,7 @@ entries:
     version: 4.12.12
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.915636558Z"
+    created: "2022-05-25T00:21:52.408215664Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: fda2706510bef3238b17e567daa022a36d809aa6578e9e0b11a77c7831e59f2b
@@ -685,7 +738,7 @@ entries:
     version: 4.12.11
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.913685983Z"
+    created: "2022-05-25T00:21:52.406236671Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 1d8939800bbb53a6ddb7b3e27f81f923af66dd809aa3236e420c4b023ff457ae
@@ -710,7 +763,7 @@ entries:
     version: 4.12.10
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.9656433Z"
+    created: "2022-05-25T00:21:52.456233976Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 64ecc31f8d4d8dcffc3a67004a89e0d4ce5f5f3b1dc3edf3c8f09a7698986a5d
@@ -735,7 +788,7 @@ entries:
     version: 4.12.9
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.963642527Z"
+    created: "2022-05-25T00:21:52.448237107Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: d7acc7678258233833af48a33ce0099847d752bbd4b9d41cd184fabb64894b22
@@ -760,7 +813,7 @@ entries:
     version: 4.12.8
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.960839463Z"
+    created: "2022-05-25T00:21:52.445648817Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: fffa32e91d4614dc40339a8d19a0c79b026d3993bbbd6275276a0a47b965b9bd
@@ -785,7 +838,7 @@ entries:
     version: 4.12.7
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.958936688Z"
+    created: "2022-05-25T00:21:52.443036427Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 3efcdfcd2064ba54fb6c3351c9ecb80284c8e3e8a60be23100533b5a307ea0de
@@ -810,7 +863,7 @@ entries:
     version: 4.12.6
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.957040813Z"
+    created: "2022-05-25T00:21:52.441169435Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: c542a8d2c1c6999e8cf7eff238d6aed19b02ceb1e49eac33c9ecdcaa27dd7a0e
@@ -835,7 +888,7 @@ entries:
     version: 4.12.5
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.955146038Z"
+    created: "2022-05-25T00:21:52.439298042Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: a3bb2a205bdd45e48f0712013f97f756ff706dbef40afb57f6226475951167f3
@@ -860,7 +913,7 @@ entries:
     version: 4.12.4
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.953167664Z"
+    created: "2022-05-25T00:21:52.43738525Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 29b5f994dc5a6ea3b851d86bffb514574b11c6aa3728504c24b3d8062a322f82
@@ -885,7 +938,7 @@ entries:
     version: 4.12.3
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.935011503Z"
+    created: "2022-05-25T00:21:52.426059894Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 5578c4b4b264b0e785a0fe010cc2336a8ca4852f6305745c6a20d12e100cd1f9
@@ -910,7 +963,7 @@ entries:
     version: 4.12.2
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.91170701Z"
+    created: "2022-05-25T00:21:52.404262379Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 43e659780a753abfba2f452b7c9b2c2cc462776951f1398515ffad2ea04d76ed
@@ -935,7 +988,7 @@ entries:
     version: 4.12.1
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.909820734Z"
+    created: "2022-05-25T00:21:52.402377487Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: b9fe031a861a42b0d6971de2b64e3334bf6923ac66b7303bfac10db7e001782c
@@ -960,7 +1013,7 @@ entries:
     version: 4.12.0
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.907647563Z"
+    created: "2022-05-25T00:21:52.399748797Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: eef99321ca7f3fe7a05aeab103fb8c998a42cc1d881d4119795d103a2f9ff929
@@ -985,7 +1038,7 @@ entries:
     version: 4.11.1
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.905263294Z"
+    created: "2022-05-25T00:21:52.397890104Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: cc9ca919afb5140ddb45e7a30efca7a61ef52acfedf9e0362dd998f7e4c5b5dd
@@ -1010,7 +1063,7 @@ entries:
     version: 4.11.0
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.876573072Z"
+    created: "2022-05-25T00:21:52.380135874Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: fcb689dd1677b5bbc99afe30299b38ebac860b35280fe12be7e9c31e1cb0c6cd
@@ -1035,7 +1088,7 @@ entries:
     version: 4.10.15
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.874629997Z"
+    created: "2022-05-25T00:21:52.377799783Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: 41fb3d7faa24cb82de5aa71e8296fe70decaab81ac8ed2acd6b94beb6d16614f
@@ -1060,7 +1113,7 @@ entries:
     version: 4.10.14
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.868472778Z"
+    created: "2022-05-25T00:21:52.375724291Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
     digest: e711e099ff7906b2d52c78243b603b25f86bdfa5c80d5225bf3fd7add7192981
@@ -1085,7 +1138,7 @@ entries:
     version: 4.10.11
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.866638902Z"
+    created: "2022-05-25T00:21:52.373868398Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 2745594332b3faec49e6d216f8f1d9f70d940021352852e83c79d1f05de908a4
     home: http://redis.io/
@@ -1109,7 +1162,7 @@ entries:
     version: 4.10.10
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.897042202Z"
+    created: "2022-05-25T00:21:52.396043111Z"
     description: Highly available Kubernetes implementation of Redis
     digest: b126ab491f121c150f772aeecff5f7a2cfb3a4dd4362c28a58675d470481fbcc
     home: http://redis.io/
@@ -1133,7 +1186,7 @@ entries:
     version: 4.10.9
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.895169027Z"
+    created: "2022-05-25T00:21:52.394178519Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 64a6579ba17fb841294e48a2721d2cac3766cfd46e827ebd28be7fb82d7efd7e
     home: http://redis.io/
@@ -1157,7 +1210,7 @@ entries:
     version: 4.10.8
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.893305151Z"
+    created: "2022-05-25T00:21:52.392310326Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 8e8dd1c63b98375a8d1d303d505139a3308d7627523123d095b53e80a98e36bb
     home: http://redis.io/
@@ -1181,7 +1234,7 @@ entries:
     version: 4.10.7
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.891427276Z"
+    created: "2022-05-25T00:21:52.390157634Z"
     description: Highly available Kubernetes implementation of Redis
     digest: c006a1f53009050759cd6b414da65ba1d8d7b4fddb54967b6d28093788367345
     home: http://redis.io/
@@ -1205,7 +1258,7 @@ entries:
     version: 4.10.6
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.889499502Z"
+    created: "2022-05-25T00:21:52.387496145Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 35b21475f13c8b32f317e5e8abe532ca710ab220c8d0023d83f06671bf915381
     home: http://redis.io/
@@ -1229,7 +1282,7 @@ entries:
     version: 4.10.5
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.882308696Z"
+    created: "2022-05-25T00:21:52.385617352Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 7691e1eba4cc0b9dfccd7afb1927a4a12081fd46ee6bc83e5a78a78fe9db8eb8
     home: http://redis.io/
@@ -1253,7 +1306,7 @@ entries:
     version: 4.10.4
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.880379421Z"
+    created: "2022-05-25T00:21:52.383821859Z"
     description: Highly available Kubernetes implementation of Redis
     digest: ea502ef725a3f4e7428e160ec9157d8d5e494c1fb508cf0155e2455b4b3713ff
     home: http://redis.io/
@@ -1277,7 +1330,7 @@ entries:
     version: 4.10.3
   - apiVersion: v1
     appVersion: 6.0.7
-    created: "2022-03-01T23:37:59.878509246Z"
+    created: "2022-05-25T00:21:52.381995566Z"
     description: Highly available Kubernetes implementation of Redis
     digest: bae9a8c702d977823f6962c1d9ca1a0ad7704124af68a87531e47144693c64a2
     home: http://redis.io/
@@ -1301,7 +1354,7 @@ entries:
     version: 4.10.2
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:37:59.864755127Z"
+    created: "2022-05-25T00:21:52.371983006Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 394297cd24a49a7080df336e2c964cee1bd9c6995f2646b418c80a37f245e1fa
     home: http://redis.io/
@@ -1325,7 +1378,7 @@ entries:
     version: 4.10.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:37:59.862920351Z"
+    created: "2022-05-25T00:21:52.370157013Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 2f8febe6a49a492e10b854e9bd87e802a0900ad20f7d6fc92f4cc01d73fea57b
     home: http://redis.io/
@@ -1349,7 +1402,7 @@ entries:
     version: 4.10.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.054954726Z"
+    created: "2022-05-25T00:21:52.531353182Z"
     description: Highly available Kubernetes implementation of Redis
     digest: d9522a7dfb6312f05430fa0c81b94633205b7b3556d0ebea80d88134ed22abc1
     home: http://redis.io/
@@ -1373,7 +1426,7 @@ entries:
     version: 4.9.3
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.053266148Z"
+    created: "2022-05-25T00:21:52.529749188Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 596e328741f1892cd87a1e017096cb4698abe7e0207c5d78dddf2d23dd12ed27
     home: http://redis.io/
@@ -1397,7 +1450,7 @@ entries:
     version: 4.9.2
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.051429272Z"
+    created: "2022-05-25T00:21:52.528119994Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 72995269c708486f1f2cfd86434427668decb1190ad8dccc220bd2d88e77f5f6
     home: http://redis.io/
@@ -1421,7 +1474,7 @@ entries:
     version: 4.9.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.049090803Z"
+    created: "2022-05-25T00:21:52.525495205Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 84388f660c2a6251ef2af8e0a59ebf60e35331948f4dc081413b1276f0e81bc0
     home: http://redis.io/
@@ -1445,7 +1498,7 @@ entries:
     version: 4.9.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.047495724Z"
+    created: "2022-05-25T00:21:52.523918211Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 3b37a7d9c4804b25ec1ebaf2f3ffe4ea718f6bff922fffd600712cfa060b468f
     home: http://redis.io/
@@ -1469,7 +1522,7 @@ entries:
     version: 4.8.3
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.045892845Z"
+    created: "2022-05-25T00:21:52.522303617Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 9a158e22d3f36827b5ccee16d562ca4ae52334535de06886dbf65b23ca266e7c
     home: http://redis.io/
@@ -1493,7 +1546,7 @@ entries:
     version: 4.8.2
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.044272966Z"
+    created: "2022-05-25T00:21:52.517718535Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 28a9f11a00deb5c6db70dfb6fe6db26fc5bddb6df0834863ee6eed161c407e9e
     home: http://redis.io/
@@ -1517,7 +1570,7 @@ entries:
     version: 4.8.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.042711187Z"
+    created: "2022-05-25T00:21:52.516183041Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 51524a4a2463677bebf1de520eecac5654d7bfe59da2315410d41f2299b46ad6
     home: http://redis.io/
@@ -1541,7 +1594,7 @@ entries:
     version: 4.8.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.041062208Z"
+    created: "2022-05-25T00:21:52.514663847Z"
     description: Highly available Kubernetes implementation of Redis
     digest: a3d5a762d446016d8e6fd494b899bb098611b7e93e057a827af94ebea0482b48
     home: http://redis.io/
@@ -1565,7 +1618,7 @@ entries:
     version: 4.7.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.033479408Z"
+    created: "2022-05-25T00:21:52.512988254Z"
     description: Highly available Kubernetes implementation of Redis
     digest: bd8bee76d18f5cbe48c7ec13fd88c31d110f37e54066daabfecda1964e7025c4
     home: http://redis.io/
@@ -1589,7 +1642,7 @@ entries:
     version: 4.6.2
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.031990328Z"
+    created: "2022-05-25T00:21:52.510942762Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 5cf7aaf78333a46ab3ebc3668e9dc09d8042066aaa777bc5109985bfab774f49
     home: http://redis.io/
@@ -1613,7 +1666,7 @@ entries:
     version: 4.6.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.030473848Z"
+    created: "2022-05-25T00:21:52.509510067Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 891a278c078033403eba40a3010fbd2c774ec8b7f4f2eec83a5396c80099dcc7
     home: http://redis.io/
@@ -1637,7 +1690,7 @@ entries:
     version: 4.6.0
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.011586796Z"
+    created: "2022-05-25T00:21:52.496411019Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 66d60c5c48473b574dc2693b232407f0c90b95c134913b8937343c3b39630ca3
     home: http://redis.io/
@@ -1661,7 +1714,7 @@ entries:
     version: 4.5.10
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.028982367Z"
+    created: "2022-05-25T00:21:52.508096773Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 2d3b71d216bc08e0a9e3a3ac33daac07e49e9d7d521c2b81876bab5e7613639d
     home: http://redis.io/
@@ -1685,7 +1738,7 @@ entries:
     version: 4.5.9
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.027561086Z"
+    created: "2022-05-25T00:21:52.506757178Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 5490dc2b9bf55cea4ffb3e5fed20000617f77a82b17a1618db096355852cae94
     home: http://redis.io/
@@ -1709,7 +1762,7 @@ entries:
     version: 4.5.8
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.020096884Z"
+    created: "2022-05-25T00:21:52.505398583Z"
     description: Highly available Kubernetes implementation of Redis
     digest: da2ed9031c9a4c4370510c838faa6555820de70b0a097d5404e281252fa6e78c
     home: http://redis.io/
@@ -1733,7 +1786,7 @@ entries:
     version: 4.5.7
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.018734302Z"
+    created: "2022-05-25T00:21:52.504040989Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 3cf0070080f04cdd9d552a185bb34f1d35da69455ef7313750279b96a1e60c76
     home: http://redis.io/
@@ -1757,7 +1810,7 @@ entries:
     version: 4.5.6
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.017314721Z"
+    created: "2022-05-25T00:21:52.502497695Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 52759830b24606b5b2f99d33151a4b9bfb7ea13b722ea5eb9381da80bee50aa0
     home: http://redis.io/
@@ -1781,7 +1834,7 @@ entries:
     version: 4.5.5
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.015930139Z"
+    created: "2022-05-25T00:21:52.500467603Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 98a745cd9ffd2e59220c04f3ddf6f1dda061cecfbc765370f8978b1a3b9e7f3c
     home: http://redis.io/
@@ -1805,7 +1858,7 @@ entries:
     version: 4.5.4
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.014507158Z"
+    created: "2022-05-25T00:21:52.499107708Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 9751137e2c0a28633147d50de5ef18ec053c04d774cccd87032262f7224fe27b
     home: http://redis.io/
@@ -1829,7 +1882,7 @@ entries:
     version: 4.5.3
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.013029877Z"
+    created: "2022-05-25T00:21:52.497735913Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 0e423790afd91af45979c58088103f64d3420e0a35389d92f7f2ec54d53800d7
     home: http://redis.io/
@@ -1853,7 +1906,7 @@ entries:
     version: 4.5.2
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.009605522Z"
+    created: "2022-05-25T00:21:52.495052324Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 7ef16484cf0542f43eb95dd14f4a3a7408d45e3824fb9dfcd43ab4fce0e4468e
     home: http://redis.io/
@@ -1877,7 +1930,7 @@ entries:
     version: 4.5.1
   - apiVersion: v1
     appVersion: 5.0.6
-    created: "2022-03-01T23:38:00.007845445Z"
+    created: "2022-05-25T00:21:52.493654329Z"
     description: Highly available Kubernetes implementation of Redis
     digest: 21ec2fca6bd6b12b9582982d831e5be7aecdf8ecabf1b15f0e0ffcc97ed47076
     home: http://redis.io/
@@ -1899,4 +1952,4 @@ entries:
     urls:
     - redis-ha-4.4.2.tgz
     version: 4.4.2
-generated: "2022-03-01T23:37:59.837548785Z"
+generated: "2022-05-25T00:21:52.338443637Z"
