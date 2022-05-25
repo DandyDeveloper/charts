@@ -27,7 +27,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .) (include "probe_true.sh" .) | sha256sum }}
+        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .) (include "probe_true.sh" .) | sha256sum }}
       {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 8 }}
       {{- end }}
