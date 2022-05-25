@@ -430,6 +430,13 @@ additionalAffinities: {}
 ##
 affinity: |
 
+## https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+topologySpreadConstraints:
+  enabled: false
+  maxSkew: ""
+  topologyKey: ""
+  whenUnsatisfiable: ""
+
 # Prometheus exporter specific configuration options
 exporter:
   enabled: false
