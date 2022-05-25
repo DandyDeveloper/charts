@@ -27,7 +27,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .)| sha256sum }}
+        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .) (include "probe_true.sh" .) | sha256sum }}
       {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 8 }}
       {{- end }}
@@ -286,6 +286,8 @@ spec:
               - sh
               - -c
               - /health/redis_readiness.sh
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.redis.securityContext.readOnlyRootFilesystem }}
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
@@ -368,6 +370,8 @@ spec:
               - sh
               - -c
               - /health/sentinel_liveness.sh
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.sentinel.securityContext.readOnlyRootFilesystem }}
         resources:
 {{ toYaml .Values.sentinel.resources | indent 10 }}
         ports:
@@ -429,6 +433,32 @@ spec:
             {{- end }}
               key: {{ .Values.sentinel.authKey }}
 {{- end }}
+{{- if .Values.splitBrainDetection.enableProbes }}
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 5
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/probe_true.sh
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 5
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/probe_true.sh
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.splitBrainDetection.securityContext.readOnlyRootFilesystem }}
+{{- end }}
         resources: 
           {{- toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         volumeMounts:
@@ -441,6 +471,8 @@ spec:
         - mountPath: /tls-certs
           name: tls-certs
         {{- end }}
+        - mountPath: /health
+          name: health
 
 {{- if .Values.exporter.enabled }}
       - name: redis-exporter
@@ -494,6 +526,8 @@ spec:
           initialDelaySeconds: {{ .Values.exporter.readinessProbe.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.exporter.readinessProbe.timeoutSeconds }}
           periodSeconds: {{ .Values.exporter.readinessProbe.periodSeconds }}
+        securityContext:
+          readOnlyRootFilesystem: {{ .Values.exporter.securityContext.readOnlyRootFilesystem }}
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
         ports:

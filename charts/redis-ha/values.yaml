@@ -244,6 +244,10 @@ redis:
     successThreshold: 1
     failureThreshold: 5
 
+  # security context parameters for redis container
+  securityContext:
+    readOnlyRootFilesystem: false
+
   config:
     ## Additional redis conf options can be added below
     ## For all available options see http://download.redis.io/redis-stable/redis.conf
@@ -333,6 +337,10 @@ sentinel:
     timeoutSeconds: 15
     successThreshold: 3
     failureThreshold: 5
+  
+  # security context parameters for sentinel container
+  securityContext:
+    readOnlyRootFilesystem: false
 
   quorum: 2
   config:
@@ -508,6 +516,10 @@ exporter:
     periodSeconds: 15
     successThreshold: 2
 
+  # security context parameters for exporter container
+  securityContext:
+    readOnlyRootFilesystem: false
+
 podDisruptionBudget: {}
   # Use only one of the two
   # maxUnavailable: 1
@@ -662,3 +674,9 @@ networkPolicy:
 splitBrainDetection:
   interval: 60
   resources: {}
+
+  enableProbes: false
+
+  # security context parameters for split-brain-fix sidecar
+  securityContext:
+    readOnlyRootFilesystem: false
