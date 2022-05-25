@@ -11,6 +11,24 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+extraVolumeMounts: []
+# Scrape k8s logs
+  # - name: containers
+  #   mountPath: /var/lib/docker/containers
+  #   readOnly: true
+  #- name: pods
+  #  mountPath: /var/log/pods
+  #  readOnly: true
+
+extraVolumes: []
+# Scrape k8s logs
+  #- name: containers
+  #  hostPath:
+  #    path: /var/lib/docker/containers
+  #- name: pods
+  #  hostPath:
+  #    path: /var/log/pods
+
 # Only relevant if scrapingMode.enabled is true
 # Delcares # of replicas for Grafana Agent deployment
 replicaCount: 3
@@ -62,6 +80,7 @@ affinity: {}
 # Currently only supports Prometheus 'configs'.
 # Other telemetary options will be added overtime.
 config:
+  logLevel: info
   # Populate this to provide an existing config for Grafana Agent. This disables the charts configMap.
   existingConfigMap: ""
   loki:
