@@ -8,9 +8,12 @@ metadata:
 {{- if .Values.exporter.enabled }}
     exporter: enabled
 {{- end }}
-    {{- range $key, $value := .Values.extraLabels }}
+{{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{- end }}
+{{- range $key, $value := .Values.serviceLabels }}
+    {{ $key }}: {{ $value | quote }}
+{{- end }}
   annotations:
   {{- if .Values.serviceAnnotations }}
 {{ toYaml .Values.serviceAnnotations | indent 4 }}
