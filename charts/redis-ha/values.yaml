@@ -102,7 +102,7 @@ haproxy:
   ##
   podDisruptionBudget: {}
     # Use only one of the two
-    # maxAvailable: 1
+    # maxUnavailable: 1
     # minAvailable: 1
 
 
