@@ -585,7 +585,6 @@
     frontend stats
       mode http
       bind [::]:{{ .Values.haproxy.metrics.port }} v4v6
-      option http-use-htx
       http-request use-service prometheus-exporter if { path {{ .Values.haproxy.metrics.scrapePath }} }
       stats enable
       stats uri /stats
