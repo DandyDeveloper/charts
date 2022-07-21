@@ -33,6 +33,9 @@ ro_replicas: ""
 ## Custom labels for the redis pod
 labels: {}
 
+## Custom labels for redis service
+serviceLabels: {}
+
 configmap:
   ## Custom labels for the redis configmap
   labels: {}
@@ -70,7 +73,7 @@ haproxy:
   replicas: 3
   image:
     repository: haproxy
-    tag: 2.4.9
+    tag: 2.5.7
     pullPolicy: IfNotPresent
 
   ## Custom labels for the haproxy pod
@@ -99,7 +102,7 @@ haproxy:
   ##
   podDisruptionBudget: {}
     # Use only one of the two
-    # maxAvailable: 1
+    # maxUnavailable: 1
     # minAvailable: 1
 
 
@@ -108,14 +111,17 @@ haproxy:
   stickyBalancing: false
   ## Kubernetes priorityClass name for the haproxy pod
   # priorityClassName: ""
-  ## Service type for HAProxy
-  ##
+
+  ## Service for HAProxy
   service:
     type: ClusterIP
     loadBalancerIP:
+    labels: {}
+    annotations: null
+
     # List of CIDR's allowed to connect to LoadBalancer
     # loadBalancerSourceRanges: []
-    annotations: {}
+
   serviceAccountName: redis-sa
   serviceAccount:
     create: true
@@ -429,6 +435,13 @@ additionalAffinities: {}
 ##           topologyKey: failure-domain.beta.kubernetes.io/zone
 ##
 affinity: |
+
+## https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+topologySpreadConstraints:
+  enabled: false
+  maxSkew: ""
+  topologyKey: ""
+  whenUnsatisfiable: ""
 
 # Prometheus exporter specific configuration options
 exporter:

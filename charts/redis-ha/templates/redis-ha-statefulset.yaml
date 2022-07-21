@@ -91,6 +91,17 @@ spec:
                 topologyKey: kubernetes.io/hostname
     {{- end }}
     {{- end }}
+    {{- if .Values.topologySpreadConstraints.enabled }}
+      topologySpreadConstraints:
+      - maxSkew: {{ .Values.topologySpreadConstraints.maxSkew | default 1 }}
+        topologyKey: {{ .Values.topologySpreadConstraints.topologyKey | default "topology.kubernetes.io/zone" }}
+        whenUnsatisfiable: {{ .Values.topologySpreadConstraints.whenUnsatisfiable | default "ScheduleAnyway" }}
+        labelSelector:
+          matchLabels:
+            app: {{ template "redis-ha.name" . }}
+            release: {{ .Release.Name }}
+            {{ template "redis-ha.fullname" . }}: replica
+      {{- end }}
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
