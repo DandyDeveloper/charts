@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: {{ template "redis-ha.fullname" . }}-configmap-test
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
   annotations:
