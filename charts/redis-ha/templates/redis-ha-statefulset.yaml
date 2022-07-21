@@ -567,6 +567,10 @@ spec:
       {{- range $key, $value := .Values.persistentVolume.annotations }}
         {{ $key }}: {{ $value }}
       {{- end }}
+      labels:
+      {{- range $key, $value := .Values.persistentVolume.labels }}
+        {{ $key }}: {{ $value }}
+      {{- end }}
     spec:
       accessModes:
       {{- range .Values.persistentVolume.accessModes }}
