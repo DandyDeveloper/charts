@@ -73,7 +73,7 @@ haproxy:
   replicas: 3
   image:
     repository: haproxy
-    tag: 2.5.7
+    tag: 2.6.2
     pullPolicy: IfNotPresent
 
   ## Custom labels for the haproxy pod
