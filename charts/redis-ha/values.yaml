@@ -72,7 +72,7 @@ haproxy:
     port: 6380
   replicas: 3
   image:
-    repository: haproxy
+    repository: public.ecr.aws/docker/library/haproxy
     tag: 2.5.7
     pullPolicy: IfNotPresent
 
