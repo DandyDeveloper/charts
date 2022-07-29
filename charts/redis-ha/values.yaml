@@ -2,7 +2,7 @@
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##
 image:
-  repository: redis
+  repository: public.ecr.aws/docker/library/redis
   tag: 6.2.5-alpine
   pullPolicy: IfNotPresent
 
