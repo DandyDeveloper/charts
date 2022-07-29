@@ -205,7 +205,7 @@ rbac:
 sysctlImage:
   enabled: false
   command: []
-  registry: docker.io
+  registry: public.ecr.aws/docker/library
   repository: busybox
   tag: 1.31.1
   pullPolicy: Always
