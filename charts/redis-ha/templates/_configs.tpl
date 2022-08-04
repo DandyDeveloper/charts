@@ -509,7 +509,6 @@
       tcp-check send SENTINEL\ get-master-addr-by-name\ {{ $masterGroupName }}\r\n
       tcp-check expect string REPLACE_ANNOUNCE{{ $i }}
       tcp-check send QUIT\r\n
-      tcp-check expect string +OK
       {{- range $i := until $replicas }}
       server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:26379 check inter {{ $root.Values.haproxy.checkInterval }}
       {{- end }}
