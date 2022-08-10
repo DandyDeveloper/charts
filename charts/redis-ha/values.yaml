@@ -40,6 +40,12 @@ configmap:
   ## Custom labels for the redis configmap
   labels: {}
 
+configmapTest:
+  ## Image for redis-ha-configmap-test hook
+  image:
+    repository: koalaman/shellcheck
+    tag: v0.5.0
+
 ## Pods Service Account
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:
