@@ -21,6 +21,11 @@
     {{- end }}
     tls-replication {{ if .Values.redis.tlsReplication }}yes{{ else }}no{{ end }}
     {{- end }}
+    {{- if .Values.redis.disableCommands }}
+    {{- range .Values.redis.disableCommands }}
+    rename-command {{ . }} ""
+    {{- end }}
+    {{- end }}
     {{- range $key, $value := .Values.redis.config }}
     {{ $key }} {{ $value }}
     {{- end }}
