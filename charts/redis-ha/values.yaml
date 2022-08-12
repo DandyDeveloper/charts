@@ -40,6 +40,12 @@ configmap:
   ## Custom labels for the redis configmap
   labels: {}
 
+configmapTest:
+  ## Image for redis-ha-configmap-test hook
+  image:
+    repository: koalaman/shellcheck
+    tag: v0.5.0
+
 ## Pods Service Account
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:
@@ -73,7 +79,7 @@ haproxy:
   replicas: 3
   image:
     repository: haproxy
-    tag: 2.5.7
+    tag: 2.6.2
     pullPolicy: IfNotPresent
 
   ## Custom labels for the haproxy pod
@@ -249,6 +255,10 @@ redis:
     timeoutSeconds: 15
     successThreshold: 1
     failureThreshold: 5
+
+  disableCommands:
+    - FLUSHDB
+    - FLUSHALL
 
   config:
     ## Additional redis conf options can be added below

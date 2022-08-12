@@ -9,6 +9,10 @@ metadata:
   annotations:
     "helm.sh/hook": test-success
 spec:
+  nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 4 }}
+  tolerations:
+{{ toYaml .Values.tolerations | indent 4 }}
   containers:
   - name: "{{ .Release.Name }}-service-test"
     image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
