@@ -250,6 +250,10 @@ redis:
     successThreshold: 1
     failureThreshold: 5
 
+  disableCommands:
+    - FLUSHDB
+    - FLUSHALL
+
   config:
     ## Additional redis conf options can be added below
     ## For all available options see http://download.redis.io/redis-stable/redis.conf
