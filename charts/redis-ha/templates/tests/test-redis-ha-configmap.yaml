@@ -8,6 +8,10 @@ metadata:
   annotations:
     "helm.sh/hook": test-success
 spec:
+  nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 4 }}
+  tolerations:
+{{ toYaml .Values.tolerations | indent 4 }}
   containers:
   - name: check-init
     image: {{ .Values.configmapTest.image.repository }}:{{ .Values.configmapTest.image.tag }}
