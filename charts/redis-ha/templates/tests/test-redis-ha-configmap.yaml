@@ -10,7 +10,7 @@ metadata:
 spec:
   containers:
   - name: check-init
-    image: koalaman/shellcheck:v0.5.0
+    image: {{ .Values.configmapTest.image.repository }}:{{ .Values.configmapTest.image.tag }}
     args:
     - --shell=sh
     - /readonly-config/init.sh
