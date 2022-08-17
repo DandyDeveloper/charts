@@ -567,6 +567,8 @@ spec:
       {{- range $key, $value := .Values.persistentVolume.annotations }}
         {{ $key }}: {{ $value }}
       {{- end }}
+      labels: {{- toYaml .Values.persistentVolume.labels | nindent 8 }}
+
     spec:
       accessModes:
       {{- range .Values.persistentVolume.accessModes }}
