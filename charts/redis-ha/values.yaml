@@ -561,6 +561,7 @@ persistentVolume:
     - ReadWriteOnce
   size: 10Gi
   annotations: {}
+  labels: {}
 init:
   resources: {}
 
