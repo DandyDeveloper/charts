@@ -63,6 +63,7 @@ serviceAccount:
 ## Recommend for externally exposed Redis clusters.
 ## ref: https://cbonte.github.io/haproxy-dconv/1.9/intro.html
 haproxy:
+  enabled: true
   servicePort: 6379
   containerPort: 6379
   ## Enable TLS termination on HAproxy, This will create a volume mount
@@ -71,7 +72,6 @@ haproxy:
     secretName: ""
     keyName:
     certMountPath: /tmp/
-  enabled: false
   # Enable if you want a dedicated port in haproxy for redis-slaves
   readOnly:
     enabled: false
@@ -189,6 +189,10 @@ haproxy:
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
+
+  ## Enable HAProxy parameters to bind and consume IPv6 addresses. Enabled by default.
+  IPv6:
+    enabled: true
 
 ## PodSecurityPolicy configuration
 ## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
