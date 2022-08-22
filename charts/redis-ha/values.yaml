@@ -168,6 +168,12 @@ haproxy:
     runAsUser: 1000
     fsGroup: 1000
     runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
 
   ## Whether the haproxy pods should be forced to run on separate nodes.
   hardAntiAffinity: true
@@ -387,6 +393,10 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
 
   ## Assuming your kubelet allows it, you can the following instructions to configure
   ## specific sysctl parameters
