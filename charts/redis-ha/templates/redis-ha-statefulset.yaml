@@ -256,13 +256,7 @@ spec:
         - redis-server
         args:
         - /data/conf/redis.conf
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         {{- if .Values.auth }}
         env:
         - name: AUTH

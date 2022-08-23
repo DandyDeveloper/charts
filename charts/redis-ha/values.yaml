@@ -169,7 +169,7 @@ haproxy:
       type: RuntimeDefault
     capabilities:
       drop:
-        - ALL
+      - ALL
 
   ## Whether the haproxy pods should be forced to run on separate nodes.
   hardAntiAffinity: true
@@ -390,7 +390,7 @@ containerSecurityContext:
     type: RuntimeDefault
   capabilities:
     drop:
-      - ALL
+    - ALL
 
   ## Assuming your kubelet allows it, you can the following instructions to configure
   ## specific sysctl parameters
