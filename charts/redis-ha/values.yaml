@@ -63,6 +63,7 @@ serviceAccount:
 ## Recommend for externally exposed Redis clusters.
 ## ref: https://cbonte.github.io/haproxy-dconv/1.9/intro.html
 haproxy:
+  enabled: true
   servicePort: 6379
   containerPort: 6379
   ## Enable TLS termination on HAproxy, This will create a volume mount
@@ -71,7 +72,6 @@ haproxy:
     secretName: ""
     keyName:
     certMountPath: /tmp/
-  enabled: false
   # Enable if you want a dedicated port in haproxy for redis-slaves
   readOnly:
     enabled: false
@@ -94,14 +94,6 @@ haproxy:
   annotations: {}
   resources: {}
   emptyDir: {}
-
-  ## PodSecurityPolicy configuration
-  ## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
-  ##
-  podSecurityPolicy:
-    ## Specifies whether a PodSecurityPolicy should be created
-    ##
-    create: false
 
   ## Pod Disruption Budget
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
@@ -168,7 +160,11 @@ haproxy:
     runAsUser: 1000
     fsGroup: 1000
     runAsNonRoot: true
+
+  containerSecurityContext:
+    runAsNonRoot: true
     allowPrivilegeEscalation: false
+    runAsUser: 1000
     seccompProfile:
       type: RuntimeDefault
     capabilities:
@@ -195,14 +191,6 @@ haproxy:
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
-
-## PodSecurityPolicy configuration
-## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
-##
-podSecurityPolicy:
-  ## Specifies whether a PodSecurityPolicy should be created
-  ##
-  create: false
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -393,7 +381,13 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
+
+containerSecurityContext:
+  runAsNonRoot: true
   allowPrivilegeEscalation: false
+  runAsUser: 1000
+  seccompProfile:
+    type: RuntimeDefault
   capabilities:
     drop:
       - ALL

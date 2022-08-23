@@ -48,6 +48,7 @@ spec:
       {{- else }}
       serviceAccountName: {{ .Values.haproxy.serviceAccountName }}
       {{- end }}
+      securityContext: {{ toYaml .Values.haproxy.securityContext | nindent 8 }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       tolerations:
@@ -103,6 +104,7 @@ spec:
         - sh
         args:
         - /readonly/haproxy_init.sh
+        securityContext: {{ toYaml .Values.haproxy.containerSecurityContext | nindent 10 }}
         volumeMounts:
         - name: config-volume
           mountPath: /readonly
@@ -112,12 +114,11 @@ spec:
       {{- if .Values.haproxy.imagePullSecrets }}
       imagePullSecrets: {{ toYaml .Values.haproxy.imagePullSecrets | nindent 8 }}
       {{- end }}
-      securityContext:
-{{ toYaml .Values.haproxy.securityContext | indent 8 }}
       containers:
       - name: haproxy
         image: {{ .Values.haproxy.image.repository }}:{{ .Values.haproxy.image.tag }}
         imagePullPolicy: {{ .Values.haproxy.image.pullPolicy }}
+        securityContext: {{ toYaml .Values.haproxy.containerSecurityContext | nindent 10 }}
     {{- if or .Values.auth .Values.sentinel.auth}}
         env:
       {{- if .Values.auth }}

@@ -1,7 +1,6 @@
 apiVersion: v2
 name: redis-ha
 home: http://redis.io/
-engine: gotpl
 keywords:
 - redis
 - keyvalue

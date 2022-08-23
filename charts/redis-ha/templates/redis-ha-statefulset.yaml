@@ -122,32 +122,15 @@ spec:
         {{- end }}
         command:
 {{ toYaml .Values.sysctlImage.command | indent 10 }}
-        securityContext:
-          runAsNonRoot: false
-          privileged: true
-          runAsUser: 0
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
       {{- end }}
 {{- if and .Values.hostPath.path .Values.hostPath.chown }}
       - name: hostpath-chown
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        securityContext:
-          runAsNonRoot: false
-          runAsUser: 0
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         command:
         - chown
-        - "{{ .Values.securityContext.runAsUser }}"
+        - "{{ .Values.containerSecurityContext.runAsUser }}"
         - /data
         volumeMounts:
         - name: data
@@ -162,15 +145,7 @@ spec:
         - sh
         args:
         - /readonly-config/init.sh
-        securityContext:
-          runAsNonRoot: false
-          runAsUser: 0
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         env:
 {{- $replicas := int (toString .Values.replicas) -}}
 {{- range $i := until $replicas }}
@@ -258,15 +233,7 @@ spec:
            && if test -s /data/dump.rdb; \
               then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
            && mv -v /data/dump.rdb_ /data/dump.rdb"
-        securityContext:
-          runAsNonRoot: false
-          runAsUser: 0
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         envFrom:
         - secretRef:
           {{- if .Values.restore.existingSecret }}
@@ -289,6 +256,13 @@ spec:
         - redis-server
         args:
         - /data/conf/redis.conf
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
         {{- if .Values.auth }}
         env:
         - name: AUTH
@@ -358,6 +332,7 @@ spec:
           - redis-sentinel
         args:
           - /data/conf/sentinel.conf
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
 {{- if or .Values.auth .Values.sentinel.auth}}
         env:
   {{- if .Values.auth }}
@@ -438,6 +413,7 @@ spec:
           - sh
         args:
           - /readonly-config/fix-split-brain.sh
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         env:
 {{- $replicas := int (toString .Values.replicas) -}}
 {{- range $i := until $replicas }}
