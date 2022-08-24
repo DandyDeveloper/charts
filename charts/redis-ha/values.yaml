@@ -46,13 +46,7 @@ configmapTest:
     repository: koalaman/shellcheck
     tag: v0.8.0
   ## Resources for the ConfigMap test pod
-  resources:
-    requests:
-      memory: 500Mi
-      cpu: 300m
-    limits:
-      memory: 600Mi
-      cpu: 400m
+  resources: {}
 
 ## Pods Service Account
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
@@ -198,6 +192,9 @@ haproxy:
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
+
+  tests:
+    resources: {}
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
