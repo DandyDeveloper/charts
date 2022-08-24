@@ -113,15 +113,13 @@ spec:
       - name: init-sysctl
         image: {{ template "redis.sysctl.image" . }}
         imagePullPolicy: {{ .Values.sysctlImage.pullPolicy }}
-        resources:
-{{ toYaml .Values.sysctlImage.resources | indent 10 }}
+        resources: {{ toYaml .Values.sysctlImage.resources | nindent 10 }}
         {{- if .Values.sysctlImage.mountHostSys }}
         volumeMounts:
         - name: host-sys
           mountPath: /host-sys
         {{- end }}
-        command:
-{{ toYaml .Values.sysctlImage.command | indent 10 }}
+        command: {{ toYaml .Values.sysctlImage.command | nindent 10 }}
         securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
       {{- end }}
 {{- if and .Values.hostPath.path .Values.hostPath.chown }}

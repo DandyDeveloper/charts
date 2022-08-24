@@ -157,14 +157,13 @@ haproxy:
   checkFall: 1
 
   securityContext:
-    runAsUser: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    fsGroup: 99
     runAsNonRoot: true
 
   containerSecurityContext:
     runAsNonRoot: true
     allowPrivilegeEscalation: false
-    runAsUser: 1000
     seccompProfile:
       type: RuntimeDefault
     capabilities:
@@ -383,9 +382,9 @@ securityContext:
   runAsNonRoot: true
 
 containerSecurityContext:
+  runAsUser: 1000
   runAsNonRoot: true
   allowPrivilegeEscalation: false
-  runAsUser: 1000
   seccompProfile:
     type: RuntimeDefault
   capabilities:
