@@ -95,14 +95,6 @@ haproxy:
   resources: {}
   emptyDir: {}
 
-  ## PodSecurityPolicy configuration
-  ## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
-  ##
-  podSecurityPolicy:
-    ## Specifies whether a PodSecurityPolicy should be created
-    ##
-    create: false
-
   ## Pod Disruption Budget
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   ##
@@ -165,9 +157,18 @@ haproxy:
   checkFall: 1
 
   securityContext:
-    runAsUser: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    fsGroup: 99
     runAsNonRoot: true
+
+  containerSecurityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+      - ALL
 
   ## Whether the haproxy pods should be forced to run on separate nodes.
   hardAntiAffinity: true
@@ -193,14 +194,6 @@ haproxy:
   ## Enable HAProxy parameters to bind and consume IPv6 addresses. Enabled by default.
   IPv6:
     enabled: true
-
-## PodSecurityPolicy configuration
-## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
-##
-podSecurityPolicy:
-  ## Specifies whether a PodSecurityPolicy should be created
-  ##
-  create: false
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -391,6 +384,16 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
+
+containerSecurityContext:
+  runAsUser: 1000
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+    - ALL
 
   ## Assuming your kubelet allows it, you can the following instructions to configure
   ## specific sysctl parameters
