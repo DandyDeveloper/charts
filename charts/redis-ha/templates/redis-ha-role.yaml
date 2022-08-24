@@ -16,14 +16,4 @@ rules:
     - endpoints
   verbs:
     - get
-{{- if .Values.podSecurityPolicy.create }}
-- apiGroups:
-    - 'policy'
-  resources:
-    - 'podsecuritypolicies'
-  verbs:
-    - 'use'
-  resourceNames:
-    - {{ template "redis-ha.fullname" . }}
-{{- end }}
 {{- end }}
