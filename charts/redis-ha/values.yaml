@@ -63,7 +63,7 @@ serviceAccount:
 ## Recommend for externally exposed Redis clusters.
 ## ref: https://cbonte.github.io/haproxy-dconv/1.9/intro.html
 haproxy:
-  enabled: true
+  enabled: false
   servicePort: 6379
   containerPort: 6379
   ## Enable TLS termination on HAproxy, This will create a volume mount
