@@ -45,6 +45,8 @@ configmapTest:
   image:
     repository: koalaman/shellcheck
     tag: v0.5.0
+  ## Resources for the ConfigMap test pod
+  resources: {}
 
 ## Pods Service Account
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
@@ -190,6 +192,10 @@ haproxy:
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
+
+  ## HAProxy test related options
+  tests:
+    resources: {}
 
   ## Enable HAProxy parameters to bind and consume IPv6 addresses. Enabled by default.
   IPv6:
