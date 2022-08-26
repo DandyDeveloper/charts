@@ -490,7 +490,7 @@
       timeout check {{ .Values.haproxy.timeout.check }}
 
     listen health_check_http_url
-      bind [::]:8888 v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:8888  {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       mode http
       monitor-uri /healthz
       option      dontlognull
@@ -523,15 +523,15 @@
     #master
     frontend ft_redis_master
       {{- if .Values.haproxy.tls.enabled }}
-      bind [::]:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{ else }}
-      bind [::]:{{ $root.Values.redis.port }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.redis.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{- end }}
       use_backend bk_redis_master
     {{- if .Values.haproxy.readOnly.enabled }}
     #slave
     frontend ft_redis_slave
-      bind [::]:{{ .Values.haproxy.readOnly.port }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ .Values.haproxy.readOnly.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       use_backend bk_redis_slave
     {{- end }}
     # Check all redis servers to see if they think they are master
@@ -583,7 +583,7 @@
     {{- if .Values.haproxy.metrics.enabled }}
     frontend stats
       mode http
-      bind [::]:{{ .Values.haproxy.metrics.port }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ .Values.haproxy.metrics.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       http-request use-service prometheus-exporter if { path {{ .Values.haproxy.metrics.scrapePath }} }
       stats enable
       stats uri /stats

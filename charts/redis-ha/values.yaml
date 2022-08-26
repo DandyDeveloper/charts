@@ -191,6 +191,10 @@ haproxy:
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   lifecycle: {}
 
+  ## Enable HAProxy parameters to bind and consume IPv6 addresses. Enabled by default.
+  IPv6:
+    enabled: true
+
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 ##
