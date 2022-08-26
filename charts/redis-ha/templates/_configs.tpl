@@ -174,11 +174,11 @@
             echo "Getting redis master ip.."
             echo "  blindly assuming (${SERVICE}-announce-0) or (${SERVICE}-server-0) are master"
             DEFAULT_MASTER="$(getent_hosts 0 | awk '{ print $1 }')"
-            echo "  identified redis (may be redis master) ip (${DEFAULT_MASTER})"
             if [ -z "${DEFAULT_MASTER}" ]; then
                 echo "Error: Unable to resolve redis master (getent hosts)."
                 exit 1
             fi
+            echo "  identified redis (may be redis master) ip (${DEFAULT_MASTER})"
             echo "Setting default slave config for redis and sentinel.."
             echo "  using master ip (${DEFAULT_MASTER})"
             redis_update "${DEFAULT_MASTER}"
@@ -275,11 +275,7 @@
     getent_hosts() {
         index=${1:-${INDEX}}
         service="${SERVICE}-announce-${index}"
-        pod="${SERVICE}-server-${index}"
         host=$(getent hosts "${service}")
-        if [ -z "${host}" ]; then
-            host=$(getent hosts "${pod}")
-        fi
         echo "${host}"
     }
 
@@ -457,6 +453,12 @@
 
     identify_announce_ip
 
+    while [ -z "${ANNOUNCE_IP}" ]; do
+        echo "Error: Could not resolve the announce ip for this pod."
+        sleep 30
+        identify_announce_ip
+    done
+
     while true; do
         sleep {{ .Values.splitBrainDetection.interval }}
 
@@ -468,7 +470,7 @@
             if [ "$ROLE" != "master" ]; then
                 reinit
             fi
-        else
+        elif [ "${MASTER}" ]; then
             identify_redis_master
             if [ "$REDIS_MASTER" != "$MASTER" ]; then
                 reinit
@@ -490,7 +492,7 @@
       timeout check {{ .Values.haproxy.timeout.check }}
 
     listen health_check_http_url
-      bind [::]:8888 v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:8888  {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       mode http
       monitor-uri /healthz
       option      dontlognull
@@ -523,15 +525,15 @@
     #master
     frontend ft_redis_master
       {{- if .Values.haproxy.tls.enabled }}
-      bind [::]:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{ else }}
-      bind [::]:{{ $root.Values.redis.port }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.redis.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{- end }}
       use_backend bk_redis_master
     {{- if .Values.haproxy.readOnly.enabled }}
     #slave
     frontend ft_redis_slave
-      bind [::]:{{ .Values.haproxy.readOnly.port }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ .Values.haproxy.readOnly.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       use_backend bk_redis_slave
     {{- end }}
     # Check all redis servers to see if they think they are master
@@ -583,7 +585,7 @@
     {{- if .Values.haproxy.metrics.enabled }}
     frontend stats
       mode http
-      bind [::]:{{ .Values.haproxy.metrics.port }} v4v6
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ .Values.haproxy.metrics.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       http-request use-service prometheus-exporter if { path {{ .Values.haproxy.metrics.scrapePath }} }
       stats enable
       stats uri /stats
