@@ -174,11 +174,11 @@
             echo "Getting redis master ip.."
             echo "  blindly assuming (${SERVICE}-announce-0) or (${SERVICE}-server-0) are master"
             DEFAULT_MASTER="$(getent_hosts 0 | awk '{ print $1 }')"
-            echo "  identified redis (may be redis master) ip (${DEFAULT_MASTER})"
             if [ -z "${DEFAULT_MASTER}" ]; then
                 echo "Error: Unable to resolve redis master (getent hosts)."
                 exit 1
             fi
+            echo "  identified redis (may be redis master) ip (${DEFAULT_MASTER})"
             echo "Setting default slave config for redis and sentinel.."
             echo "  using master ip (${DEFAULT_MASTER})"
             redis_update "${DEFAULT_MASTER}"
@@ -275,11 +275,7 @@
     getent_hosts() {
         index=${1:-${INDEX}}
         service="${SERVICE}-announce-${index}"
-        pod="${SERVICE}-server-${index}"
         host=$(getent hosts "${service}")
-        if [ -z "${host}" ]; then
-            host=$(getent hosts "${pod}")
-        fi
         echo "${host}"
     }
 
@@ -457,6 +453,12 @@
 
     identify_announce_ip
 
+    while [ -z "${ANNOUNCE_IP}" ]; do
+        echo "Error: Could not resolve the announce ip for this pod."
+        sleep 30
+        identify_announce_ip
+    done
+
     while true; do
         sleep {{ .Values.splitBrainDetection.interval }}
 
@@ -468,7 +470,7 @@
             if [ "$ROLE" != "master" ]; then
                 reinit
             fi
-        else
+        elif [ "${MASTER}" ]; then
             identify_redis_master
             if [ "$REDIS_MASTER" != "$MASTER" ]; then
                 reinit
