@@ -487,19 +487,9 @@ spec:
             value: /tls-certs/{{ .Values.tls.caCertFile }}
         {{- end }}
         livenessProbe:
-          httpGet:
-            path: {{ .Values.exporter.scrapePath }}
-            port: {{ .Values.exporter.port }}
-          initialDelaySeconds: {{ .Values.exporter.livenessProbe.initialDelaySeconds }}
-          timeoutSeconds: {{ .Values.exporter.livenessProbe.timeoutSeconds }}
-          periodSeconds: {{ .Values.exporter.livenessProbe.periodSeconds }}
+{{ toYaml .Values.exporter.livenessProbe | indent 10 }}
         readinessProbe:
-          httpGet:
-            path: {{ .Values.exporter.scrapePath }}
-            port: {{ .Values.exporter.port }}
-          initialDelaySeconds: {{ .Values.exporter.readinessProbe.initialDelaySeconds }}
-          timeoutSeconds: {{ .Values.exporter.readinessProbe.timeoutSeconds }}
-          periodSeconds: {{ .Values.exporter.readinessProbe.periodSeconds }}
+{{ toYaml .Values.exporter.readinessProbe | indent 10 }}
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
         ports:
