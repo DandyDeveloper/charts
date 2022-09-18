@@ -465,7 +465,7 @@
         # where is redis master
         identify_master
 
-        if [ "$MASTER" == "$ANNOUNCE_IP" ]; then
+        if [ "$MASTER" = "$ANNOUNCE_IP" ]; then
             redis_role
             if [ "$ROLE" != "master" ]; then
                 reinit
