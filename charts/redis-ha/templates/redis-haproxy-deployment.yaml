@@ -4,6 +4,10 @@ apiVersion: apps/v1
 metadata:
   name: {{ template "redis-ha.fullname" . }}-haproxy
   namespace: {{ .Release.Namespace | quote }}
+  annotations:
+    {{- range $key, $value := .Values.extraAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
     {{- range $key, $value := .Values.extraLabels }}

@@ -667,6 +667,9 @@ extraVolumes: []
 #  - name: empty
 #    emptyDir: {}
 
+# Annotations added here are applied to all created resources
+extraAnnotations: {}
+
 # Labels added here are applied to all created resources
 extraLabels: {}
 

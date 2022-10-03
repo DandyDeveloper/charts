@@ -10,6 +10,9 @@ metadata:
     {{- range $key, $value := .Values.networkPolicy.annotations }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
+    {{- range $key, $value := .Values.extraAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 {{- end }}
   labels:
 {{ include "labels.standard" . | indent 4 }}

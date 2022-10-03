@@ -6,6 +6,10 @@ metadata:
   {{- if .Values.prometheusRule.namespace }}
   namespace: {{ .Values.prometheusRule.namespace }}
   {{- end }}
+  annotations:
+    {{- range $key, $value := .Values.extraAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
   labels: {{- toYaml .Values.prometheusRule.additionalLabels | nindent 4 }}
 spec:
   groups:

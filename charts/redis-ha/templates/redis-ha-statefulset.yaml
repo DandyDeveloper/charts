@@ -14,6 +14,9 @@ metadata:
 {{ include "labels.standard" . | indent 4 }}
   annotations:
 {{ toYaml .Values.redis.annotations | indent 4 }}
+    {{- range $key, $value := .Values.extraAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -560,6 +563,9 @@ spec:
       annotations:
       {{- range $key, $value := .Values.persistentVolume.annotations }}
         {{ $key }}: {{ $value }}
+      {{- end }}
+      {{- range $key, $value := .Values.extraAnnotations }}
+        {{ $key }}: {{ $value | quote }}
       {{- end }}
       labels: {{- toYaml .Values.persistentVolume.labels | nindent 8 }}
 

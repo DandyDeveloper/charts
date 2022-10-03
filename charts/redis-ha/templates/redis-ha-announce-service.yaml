@@ -19,6 +19,9 @@ metadata:
   {{- if $root.Values.serviceAnnotations }}
 {{ toYaml $root.Values.serviceAnnotations | indent 4 }}
   {{- end }}
+  {{- range $key, $value := .Values.extraAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
 spec:
   publishNotReadyAddresses: true
   type: ClusterIP

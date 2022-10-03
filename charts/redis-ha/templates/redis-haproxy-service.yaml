@@ -17,6 +17,9 @@ metadata:
   {{- if .Values.haproxy.service.annotations }}
 {{ toYaml .Values.haproxy.service.annotations | indent 4 }}
   {{- end }}
+  {{- range $key, $value := .Values.extraAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
 spec:
   type: {{ default "ClusterIP" .Values.haproxy.service.type }}
   {{- if and (eq .Values.haproxy.service.type "LoadBalancer") .Values.haproxy.service.loadBalancerIP }}
