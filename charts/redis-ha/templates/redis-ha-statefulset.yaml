@@ -455,6 +455,7 @@ spec:
         {{- range $key, $value := .Values.exporter.extraArgs }}
           - --{{ $key }}={{ $value }}
         {{- end }}
+        securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         env:
           - name: REDIS_ADDR
           {{- if .Values.exporter.sslEnabled }}
