@@ -231,6 +231,12 @@ redis:
   port: 6379
   masterGroupName: "mymaster"       # must match ^[\\w-\\.]+$) and can be templated
 
+  command:
+  - redis-server
+
+  args:
+  - /data/conf/redis.conf
+
   ## Configures redis with tls-port parameter
   # tlsPort: 6385
 
