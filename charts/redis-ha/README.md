@@ -393,4 +393,4 @@ This version introduced the deprecation of the PSP and subsequently added fields
 
 https://kubernetes.io/docs/tutorials/security/seccomp/
 
-As a result, from this version onwards Kubernetes versions older than 1.19 will fail to install without the removal of `.Values.containerSeucrityContext.seccompProfile` and `.Values.haproxy.containerSeucrityContext.seccompProfile` (If HAProxy is enabled)
+As a result, from this version onwards Kubernetes versions older than 1.19 will fail to install without the removal of `.Values.containerSecurityContext.seccompProfile` and `.Values.haproxy.containerSecurityContext.seccompProfile` (If HAProxy is enabled)
