@@ -277,6 +277,9 @@ redis:
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
+    # When non-empty list is provided will generate loadmodule configurations
+    # The list should contain a list on `.so` files should be present is image or provided by extra volumes
+    modules: []
 
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.

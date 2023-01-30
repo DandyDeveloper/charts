@@ -28,6 +28,9 @@
     {{- end }}
     {{- range $key, $value := .Values.redis.config }}
     {{ $key }} {{ $value }}
+    {{- range $v := .Values.redis.modules }}
+    loadmodule {{ $v }}
+    {{- end }}
     {{- end }}
 {{- if .Values.auth }}
     requirepass replace-default-auth
