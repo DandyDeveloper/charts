@@ -27,10 +27,13 @@
     {{- end }}
     {{- end }}
     {{- range $key, $value := .Values.redis.config }}
+    {{- if kindIs "slice" $value }}
+        {{- range $value }}
+    {{ $key }} {{ . }}
+        {{- end }}
+        {{- else }}
     {{ $key }} {{ $value }}
-    {{- range $v := .Values.redis.modules }}
-    loadmodule {{ $v }}
-    {{- end }}
+        {{- end }}
     {{- end }}
 {{- if .Values.auth }}
     requirepass replace-default-auth
