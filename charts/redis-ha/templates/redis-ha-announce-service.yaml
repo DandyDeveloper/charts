@@ -15,12 +15,16 @@ metadata:
     {{ $key }}: {{ $value | quote }}
     {{- end }}
   annotations:
+{{- if (semverCompare "<=1.10-0" $.Capabilities.KubeVersion.GitVersion) }}
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+{{- end }}
   {{- if $root.Values.serviceAnnotations }}
 {{ toYaml $root.Values.serviceAnnotations | indent 4 }}
   {{- end }}
 spec:
+{{- if (semverCompare ">=1.11-0" $.Capabilities.KubeVersion.GitVersion) }}
   publishNotReadyAddresses: true
+{{- end }}
   type: ClusterIP
   ports:
   {{- if ne (int $root.Values.redis.port) 0 }}
