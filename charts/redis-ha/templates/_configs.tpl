@@ -80,7 +80,7 @@
     sentinel_get_master() {
     set +e
         if [ "$SENTINEL_PORT" -eq 0 ]; then
-            redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
+            redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
             grep -E '((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?s*$))'
         else
             redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} sentinel get-master-addr-by-name "${MASTER_GROUP}" |\
@@ -189,7 +189,7 @@
     redis_ping() {
     set +e
         if [ "$REDIS_PORT" -eq 0 ]; then
-            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} ping
+            redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} ping
         else
             redis-cli -h "${MASTER}"{{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_PORT}" ping
         fi
@@ -224,7 +224,7 @@
 
             if [ "$SENTINEL_PORT" -eq 0 ]; then
                 echo "  on sentinel (${SERVICE}:${SENTINEL_TLS_PORT}), sentinel grp (${MASTER_GROUP})"
-                if redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
+                if redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel failover "${MASTER_GROUP}" | grep -q 'NOGOODSLAVE' ; then
                     echo "  $(date) Failover returned with 'NOGOODSLAVE'"
                     echo "Setting defaults for this pod.."
                     setup_defaults
@@ -361,7 +361,7 @@
 
 {{- define "trigger-failover-if-master.sh" }}
     {{- if or (eq (int .Values.redis.port) 0) (eq (int .Values.sentinel.port) 0) }}
-    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
     {{- end }}
     get_redis_role() {
       is_master=$(
@@ -422,7 +422,7 @@
     redis_role() {
     set +e
         if [ "$REDIS_PORT" -eq 0 ]; then
-            ROLE=$(redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} info | grep role | sed 's/role://' | sed 's/\r//')
+            ROLE=$(redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} info | grep role | sed 's/role://' | sed 's/\r//')
         else
             ROLE=$(redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_PORT}" info | grep role | sed 's/role://' | sed 's/\r//')
         fi
@@ -432,7 +432,7 @@
     identify_redis_master() {
     set +e
         if [ "$REDIS_PORT" -eq 0 ]; then
-            REDIS_MASTER=$(redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} info | grep master_host | sed 's/master_host://' | sed 's/\r//')
+            REDIS_MASTER=$(redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} info | grep master_host | sed 's/master_host://' | sed 's/\r//')
         else
             REDIS_MASTER=$(redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_PORT}" info | grep master_host | sed 's/master_host://' | sed 's/\r//')
         fi
@@ -444,7 +444,7 @@
         sh /readonly-config/init.sh
 
         if [ "$REDIS_PORT" -eq 0 ]; then
-            echo "shutdown" | redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }}
+            echo "shutdown" | redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }}
         else
             echo "shutdown" | redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_PORT}"
         fi
@@ -621,7 +621,7 @@
 
 {{- define "redis_liveness.sh" }}
     {{- if not (ne (int .Values.sentinel.port) 0) }}
-    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
     {{- end }}
     response=$(
       redis-cli \
@@ -645,7 +645,7 @@
 
 {{- define "redis_readiness.sh" }}
     {{- if not (ne (int .Values.sentinel.port) 0) }}
-    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
     {{- end }}
     response=$(
       redis-cli \
@@ -669,7 +669,7 @@
 
 {{- define "sentinel_liveness.sh" }}
     {{- if not (ne (int .Values.sentinel.port) 0) }}
-    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}"
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
     {{- end }}
     response=$(
       redis-cli \
