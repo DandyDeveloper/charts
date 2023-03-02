@@ -15,12 +15,7 @@ metadata:
     {{ $key }}: {{ $value | quote }}
 {{- end }}
   annotations:
-  {{- if .Values.serviceAnnotations }}
-{{ toYaml .Values.serviceAnnotations | indent 4 }}
-  {{- end }}
-    {{- range $key, $value := .Values.extraAnnotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ toYaml (merge .Values.serviceAnnotations .Values.extraAnnotations) | indent 4 }}
 spec:
   type: ClusterIP
   clusterIP: None

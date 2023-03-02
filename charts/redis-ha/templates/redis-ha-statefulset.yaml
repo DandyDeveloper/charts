@@ -1,6 +1,9 @@
 {{- $regexRestoreS3 := "^s3://.+|^S3://.+" -}}
 {{- $regexRestoreSSH := "^.+@.+:.+" -}}
 
+{{- $ssDefaultTemplateAnnotations := dict -}}
+{{- $_ := set $ssDefaultTemplateAnnotations "checksum/init-config" (print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .) | sha256sum) -}}
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -13,10 +16,7 @@ metadata:
     {{- end }}
 {{ include "labels.standard" . | indent 4 }}
   annotations:
-{{ toYaml .Values.redis.annotations | indent 4 }}
-    {{- range $key, $value := .Values.extraAnnotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ toYaml (merge .Values.redis.annotations .Values.extraAnnotations) | indent 4 }}
 spec:
   selector:
     matchLabels:
@@ -30,15 +30,12 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .)| sha256sum }}
-      {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | indent 8 }}
-      {{- end }}
       {{- if and (.Values.exporter.enabled) (not .Values.exporter.serviceMonitor.enabled) }}
-        prometheus.io/port: "{{ .Values.exporter.port }}"
-        prometheus.io/scrape: "true"
-        prometheus.io/path: {{ .Values.exporter.scrapePath }}
+        {{- $_ := set $ssDefaultTemplateAnnotations "prometheus.io/port" .Values.exporter.port -}}
+        {{- $_ := set $ssDefaultTemplateAnnotations "prometheus.io/scrape" "true" -}}
+        {{- $_ := set $ssDefaultTemplateAnnotations "prometheus.io/path" .Values.exporter.scrapePath -}}
       {{- end }}
+{{ toYaml (merge $ssDefaultTemplateAnnotations .Values.podAnnotations .Values.extraAnnotations) | indent 8 }}
       labels:
         release: {{ .Release.Name }}
         app: {{ template "redis-ha.name" . }}

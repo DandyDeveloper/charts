@@ -117,7 +117,7 @@ haproxy:
     type: ClusterIP
     loadBalancerIP:
     labels: {}
-    annotations: null
+    annotations: {}
 
     # List of CIDR's allowed to connect to LoadBalancer
     # loadBalancerSourceRanges: []
@@ -667,8 +667,15 @@ extraVolumes: []
 #  - name: empty
 #    emptyDir: {}
 
+# Pod level annotations
+podAnnotations: {}
+
+# Service level annotations
+serviceAnnotations: {}
+
 # Annotations added here are applied to all created resources
 extraAnnotations: {}
+
 
 # Labels added here are applied to all created resources
 extraLabels: {}

@@ -2,6 +2,7 @@
 {{- $namespace := .Release.Namespace -}}
 {{- $replicas := int (toString .Values.replicas) }}
 {{- $root := . }}
+{{- $defaultAnnotation := dict }}
 {{- range $i := until $replicas }}
 ---
 apiVersion: v1
@@ -16,14 +17,9 @@ metadata:
     {{- end }}
   annotations:
 {{- if (semverCompare "<=1.10-0" $.Capabilities.KubeVersion.GitVersion) }}
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    {{- $_ := set $defaultAnnotation "service.alpha.kubernetes.io/tolerate-unready-endpoints" "true" }}
 {{- end }}
-  {{- if $root.Values.serviceAnnotations }}
-{{ toYaml $root.Values.serviceAnnotations | indent 4 }}
-  {{- end }}
-  {{- range $key, $value := .Values.extraAnnotations }}
-    {{ $key }}: {{ $value | quote }}
-  {{- end }}
+{{ toYaml (merge $defaultAnnotation $root.Values.serviceAnnotations $root.Values.extraAnnotations) | indent 4 }}
 spec:
 {{- if (semverCompare ">=1.11-0" $.Capabilities.KubeVersion.GitVersion) }}
   publishNotReadyAddresses: true

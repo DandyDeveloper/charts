@@ -1,4 +1,7 @@
 {{- if .Values.haproxy.enabled }}
+{{- $dpDefaultTemplateAnnotations := dict -}}
+{{- $_ := set $dpDefaultTemplateAnnotations "checksum/config" (print (include "config-haproxy.cfg" .) (include "config-haproxy_init.sh" .) | sha256sum) -}}
+
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -36,14 +39,11 @@ spec:
         {{- end }}
       annotations:
       {{- if and (.Values.haproxy.metrics.enabled) (not .Values.haproxy.metrics.serviceMonitor.enabled)  }}
-        prometheus.io/port: "{{ .Values.haproxy.metrics.port }}"
-        prometheus.io/scrape: "true"
-        prometheus.io/path: "{{ .Values.haproxy.metrics.scrapePath }}"
+        {{- $_ := set $dpDefaultTemplateAnnotations "prometheus.io/port" .Values.haproxy.metrics.port -}}
+        {{- $_ := set $dpDefaultTemplateAnnotations "prometheus.io/scrape" "true" -}}
+        {{- $_ := set $dpDefaultTemplateAnnotations "prometheus.io/path" .Values.haproxy.metrics.scrapePath -}}
       {{- end }}
-        checksum/config: {{ print (include "config-haproxy.cfg" .) (include "config-haproxy_init.sh" .) | sha256sum }}
-      {{- if .Values.haproxy.annotations }}
-{{ toYaml .Values.haproxy.annotations | indent 8 }}
-      {{- end }}
+{{ toYaml (merge $dpDefaultTemplateAnnotations .Values.haproxy.annotations .Values.extraAnnotations) | indent 8 }}
     spec:
       # Needed when using unmodified rbac-setup.yml
       {{ if .Values.haproxy.serviceAccount.create }}

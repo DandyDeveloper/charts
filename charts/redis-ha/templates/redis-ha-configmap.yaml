@@ -4,9 +4,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-configmap
   namespace: {{ .Release.Namespace | quote }}
   annotations:
-    {{- range $key, $value := .Values.extraAnnotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ toYaml .Values.extraAnnotations | indent 4 }}
   labels:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}

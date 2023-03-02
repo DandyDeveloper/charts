@@ -5,9 +5,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-pdb
   namespace: {{ .Release.Namespace | quote }}
   annotations:
-    {{- range $key, $value := .Values.extraAnnotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ toYaml .Values.extraAnnotations | indent 4 }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
     {{- range $key, $value := .Values.extraLabels }}
