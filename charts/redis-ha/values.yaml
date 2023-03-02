@@ -78,7 +78,7 @@ haproxy:
   readOnly:
     enabled: false
     port: 6380
-  replicas: 2
+  replicas: 3
   image:
     repository: haproxy
     tag: 2.6.4
