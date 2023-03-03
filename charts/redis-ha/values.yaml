@@ -100,11 +100,11 @@ haproxy:
   ## Pod Disruption Budget
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   ##
-  podDisruptionBudget: {}
+  podDisruptionBudget:
+    {}
     # Use only one of the two
     # maxUnavailable: 1
     # minAvailable: 1
-
 
   ## Enable sticky sessions to Redis nodes via HAProxy
   ## Very useful for long-living connections as in case of Sentry for example
@@ -170,7 +170,7 @@ haproxy:
       type: RuntimeDefault
     capabilities:
       drop:
-      - ALL
+        - ALL
 
   ## Whether the haproxy pods should be forced to run on separate nodes.
   hardAntiAffinity: true
@@ -184,10 +184,10 @@ haproxy:
   ## Custom config-haproxy.cfg files used to override default settings. If this file is
   ## specified then the config-haproxy.cfg above will be ignored.
   # customConfig: |-
-    # Define configuration here
+  # Define configuration here
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # extraConfig: |-
-    # Define configuration here
+  # Define configuration here
 
   ## Container lifecycle hooks
   ## Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
@@ -229,7 +229,7 @@ sysctlImage:
 ## Redis specific configuration options
 redis:
   port: 6379
-  masterGroupName: "mymaster"       # must match ^[\\w-\\.]+$) and can be templated
+  masterGroupName: "mymaster" # must match ^[\\w-\\.]+$) and can be templated
 
   ## Configures redis with tls-port parameter
   # tlsPort: 6385
@@ -267,9 +267,9 @@ redis:
     ## Additional redis conf options can be added below
     ## For all available options see http://download.redis.io/redis-stable/redis.conf
     min-replicas-to-write: 1
-    min-replicas-max-lag: 5   # Value in seconds
-    maxmemory: "0"       # Max memory to use for each redis instance. Default is unlimited.
-    maxmemory-policy: "volatile-lru"  # Max memory policy to use for each redis instance. Default is volatile-lru.
+    min-replicas-max-lag: 5 # Value in seconds
+    maxmemory: "0" # Max memory to use for each redis instance. Default is unlimited.
+    maxmemory-policy: "volatile-lru" # Max memory policy to use for each redis instance. Default is volatile-lru.
     # Determines if scheduled RDB backups are created. Default is false.
     # Please note that local (on-disk) RDBs will still be created when re-syncing with a new slave. The only way to prevent this is to enable diskless replication.
     save: "900 1"
@@ -281,7 +281,7 @@ redis:
   ## Custom redis.conf files used to override default settings. If this file is
   ## specified then the redis.config above will be ignored.
   # customConfig: |-
-    # Define configuration here
+  # Define configuration here
 
   resources: {}
   #  requests:
@@ -368,7 +368,7 @@ sentinel:
   ## Custom sentinel.conf files used to override default settings. If this file is
   ## specified then the sentinel.config above will be ignored.
   # customConfig: |-
-    # Define configuration here
+  # Define configuration here
 
   resources: {}
   #  requests:
@@ -399,7 +399,7 @@ containerSecurityContext:
     type: RuntimeDefault
   capabilities:
     drop:
-    - ALL
+      - ALL
 
   ## Assuming your kubelet allows it, you can the following instructions to configure
   ## specific sysctl parameters
@@ -470,7 +470,7 @@ topologySpreadConstraints:
 exporter:
   enabled: false
   image: oliver006/redis_exporter
-  tag: v1.43.0
+  tag: v1.48.0
   pullPolicy: IfNotPresent
 
   # prometheus port & scrape path
@@ -544,7 +544,8 @@ exporter:
     periodSeconds: 15
     successThreshold: 2
 
-podDisruptionBudget: {}
+podDisruptionBudget:
+  {}
   # Use only one of the two
   # maxUnavailable: 1
   # minAvailable: 1
@@ -645,7 +646,8 @@ prometheusRule:
   # prometheusRule.interval -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
   interval: 10s
   # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
-  rules: []
+  rules:
+    []
     # Example:
     # - alert: RedisPodDown
     #   expr: |
@@ -678,7 +680,8 @@ networkPolicy:
   labels: {}
   ## user defines ingress rules that Redis should permit into
   ## uses the format defined in https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-  ingressRules: []
+  ingressRules:
+    []
     # - selectors:
     #   - namespaceSelector:
     #       matchLabels:
