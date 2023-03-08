@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: {{ template "redis-ha.fullname" . }}-health-configmap
   namespace: {{ .Release.Namespace | quote }}
+  annotations:
+{{ toYaml .Values.extraAnnotations | indent 4 }}
   labels:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}

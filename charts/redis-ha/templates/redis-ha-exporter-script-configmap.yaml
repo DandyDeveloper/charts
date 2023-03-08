@@ -4,6 +4,8 @@ kind: ConfigMap
 metadata:
   name: {{ template "redis-ha.fullname" . }}-exporter-script-configmap
   namespace: {{ .Release.Namespace | quote }}
+  annotations:
+{{ toYaml .Values.extraAnnotations | indent 4 }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
     {{- range $key, $value := .Values.extraLabels }}

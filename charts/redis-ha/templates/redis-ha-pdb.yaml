@@ -4,6 +4,8 @@ kind: PodDisruptionBudget
 metadata:
   name: {{ template "redis-ha.fullname" . }}-pdb
   namespace: {{ .Release.Namespace | quote }}
+  annotations:
+{{ toYaml .Values.extraAnnotations | indent 4 }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
     {{- range $key, $value := .Values.extraLabels }}

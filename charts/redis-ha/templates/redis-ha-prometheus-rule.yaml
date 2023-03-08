@@ -6,6 +6,8 @@ metadata:
   {{- if .Values.prometheusRule.namespace }}
   namespace: {{ .Values.prometheusRule.namespace }}
   {{- end }}
+  annotations:
+{{ toYaml .Values.extraAnnotations | indent 4 }}
   labels: {{- toYaml .Values.prometheusRule.additionalLabels | nindent 4 }}
 spec:
   groups:

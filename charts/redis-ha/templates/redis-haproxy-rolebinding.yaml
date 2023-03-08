@@ -5,6 +5,8 @@ kind: RoleBinding
 metadata:
   name: {{ template "redis-ha.fullname" . }}-haproxy
   namespace: {{ .Release.Namespace | quote }}
+  annotations:
+{{ toYaml .Values.extraAnnotations | indent 4 }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
     component: {{ template "redis-ha.fullname" . }}-haproxy
