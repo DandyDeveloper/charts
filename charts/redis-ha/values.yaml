@@ -100,8 +100,7 @@ haproxy:
   ## Pod Disruption Budget
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   ##
-  podDisruptionBudget:
-    {}
+  podDisruptionBudget: {}
     # Use only one of the two
     # maxUnavailable: 1
     # minAvailable: 1
@@ -544,8 +543,7 @@ exporter:
     periodSeconds: 15
     successThreshold: 2
 
-podDisruptionBudget:
-  {}
+podDisruptionBudget: {}
   # Use only one of the two
   # maxUnavailable: 1
   # minAvailable: 1
@@ -646,8 +644,7 @@ prometheusRule:
   # prometheusRule.interval -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
   interval: 10s
   # prometheusRule.rules -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
-  rules:
-    []
+  rules: []
     # Example:
     # - alert: RedisPodDown
     #   expr: |
@@ -680,8 +677,7 @@ networkPolicy:
   labels: {}
   ## user defines ingress rules that Redis should permit into
   ## uses the format defined in https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-  ingressRules:
-    []
+  ingressRules: []
     # - selectors:
     #   - namespaceSelector:
     #       matchLabels:
