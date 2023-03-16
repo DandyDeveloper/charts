@@ -231,11 +231,14 @@ redis:
   port: 6379
   masterGroupName: "mymaster"       # must match ^[\\w-\\.]+$) and can be templated
 
-  command:
-  - redis-server
+  customCommand: []
+  # - bash
+  customArgs: []
+  # - "custom-startup.sh"
 
-  args:
-  - /data/conf/redis.conf
+  envFrom: []
+  # - secretRef:
+  #     name: add-env-secret
 
   ## Configures redis with tls-port parameter
   # tlsPort: 6385

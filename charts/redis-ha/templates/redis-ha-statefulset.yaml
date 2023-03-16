@@ -251,9 +251,17 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
-{{ toYaml .Values.redis.command | indent 10 }}
+        {{- if .Values.redis.customCommand }}
+{{ toYaml .Values.redis.customCommand | indent 10 }}
+        {{- else }}
+          - redis-server
+        {{- end }}
         args:
-{{ toYaml .Values.redis.args | indent 10 }}
+        {{- if .Values.redis.customArgs }}
+{{ toYaml .Values.redis.customArgs | indent 10 }}
+        {{- else }}
+          - /data/conf/redis.conf
+        {{- end }}
         securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         {{- if .Values.auth }}
         env:
