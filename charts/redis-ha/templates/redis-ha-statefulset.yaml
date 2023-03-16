@@ -251,9 +251,17 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
-        - redis-server
+        {{- if .Values.redis.customCommand }}
+{{ toYaml .Values.redis.customCommand | indent 10 }}
+        {{- else }}
+          - redis-server
+        {{- end }}
         args:
-        - /data/conf/redis.conf
+        {{- if .Values.redis.customArgs }}
+{{ toYaml .Values.redis.customArgs | indent 10 }}
+        {{- else }}
+          - /data/conf/redis.conf
+        {{- end }}
         securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
         {{- if .Values.auth }}
         env:
@@ -266,6 +274,10 @@ spec:
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
               key: {{ .Values.authKey }}
+        {{- end }}
+        {{- if .Values.redis.envFrom }}
+        envFrom:
+{{ toYaml .Values.redis.envFrom | indent 10 }}
         {{- end }}
         livenessProbe:
           initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds }}
