@@ -79,6 +79,12 @@ haproxy:
     enabled: false
     port: 6380
   replicas: 3
+  # -- Deployment strategy for the haproxy deployment
+  deploymentStrategy:
+    type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 25%
+    #   maxUnavailable: 25%
   image:
     repository: haproxy
     tag: 2.6.9
