@@ -316,6 +316,9 @@
 
     {{- include "lib.sh" . }}
 
+    # delete old temporary RDB files that were created during master-slave synchronization and something went wrong in the process (out of free disk space)
+    find . -type f -name 'temp-*.rdb' -delete
+
     mkdir -p /data/conf/
 
     echo "Initializing config.."
