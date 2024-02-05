@@ -105,7 +105,6 @@ haproxy:
     # maxUnavailable: 1
     # minAvailable: 1
 
-
   ## Enable sticky sessions to Redis nodes via HAProxy
   ## Very useful for long-living connections as in case of Sentry for example
   stickyBalancing: false
@@ -146,9 +145,11 @@ haproxy:
       # Set path to redis-exporter telemtery-path
       # telemetryPath: /metrics
       # Set labels for the ServiceMonitor, use this to define your scrape label for Prometheus Operator
-      # labels: {}
+      labels: {}
       # Set timeout for scrape
       # timeout: 10s
+      # Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
+      endpointAdditionalProperties: {}
   init:
     resources: {}
   timeout:
@@ -528,9 +529,11 @@ exporter:
     # Set path to redis-exporter telemtery-path
     # telemetryPath: /metrics
     # Set labels for the ServiceMonitor, use this to define your scrape label for Prometheus Operator
-    # labels: {}
+    labels: {}
     # Set timeout for scrape
     # timeout: 10s
+    # Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
+    endpointAdditionalProperties: {}
 
   # prometheus exporter SCANS redis db which can take some time
   # allow different probe settings to not let container crashloop
