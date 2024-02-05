@@ -115,6 +115,7 @@ haproxy:
   service:
     type: ClusterIP
     loadBalancerIP:
+    externalIPs: {}
     labels: {}
     annotations: null
 
