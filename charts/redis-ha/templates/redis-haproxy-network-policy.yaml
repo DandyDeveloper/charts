@@ -65,11 +65,10 @@ spec:
       ports:
         {{- if $rule.ports }}
         {{- toYaml $rule.ports | nindent 8 }}
-        {{- else }}
+        {{- end }}
         - port: {{ $root.Values.redis.port }}
           protocol: TCP
         - port: {{ $root.Values.sentinel.port }}
           protocol: TCP
-        {{- end }}
     {{- end }}
 {{- end }}
