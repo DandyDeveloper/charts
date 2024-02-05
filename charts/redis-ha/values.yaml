@@ -503,7 +503,7 @@ topologySpreadConstraints:
 exporter:
   enabled: false
   image: oliver006/redis_exporter
-  tag: v1.43.0
+  tag: v1.57.0
   pullPolicy: IfNotPresent
 
   # prometheus port & scrape path
