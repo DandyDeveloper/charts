@@ -3,7 +3,7 @@
 ##
 image:
   repository: redis
-  tag: 7.0.9-alpine3.17
+  tag: 7.2.4-alpine
   pullPolicy: IfNotPresent
 
 ## Reference to one or more secrets to be used when pulling images
@@ -87,7 +87,7 @@ haproxy:
     #   maxUnavailable: 25%
   image:
     repository: haproxy
-    tag: 2.6.9
+    tag: 2.9.4-alpine
     pullPolicy: IfNotPresent
 
   ## Custom labels for the haproxy pod
