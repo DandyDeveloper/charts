@@ -88,6 +88,31 @@ entries:
   redis-ha:
   - apiVersion: v2
     appVersion: 7.2.4
+    created: "2024-04-07T11:58:04.422255572Z"
+    description: This Helm chart provides a highly available Redis implementation
+      with a master/slave configuration and uses Sentinel sidecars for failover management
+    digest: f016286a494f07b6fb3b1ac9f03a7683ccd603c4ac62049f735a31786ca14f58
+    home: http://redis.io/
+    icon: https://upload.wikimedia.org/wikipedia/en/thumb/6/6b/Redis_Logo.svg/1200px-Redis_Logo.svg.png
+    keywords:
+    - redis
+    - keyvalue
+    - database
+    maintainers:
+    - email: salimsalaues@gmail.com
+      name: ssalaues
+    - email: aaron.layfield@gmail.com
+      name: dandydeveloper
+    name: redis-ha
+    sources:
+    - https://redis.io/download
+    - https://github.com/DandyDeveloper/charts/blob/master/charts/redis-ha
+    - https://github.com/oliver006/redis_exporter
+    urls:
+    - https://github.com/DandyDeveloper/charts/releases/download/redis-ha-4.26.5/redis-ha-4.26.5.tgz
+    version: 4.26.5
+  - apiVersion: v2
+    appVersion: 7.2.4
     created: "2024-04-07T11:33:15.630405659Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
@@ -2802,4 +2827,4 @@ entries:
     urls:
     - redis-ha-4.4.2.tgz
     version: 4.4.2
-generated: "2024-04-07T11:33:15.630689833Z"
+generated: "2024-04-07T11:58:04.422543521Z"
