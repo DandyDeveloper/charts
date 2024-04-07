@@ -27,7 +27,13 @@
     {{- end }}
     {{- end }}
     {{- range $key, $value := .Values.redis.config }}
+    {{- if kindIs "slice" $value }}
+        {{- range $value }}
+    {{ $key }} {{ . }}
+        {{- end }}
+        {{- else }}
     {{ $key }} {{ $value }}
+        {{- end }}
     {{- end }}
 {{- if .Values.auth }}
     requirepass replace-default-auth
@@ -459,6 +465,7 @@
         identify_announce_ip
     done
 
+    trap "exit 0" TERM
     while true; do
         sleep {{ .Values.splitBrainDetection.interval }}
 
