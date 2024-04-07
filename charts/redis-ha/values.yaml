@@ -507,9 +507,9 @@ exporter:
   pullPolicy: IfNotPresent
 
   # prometheus port & scrape path
-  port: 9121
+  port: &exporter_port 9121
   portName: exporter-port
-  scrapePath: /metrics
+  scrapePath: &exporter_scrapePath /metrics
 
   # Address/Host for Redis instance. Default: localhost
   # Exists to circumvent issues with IPv6 dns resolution that occurs on certain environments
@@ -569,11 +569,17 @@ exporter:
   # prometheus exporter SCANS redis db which can take some time
   # allow different probe settings to not let container crashloop
   livenessProbe:
+    httpGet:
+      path: *exporter_scrapePath
+      port: *exporter_port
     initialDelaySeconds: 15
     timeoutSeconds: 3
     periodSeconds: 15
 
   readinessProbe:
+    httpGet:
+      path: *exporter_scrapePath
+      port: *exporter_port
     initialDelaySeconds: 15
     timeoutSeconds: 3
     periodSeconds: 15
