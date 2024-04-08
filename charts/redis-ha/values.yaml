@@ -2,7 +2,7 @@
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##
 image:
-  repository: redis
+  repository: public.ecr.aws/docker/library/redis
   tag: 7.2.4-alpine
   pullPolicy: IfNotPresent
 
@@ -86,7 +86,7 @@ haproxy:
     #   maxSurge: 25%
     #   maxUnavailable: 25%
   image:
-    repository: haproxy
+    repository: public.ecr.aws/docker/library/haproxy
     tag: 2.9.4-alpine
     pullPolicy: IfNotPresent
 
@@ -247,7 +247,7 @@ rbac:
 sysctlImage:
   enabled: false
   command: []
-  registry: docker.io
+  registry: public.ecr.aws/docker/library
   repository: busybox
   tag: 1.34.1
   pullPolicy: Always
