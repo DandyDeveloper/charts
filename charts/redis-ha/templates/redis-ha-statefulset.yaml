@@ -24,6 +24,9 @@ spec:
   podManagementPolicy: {{ .Values.podManagementPolicy }}
   updateStrategy:
     type: {{ .Values.redis.updateStrategy.type }}
+  {{- if .Values.redis.minReadySeconds }}
+  minReadySeconds: {{ .Values.redis.minReadySeconds }}
+  {{- end }}
   template:
     metadata:
       annotations:
