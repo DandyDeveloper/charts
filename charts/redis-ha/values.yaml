@@ -124,6 +124,7 @@ haproxy:
     externalIPs: {}
     labels: {}
     annotations: null
+    headless: false
 
     # List of CIDR's allowed to connect to LoadBalancer
     # loadBalancerSourceRanges: []

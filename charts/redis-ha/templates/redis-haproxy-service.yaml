@@ -19,6 +19,9 @@ metadata:
   {{- end }}
 spec:
   type: {{ default "ClusterIP" .Values.haproxy.service.type }}
+  {{- if and (eq .Values.haproxy.service.type "ClusterIP") .Values.haproxy.service.headless }}
+  clusterIP: None
+  {{- end }}
   {{- if and (eq .Values.haproxy.service.type "LoadBalancer") .Values.haproxy.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.haproxy.service.loadBalancerIP }}
   {{- end }}
