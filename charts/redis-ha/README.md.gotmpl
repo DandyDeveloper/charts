@@ -1,0 +1,242 @@
+# Redis
+
+[Redis](http://redis.io/) is an advanced key-value cache and store. It is often referred to as a data structure server since keys can contain strings, hashes, lists, sets, sorted sets, bitmaps and hyperloglogs.
+
+## TL;DR
+
+```bash
+helm repo add dandydev https://dandydeveloper.github.io/charts
+helm install dandydev/redis-ha
+```
+
+By default this chart install 3 pods total:
+
+* one pod containing a redis master and sentinel container (optional prometheus metrics exporter sidecar available)
+* two pods each containing a redis slave and sentinel containers (optional prometheus metrics exporter sidecars available)
+
+## Introduction
+
+This chart bootstraps a [Redis](https://redis.io) highly available master/slave statefulset in a [Kubernetes](http://kubernetes.io) cluster using the Helm package manager.
+
+## Prerequisites
+
+* Kubernetes 1.8+ with Beta APIs enabled
+* PV provisioner support in the underlying infrastructure
+
+## Upgrading the Chart
+
+Please note that there have been a number of changes simplifying the redis management strategy (for better failover and elections) in the 3.x version of this chart. These changes allow the use of official [redis](https://hub.docker.com/_/redis/) images that do not require special RBAC or ServiceAccount roles. As a result when upgrading from version >=2.0.1 to >=3.0.0 of this chart, `Role`, `RoleBinding`, and `ServiceAccount` resources should be deleted manually.
+
+### Upgrading the chart from 3.x to 4.x
+
+Starting from version `4.x` HAProxy sidecar prometheus-exporter removed and replaced by the embedded [HAProxy metrics endpoint](https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter), as a result when upgrading from version 3.x to 4.x section `haproxy.exporter` should be removed and the `haproxy.metrics` need to be configured for fit your needs.
+
+## Installing the Chart
+
+To install the chart
+
+```bash
+helm repo add dandydev https://dandydeveloper.github.io/charts
+helm install dandydev/redis-ha
+```
+
+The command deploys Redis on the Kubernetes cluster in the default configuration. By default this chart install one master pod containing redis master container and sentinel container along with 2 redis slave pods each containing their own sentinel sidecars. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+
+> **Tip**: List all releases using `helm list`
+
+## Uninstalling the Chart
+
+To uninstall/delete the deployment:
+
+```bash
+helm delete <chart-name>
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Configuration
+
+The following table lists the configurable parameters of the Redis chart and their default values.
+
+### General parameters
+
+| Parameter | Description | Type | Default |
+|-----|------|---------|-------------|
+{{- range .Values }}
+  {{- if not (or  (hasPrefix "haproxy" .Key) (hasPrefix "sentinel" .Key) (hasPrefix "exporter" .Key) (hasPrefix "prometheusRule" .Key) ) }}
+| `{{ .Key }}` | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} |
+  {{- end }}
+{{- end }}
+
+### Redis Sentinel parameters
+
+| Parameter | Description | Type | Default |
+|-----|------|---------|-------------|
+{{- range .Values }}
+  {{- if hasPrefix "sentinel" .Key }}
+| `{{ .Key }}` | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} |
+  {{- end }}
+{{- end }}
+
+### HAProxy parameters
+
+| Parameter | Description | Type | Default |
+|-----|------|---------|-------------|
+{{- range .Values }}
+  {{- if hasPrefix "haproxy" .Key }}
+| `{{ .Key }}` | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} |
+  {{- end }}
+{{- end }}
+
+### Prometheus exporter parameters
+
+| Parameter | Description | Type | Default |
+|-----|------|---------|-------------|
+{{- range .Values }}
+  {{- if or (hasPrefix "exporter" .Key) (hasPrefix "prometheusRule" .Key) }}
+| `{{ .Key }}` | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} |
+  {{- end }}
+{{- end }}
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
+
+```bash
+$ helm repo add dandydev https://dandydeveloper.github.io/charts
+$ helm install \
+  --set image=redis \
+  --set tag=5.0.5-alpine \
+    dandydev/redis-ha
+```
+
+The above command sets the Redis server within `default` namespace.
+
+Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
+
+```bash
+helm install -f values.yaml dandydev/redis-ha
+```
+
+> **Tip**: You can use the default [values.yaml](values.yaml)
+
+## Custom Redis and Sentinel config options
+
+This chart allows for most redis or sentinel config options to be passed as a key value pair through the `values.yaml` under `redis.config` and `sentinel.config`. See links below for all available options.
+
+[Example redis.conf](http://download.redis.io/redis-stable/redis.conf)
+[Example sentinel.conf](http://download.redis.io/redis-stable/sentinel.conf)
+
+For example `repl-timeout 60` would be added to the `redis.config` section of the `values.yaml` as:
+
+```yml
+    repl-timeout: "60"
+```
+
+Note:
+
+1. Some config options should be renamed by redis version，e.g.:
+
+   ```yml
+   # In redis 5.x，see https://raw.githubusercontent.com/antirez/redis/5.0/redis.conf
+   min-replicas-to-write: 1
+   min-replicas-max-lag: 5
+
+   # In redis 4.x and redis 3.x，see https://raw.githubusercontent.com/antirez/redis/4.0/redis.conf and https://raw.githubusercontent.com/antirez/redis/3.0/redis.conf
+   min-slaves-to-write 1
+   min-slaves-max-lag 5
+   ```
+
+Sentinel options supported must be in the the `sentinel <option> <master-group-name> <value>` format. For example, `sentinel down-after-milliseconds 30000` would be added to the `sentinel.config` section of the `values.yaml` as:
+
+```yml
+    down-after-milliseconds: 30000
+```
+
+If more control is needed from either the redis or sentinel config then an entire config can be defined under `redis.customConfig` or `sentinel.customConfig`. Please note that these values will override any configuration options under their respective section. For example, if you define `sentinel.customConfig` then the `sentinel.config` is ignored.
+
+## Host Kernel Settings
+
+Redis may require some changes in the kernel of the host machine to work as expected, in particular increasing the `somaxconn` value and disabling transparent huge pages.
+To do so, you can set up a privileged initContainer with the `sysctlImage` config values, for example:
+
+```yml
+sysctlImage:
+  enabled: true
+  mountHostSys: true
+  command:
+    - /bin/sh
+    - -xc
+    - |-
+      sysctl -w net.core.somaxconn=10000
+      echo never > /host-sys/kernel/mm/transparent_hugepage/enabled
+```
+
+## HAProxy startup
+
+When HAProxy is enabled, it will attempt to connect to each announce-service of each redis replica instance in its init container before starting.
+It will fail if announce-service IP is not available fast enough (10 seconds max by announce-service).
+A such case could happen if the orchestator is pending the nomination of redis pods.
+Risk is limited because announce-service is using `publishNotReadyAddresses: true`, although, in such case, HAProxy pod will be rescheduled afterward by the orchestrator.
+
+PodDisruptionBudgets are not configured by default, you may need to set the `haproxy.podDisruptionBudget` parameter in values.yaml to enable it.
+
+## Network policies
+
+If `networkPolicy.enabled` is set to `true`, then a `NetworkPolicy` resource is created with default rules to allow inter-Redis and Sentinel connectivity.
+This is a requirement for Redis Pods to come up successfully.
+
+You will need to define `ingressRules` to permit your application connectivity to Redis.
+The `selectors` block should be in the format of a [label selector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors).
+Templating is also supported in the selectors.
+See such a configuration below.
+
+```yaml
+networkPolicy: true
+  ingressRules:
+    - selectors:
+      - namespaceSelector:
+          matchLabels:
+            name: my-redis-client-namespace
+        podSelector:
+          matchLabels:
+            # template example
+            app: |-
+              {{ printf "{{- .App.Name }}" }}
+      ## ports block is optional (defaults to below), define the block to override the defaults
+      # ports:
+      #   - port: 6379
+      #     protocol: TCP
+      #   - port: 26379
+      #     protocol: TCP
+```
+
+Should your Pod require additional egress rules, define them in a `egressRules` key which is structured identically to an `ingressRules` key.
+
+## Sentinel and redis server split brain detection
+
+Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Majority of original discussion on the problem has happened at the <https://github.com/DandyDeveloper/charts/issues/121>.
+
+The proposed solution is currently implemented as a sidecar container that runs a bash script with the following logic:
+
+1. Every `splitBrainDetection.interval` seconds a master (as known by sentinel) is determined
+1. If it is the current node: ensure the redis server's role is master as well.
+1. If it is not the current node: ensure the redis server also replicates from the same node.
+
+If any of the checks above fails - the redis server reinitialisation happens (it regenerates configs the same way it's done during the pod init), and then the redis server is instructed to shutdown. Then kubernetes restarts the container immediately.
+
+
+# Change Log
+
+## 4.14.9 - ** POTENTIAL BREAKING CHANGE. **
+Introduced the ability to change the Haproxy Deployment container pod
+- Container port in redis-haproxy-deployment.yam has been changed. Was **redis.port** To **haproxy.containerPort**. Default value is 6379.
+- Port in redis-haproxy-service.yaml has been changed. Was **redis.port** To **haproxy.servicePort**. Default value is 6379.
+
+## 4.21.0 - BREAKING CHANGES (Kubernetes Deprecation)
+This version introduced the deprecation of the PSP and subsequently added fields to the securityContexts that were introduced in Kubernetes v1.19:
+
+https://kubernetes.io/docs/tutorials/security/seccomp/
+
+As a result, from this version onwards Kubernetes versions older than 1.19 will fail to install without the removal of `.Values.containerSecurityContext.seccompProfile` and `.Values.haproxy.containerSecurityContext.seccompProfile` (If HAProxy is enabled)
+
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs](https://github.com/norwoodj/helm-docs)
