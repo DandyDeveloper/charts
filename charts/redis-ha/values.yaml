@@ -1,3 +1,8 @@
+## Globally shared configuration
+global:
+  # -- Default priority class for all components
+  priorityClassName: ""
+
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##

@@ -60,6 +60,7 @@ The following table lists the configurable parameters of the Redis chart and the
 
 | Parameter                 | Description                                                                                                                                                                                              | Default                                                                                    |
 |:--------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| `global.priorityClassName`| Default priority class for all components (HAProxy Deployment and Redis StatefulSet)                                                                                                                     | `""`                                                                                       |
 | `image.repository`        | Redis image repository                 | `redis`                                                                                  |
 | `image.tag`        | Redis image tag                            | `6.2.5-alpine`                                                                              |
 | `image.pullPolicy`        | Redis image pull policy                          | `IfNotPresent`                                                                   |
