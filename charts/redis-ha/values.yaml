@@ -384,6 +384,9 @@ sentinel:
   ## Defines the key holding the sentinel password in existing secret.
   authKey: sentinel-password
 
+  customCommand: []
+  customArgs: []
+
   # liveness probe parameters for sentinel container
   livenessProbe:
     initialDelaySeconds: 30
