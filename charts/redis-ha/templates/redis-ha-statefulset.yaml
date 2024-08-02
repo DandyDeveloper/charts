@@ -528,9 +528,10 @@ spec:
 {{- if .Values.extraContainers }}
 {{- toYaml .Values.extraContainers | nindent 6 }}
 {{- end -}}
-      {{- with .Values.priorityClassName | default .Values.global.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName }}
-      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- else }}
+      priorityClassName: {{ .Values.global.priorityClassName }}
       volumes:
       - name: config
         configMap:
