@@ -37,6 +37,8 @@ spec:
           protocol: TCP
     - to:
       - namespaceSelector: {}
+      - ipBlock:
+          cidr: 169.254.0.0/16
       ports:
         - port: 53
           protocol: UDP
