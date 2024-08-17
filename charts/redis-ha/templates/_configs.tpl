@@ -27,6 +27,9 @@
     {{- end }}
     {{- end }}
     {{- range $key, $value := .Values.redis.config }}
+    {{- if not $value }}
+        {{ continue }}
+    {{- end}}
     {{- if kindIs "slice" $value }}
         {{- range $value }}
     {{ $key }} {{ . }}
