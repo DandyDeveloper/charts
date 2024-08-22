@@ -279,6 +279,7 @@ spec:
         envFrom:
 {{ toYaml .Values.redis.envFrom | indent 10 }}
         {{- end }}
+        {{- if .Values.redis.livenessProbe.enabled }}
         livenessProbe:
           initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.redis.livenessProbe.periodSeconds }}
@@ -290,6 +291,8 @@ spec:
               - sh
               - -c
               - /health/redis_liveness.sh
+        {{- end }}
+        {{- if .Values.redis.readinessProbe.enabled }}
         readinessProbe:
           initialDelaySeconds: {{ .Values.redis.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.redis.readinessProbe.periodSeconds }}
@@ -301,6 +304,20 @@ spec:
               - sh
               - -c
               - /health/redis_readiness.sh
+        {{- end }}
+        {{- if .Values.redis.startupProbe.enabled }}
+        startupProbe:
+          initialDelaySeconds: {{ .Values.redis.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.redis.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.redis.startupProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.redis.startupProbe.successThreshold }}
+          failureThreshold: {{ .Values.redis.startupProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/redis_readiness.sh
+        {{- end }}
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
@@ -370,6 +387,7 @@ spec:
               key: {{ .Values.sentinel.authKey }}
   {{- end }}
 {{- end }}
+        {{- if .Values.sentinel.livenessProbe.enabled }}
         livenessProbe:
           initialDelaySeconds: {{ .Values.sentinel.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.sentinel.livenessProbe.periodSeconds }}
@@ -381,6 +399,8 @@ spec:
               - sh
               - -c
               - /health/sentinel_liveness.sh
+        {{- end }}
+        {{- if .Values.sentinel.readinessProbe.enabled }}
         readinessProbe:
           initialDelaySeconds: {{ .Values.sentinel.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.sentinel.readinessProbe.periodSeconds }}
@@ -392,6 +412,20 @@ spec:
               - sh
               - -c
               - /health/sentinel_liveness.sh
+        {{- end }}
+        {{- if .Values.sentinel.startupProbe.enabled }}
+        startupProbe:
+          initialDelaySeconds: {{ .Values.sentinel.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.sentinel.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.sentinel.startupProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.sentinel.startupProbe.successThreshold }}
+          failureThreshold: {{ .Values.sentinel.startupProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/sentinel_liveness.sh
+        {{- end }}
         resources:
 {{ toYaml .Values.sentinel.resources | indent 10 }}
         ports:
