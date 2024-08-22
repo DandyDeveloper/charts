@@ -138,6 +138,8 @@ haproxy:
   serviceAccountName: redis-sa
   serviceAccount:
     create: true
+    automountToken: false
+    
   ## Official HAProxy embedded prometheus metrics settings.
   ## Ref: https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter
   ##
