@@ -2,6 +2,9 @@
 global:
   # -- Default priority class for all components
   priorityClassName: ""
+  compatibility:
+    openshift:
+      adaptSecurityContext: auto
 
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
