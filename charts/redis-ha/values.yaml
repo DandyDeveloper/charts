@@ -65,6 +65,8 @@ serviceAccount:
   ## opt in/out of automounting API credentials into container
   ## https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   automountToken: false
+  # Annotations to be added to the service account for the redis statefulset
+  annotations: {}
 
 ## Enables a HA Proxy for better LoadBalancing / Sentinel Master support. Automatically proxies to Redis master.
 ## Recommend for externally exposed Redis clusters.

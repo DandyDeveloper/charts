@@ -529,7 +529,7 @@ spec:
 {{- toYaml .Values.extraContainers | nindent 6 }}
 {{- end -}}
       {{- with .Values.priorityClassName | default .Values.global.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
       volumes:
       - name: config
