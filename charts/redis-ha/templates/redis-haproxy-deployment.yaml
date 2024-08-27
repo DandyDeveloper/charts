@@ -49,6 +49,7 @@ spec:
       {{- else }}
       serviceAccountName: {{ .Values.haproxy.serviceAccountName }}
       {{- end }}
+      automountServiceAccountToken: {{ .Values.haproxy.serviceAccount.automountToken }}
       securityContext: {{ toYaml .Values.haproxy.securityContext | nindent 8 }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
