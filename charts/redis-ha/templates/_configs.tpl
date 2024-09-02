@@ -643,11 +643,12 @@
       {{- end}}
         ping
     )
-    if [ "$response" != "PONG" ] && [ "${response:0:7}" != "LOADING" ] ; then
-      echo "$response"
-      exit 1
-    fi
     echo "response=$response"
+    case $response in
+      PONG|LOADING*) ;;
+      *) exit 1 ;;
+    esac
+    exit 0
 {{- end }}
 
 {{- define "redis_readiness.sh" }}

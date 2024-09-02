@@ -336,9 +336,17 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
+        {{- if .Values.sentinel.customCommand }}
+{{ toYaml .Values.sentinel.customCommand | indent 10 }}
+        {{- else }}
           - redis-sentinel
+        {{- end }}
         args:
+        {{- if .Values.sentinel.customArgs }}
+{{ toYaml .Values.sentinel.customArgs | indent 10 }}
+        {{- else }}
           - /data/conf/sentinel.conf
+        {{- end }}
         securityContext: {{ toYaml .Values.containerSecurityContext | nindent 10 }}        
 {{- if or .Values.auth .Values.sentinel.auth}}
         env:
@@ -524,7 +532,7 @@ spec:
 {{- toYaml .Values.extraContainers | nindent 6 }}
 {{- end -}}
       {{- with .Values.priorityClassName | default .Values.global.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
       volumes:
       - name: config
@@ -561,7 +569,9 @@ spec:
 {{- end -}}
 {{- if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
-  - metadata:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
       name: data
       annotations:
       {{- range $key, $value := .Values.persistentVolume.annotations }}

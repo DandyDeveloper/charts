@@ -65,6 +65,8 @@ serviceAccount:
   ## opt in/out of automounting API credentials into container
   ## https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   automountToken: false
+  # Annotations to be added to the service account for the redis statefulset
+  annotations: {}
 
 ## Enables a HA Proxy for better LoadBalancing / Sentinel Master support. Automatically proxies to Redis master.
 ## Recommend for externally exposed Redis clusters.
@@ -136,6 +138,8 @@ haproxy:
   serviceAccountName: redis-sa
   serviceAccount:
     create: true
+    automountToken: false
+
   ## Official HAProxy embedded prometheus metrics settings.
   ## Ref: https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter
   ##
@@ -383,6 +387,9 @@ sentinel:
 
   ## Defines the key holding the sentinel password in existing secret.
   authKey: sentinel-password
+
+  customCommand: []
+  customArgs: []
 
   # liveness probe parameters for sentinel container
   livenessProbe:
