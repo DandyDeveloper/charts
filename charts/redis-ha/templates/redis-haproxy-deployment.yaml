@@ -50,6 +50,7 @@ spec:
       serviceAccountName: {{ .Values.haproxy.serviceAccountName }}
       {{- end }}
       securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.haproxy.securityContext "context" $) | nindent 8 }}
+      automountServiceAccountToken: {{ .Values.haproxy.serviceAccount.automountToken }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       tolerations:

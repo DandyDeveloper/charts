@@ -529,7 +529,7 @@ spec:
 {{- toYaml .Values.extraContainers | nindent 6 }}
 {{- end -}}
       {{- with .Values.priorityClassName | default .Values.global.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
       volumes:
       - name: config
@@ -566,7 +566,9 @@ spec:
 {{- end -}}
 {{- if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
-  - metadata:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
       name: data
       annotations:
       {{- range $key, $value := .Values.persistentVolume.annotations }}
