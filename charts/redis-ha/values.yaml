@@ -138,6 +138,8 @@ haproxy:
   serviceAccountName: redis-sa
   serviceAccount:
     create: true
+    automountToken: false
+
   ## Official HAProxy embedded prometheus metrics settings.
   ## Ref: https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter
   ##
@@ -774,7 +776,20 @@ networkPolicy:
     #       protocol: TCP
 
   ## user can define egress rules too, uses the same structure as ingressRules
-  egressRules: []
+  egressRules:
+    - selectors:
+      # allow all destinations for DNS traffic
+      - namespaceSelector: {}
+      - ipBlock:
+          # Cloud Provider often uses the local link local range to host managed DNS resolvers.
+          # We need to allow this range to ensure that the Redis pods can resolve DNS.
+          # Example architecture for GCP Cloud DNS: https://cloud.google.com/kubernetes-engine/docs/how-to/cloud-dns#architecture
+          cidr: 169.254.0.0/16
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
 
 splitBrainDetection:
   interval: 60
