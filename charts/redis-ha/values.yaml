@@ -882,7 +882,7 @@ restore:
   existingSecret: false
   s3:
     # -- Restore init container - AWS S3 location of dump - i.e. s3://bucket/dump.rdb or false
-    source: "" 
+    source: ""
     # If using existingSecret, that secret must contain:
     # AWS_SECRET_ACCESS_KEY: <YOUR_ACCESS_KEY:>
     # AWS_ACCESS_KEY_ID: <YOUR_KEY_ID>
@@ -895,7 +895,7 @@ restore:
     region: ""
   ssh:
     # -- Restore init container - SSH scp location of dump - i.e. user@server:/path/dump.rdb or false
-    source: "" 
+    source: ""
     # -- Restore init container - SSH private key to scp restore.ssh.source to init container.
     # Key should be in one line separated with \n.
     # i.e. `-----BEGIN RSA PRIVATE KEY-----\n...\n...\n-----END RSA PRIVATE KEY-----`
