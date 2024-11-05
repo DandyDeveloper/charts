@@ -669,10 +669,39 @@
         ping
     )
     if [ "$response" != "PONG" ] ; then
-      echo "$response"
+      echo "ping=$response"
       exit 1
     fi
-    echo "response=$response"
+
+    response=$(
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "${AUTH}" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if ne (int .Values.redis.port) 0 }}
+        -p {{ .Values.redis.port }} \
+      {{- else }}
+        -p {{ .Values.redis.tlsPort }} ${TLS_CLIENT_OPTION} \
+      {{- end}}
+        role
+    )
+    role=$( echo "$response" | sed "1!d" )
+    if [ "$role" = "master" ]; then
+      echo "role=$role"
+      exit 0
+    elif [ "$role" = "slave" ]; then
+      repl=$( echo "$response" | sed "4!d" )
+      echo "role=$role; repl=$repl"
+      if [ "$repl" = "connected" ]; then
+        exit 0
+      else
+        exit 1
+      fi
+    else
+      echo "role=$role"
+      exit 1
+    fi
 {{- end }}
 
 {{- define "sentinel_liveness.sh" }}
