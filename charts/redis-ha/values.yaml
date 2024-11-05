@@ -1,3 +1,11 @@
+## Globally shared configuration
+global:
+  # -- Default priority class for all components
+  priorityClassName: ""
+  compatibility:
+    openshift:
+      adaptSecurityContext: auto
+
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##
@@ -68,6 +76,8 @@ serviceAccount:
   # -- opt in/out of automounting API credentials into container.
   # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   automountToken: false
+  # Annotations to be added to the service account for the redis statefulset
+  annotations: {}
 
 ## Enables a HA Proxy for better LoadBalancing / Sentinel Master support. Automatically proxies to Redis master.
 ## Recommend for externally exposed Redis clusters.
@@ -165,6 +175,8 @@ haproxy:
   serviceAccount:
     # -- Specifies whether a ServiceAccount should be created
     create: true
+    automountToken: false
+
   ## Official HAProxy embedded prometheus metrics settings.
   ## Ref: https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter
   ##
@@ -359,8 +371,10 @@ redis:
   # ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced
   terminationGracePeriodSeconds: 60
 
-  # liveness probe parameters for redis container
+  # -- Liveness probe parameters for redis container
   livenessProbe:
+    # -- Enable the Liveness Probe
+    enabled: true
     # -- Initial delay in seconds for liveness probe
     initialDelaySeconds: 30
     # -- Period in seconds after which liveness probe will be repeated
@@ -372,7 +386,10 @@ redis:
     # -- Failure threshold for liveness probe
     failureThreshold: 5
 
+  # -- Readiness probe parameters for redis container
   readinessProbe:
+    # -- Enable the Readiness Probe
+    enabled: true
     # -- Initial delay in seconds for readiness probe
     initialDelaySeconds: 30
     # -- Period in seconds after which readiness probe will be repeated
@@ -383,6 +400,21 @@ redis:
     successThreshold: 1
     # -- Failure threshold for readiness probe
     failureThreshold: 5
+
+  # -- Startup probe parameters for redis container
+  startupProbe:
+    # -- Enable Startup Probe
+    enabled: true
+    # -- Initial delay in seconds for startup probe
+    initialDelaySeconds: 5
+    # -- Period in seconds after which startup probe will be repeated
+    periodSeconds: 10
+    # -- Timeout seconds for startup probe
+    timeoutSeconds: 15
+    # -- Success threshold for startup probe
+    successThreshold: 1
+    # -- Failure threshold for startup probe
+    failureThreshold: 3
 
   # -- Array with commands to disable 
   disableCommands:
@@ -477,8 +509,12 @@ sentinel:
   # -- The key holding the sentinel password in an existing secret.
   authKey: sentinel-password
 
+  customCommand: []
+  customArgs: []
+
   # liveness probe parameters for sentinel container
   livenessProbe:
+    enabled: true
     # -- Initial delay in seconds for liveness probe
     initialDelaySeconds: 30
     # -- Period in seconds after which liveness probe will be repeated
@@ -492,6 +528,7 @@ sentinel:
 
   # readiness probe parameters for sentinel container
   readinessProbe:
+    enabled: true
     # -- Initial delay in seconds for readiness probe
     initialDelaySeconds: 30
     # -- Period in seconds after which readiness probe will be repeated
@@ -503,8 +540,24 @@ sentinel:
     # -- Failure threshold for readiness probe
     failureThreshold: 5
 
-  # -- Minimum number of servers necessary to maintain quorum
+  # -- Startup probe parameters for redis container
+  startupProbe:
+    # -- Enable Startup Probe
+    enabled: true
+    # -- Initial delay in seconds for startup probe
+    initialDelaySeconds: 5
+    # -- Period in seconds after which startup probe will be repeated
+    periodSeconds: 10
+    # -- Timeout seconds for startup probe
+    timeoutSeconds: 15
+    # -- Success threshold for startup probe
+    successThreshold: 1
+    # -- Failure threshold for startup probe
+    failureThreshold: 3
+
+  # -- Minimum number of nodes expected to be live. 
   quorum: 2
+
   # -- Valid sentinel config options in this section will be applied as config options to each sentinel (see below)
   # @default -- see values.yaml
   config:
@@ -914,7 +967,20 @@ networkPolicy:
     #       protocol: TCP
 
   # -- user can define egress rules too, uses the same structure as ingressRules
-  egressRules: []
+  egressRules:
+    - selectors:
+      # -- Allow all destinations for DNS traffic
+      - namespaceSelector: {}
+      - ipBlock:
+          # Cloud Provider often uses the local link local range to host managed DNS resolvers.
+          # We need to allow this range to ensure that the Redis pods can resolve DNS.
+          # Example architecture for GCP Cloud DNS: https://cloud.google.com/kubernetes-engine/docs/how-to/cloud-dns#architecture
+          cidr: 169.254.0.0/16
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
 
 splitBrainDetection:
   # -- Interval between redis sentinel and server split brain checks (in seconds)
