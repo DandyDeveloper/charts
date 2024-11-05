@@ -300,6 +300,7 @@ redis:
 
   # liveness probe parameters for redis container
   livenessProbe:
+    enabled: true
     initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 15
@@ -307,11 +308,20 @@ redis:
     failureThreshold: 5
 
   readinessProbe:
+    enabled: true
     initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 15
     successThreshold: 1
     failureThreshold: 5
+
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
 
   disableCommands:
     - FLUSHDB
@@ -396,6 +406,7 @@ sentinel:
 
   # liveness probe parameters for sentinel container
   livenessProbe:
+    enabled: true
     initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 15
@@ -404,11 +415,20 @@ sentinel:
 
   # readiness probe parameters for sentinel container
   readinessProbe:
+    enabled: true
     initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 15
     successThreshold: 3
     failureThreshold: 5
+
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
 
   quorum: 2
   config:
