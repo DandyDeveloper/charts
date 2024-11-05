@@ -196,14 +196,14 @@ haproxy:
       # -- Set the namespace the ServiceMonitor should be deployed
       # @default -- `.Release.Namespace`
       namespace: ""
-      # -- Set how frequently Prometheus should scrape
-      interval: "" # 30s
-      # -- Set path to redis-exporter telemtery-path
-      telemetryPath: "" # /metrics
+      # -- Set how frequently Prometheus should scrape (default is 30s)
+      interval: ""
+      # -- Set path to redis-exporter telemtery-path (default is /metrics)
+      telemetryPath: ""
       # -- Set labels for the ServiceMonitor, use this to define your scrape label for Prometheus Operator
       labels: {}
-      # -- Set timeout for scrape
-      timeout: "" # 10s
+      # -- Set timeout for scrape (default is 10s)
+      timeout: ""
       # -- Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
       endpointAdditionalProperties: {}
   init:
@@ -424,16 +424,19 @@ redis:
   # -- Any valid redis config options in this section will be applied to each server, For multi-value configs use list instead of string (for example loadmodule) (see below)
   # @default -- see values.yaml
   config:
-    ## Additional redis conf options can be added below
-    ## For all available options see http://download.redis.io/redis-stable/redis.conf
+    ## -- Additional redis conf options can be added below
+    ## -- For all available options see http://download.redis.io/redis-stable/redis.conf
     min-replicas-to-write: 1
-    min-replicas-max-lag: 5   # Value in seconds
-    maxmemory: "0"       # Max memory to use for each redis instance. Default is unlimited.
-    maxmemory-policy: "volatile-lru"  # Max memory policy to use for each redis instance. Default is volatile-lru.
-    # Determines if scheduled RDB backups are created. Default is false.
-    # Please note that local (on-disk) RDBs will still be created when re-syncing with a new slave. The only way to prevent this is to enable diskless replication.
+    # -- Value in seconds
+    min-replicas-max-lag: 5
+    # -- Max memory to use for each redis instance. Default is unlimited.
+    maxmemory: "0"
+    # -- Max memory policy to use for each redis instance. Default is volatile-lru.
+    maxmemory-policy: "volatile-lru"
+    # -- Determines if scheduled RDB backups are created. Default is false.
+    # -- Please note that local (on-disk) RDBs will still be created when re-syncing with a new slave. The only way to prevent this is to enable diskless replication.
     save: "900 1"
-    # When enabled, directly sends the RDB over the wire to slaves, without using the disk as intermediate storage. Default is false.
+    # -- When enabled, directly sends the RDB over the wire to slaves, without using the disk as intermediate storage. Default is false.
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
@@ -745,14 +748,14 @@ exporter:
     # -- Set the namespace the ServiceMonitor should be deployed
     # @default -- `.Release.Namespace`
     namespace: ""
-    # -- Set how frequently Prometheus should scrape
-    interval: "" # 30s
-    # -- Set path to redis-exporter telemtery-path
-    telemetryPath: "" # /metrics
+    # -- Set how frequently Prometheus should scrape (default is 30s)
+    interval: ""
+    # -- Set path to redis-exporter telemtery-path (default is /metrics)
+    telemetryPath: ""
     # -- Set labels for the ServiceMonitor, use this to define your scrape label for Prometheus Operator
     labels: {}
-    # -- Set timeout for scrape
-    timeout: "" # 10s
+    # -- Set timeout for scrape (default is 10s)
+    timeout: ""
     # -- Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
     endpointAdditionalProperties: {}
 
