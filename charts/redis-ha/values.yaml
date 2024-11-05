@@ -38,7 +38,7 @@ podManagementPolicy: OrderedReady
 ## index starts with 0 - which is master on init
 ## i.e. "8,9" means 8th and 9th slave will be replica with replica-priority=0
 ## see also: https://redis.io/topics/sentinel
-# -- Comma separated list of slaves which never get promoted to be master. 
+# -- Comma separated list of slaves which never get promoted to be master.
 # Count starts with 0. Allowed values 1-9. i.e. 3,4 - 3th and 4th redis slave never make it to be master, where master is index 0.
 ro_replicas: ""
 
@@ -416,7 +416,7 @@ redis:
     # -- Failure threshold for startup probe
     failureThreshold: 3
 
-  # -- Array with commands to disable 
+  # -- Array with commands to disable
   disableCommands:
     - FLUSHDB
     - FLUSHALL
@@ -555,7 +555,7 @@ sentinel:
     # -- Failure threshold for startup probe
     failureThreshold: 3
 
-  # -- Minimum number of nodes expected to be live. 
+  # -- Minimum number of nodes expected to be live.
   quorum: 2
 
   # -- Valid sentinel config options in this section will be applied as config options to each sentinel (see below)
@@ -985,5 +985,5 @@ networkPolicy:
 splitBrainDetection:
   # -- Interval between redis sentinel and server split brain checks (in seconds)
   interval: 60
-  # -- splitBrainDetection resources 
+  # -- splitBrainDetection resources
   resources: {}
