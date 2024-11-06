@@ -49,7 +49,8 @@ spec:
       {{- else }}
       serviceAccountName: {{ .Values.haproxy.serviceAccountName }}
       {{- end }}
-      securityContext: {{ toYaml .Values.haproxy.securityContext | nindent 8 }}
+      securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.haproxy.securityContext "context" $) | nindent 8 }}
+      automountServiceAccountToken: {{ .Values.haproxy.serviceAccount.automountToken }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       tolerations:
@@ -102,7 +103,7 @@ spec:
         - sh
         args:
         - /readonly/haproxy_init.sh
-        securityContext: {{ toYaml .Values.haproxy.containerSecurityContext | nindent 10 }}
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.haproxy.containerSecurityContext "context" $) | nindent 10 }}
         volumeMounts:
         - name: config-volume
           mountPath: /readonly
@@ -116,7 +117,7 @@ spec:
       - name: haproxy
         image: {{ .Values.haproxy.image.repository }}:{{ .Values.haproxy.image.tag }}
         imagePullPolicy: {{ .Values.haproxy.image.pullPolicy }}
-        securityContext: {{ toYaml .Values.haproxy.containerSecurityContext | nindent 10 }}
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.haproxy.containerSecurityContext "context" $) | nindent 10 }}
     {{- if or .Values.auth .Values.sentinel.auth}}
         env:
       {{- if .Values.auth }}
