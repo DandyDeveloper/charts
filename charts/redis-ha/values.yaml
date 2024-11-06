@@ -2,11 +2,12 @@
 global:
   # -- Default priority class for all components
   priorityClassName: ""
+  # -- Openshift compatibility options
   compatibility:
     openshift:
       adaptSecurityContext: auto
 
-## Configure resource requests and limits
+## -- Image information for Redis HA
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##
 image:
@@ -51,12 +52,14 @@ labels: {}
 # -- Custom labels for redis service
 serviceLabels: {}
 
+## Custom labels for the redis configmap
 configmap:
   # -- Custom labels for the redis configmap
   labels: {}
 
+## ConfigMap Test Parameters
 configmapTest:
-  ## Image for redis-ha-configmap-test hook
+  # -- Image for redis-ha-configmap-test hook
   image:
     # -- Repository of the configmap shellcheck test image.
     repository: koalaman/shellcheck
@@ -76,7 +79,7 @@ serviceAccount:
   # -- opt in/out of automounting API credentials into container.
   # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   automountToken: false
-  # Annotations to be added to the service account for the redis statefulset
+  # -- Annotations to be added to the service account for the redis statefulset
   annotations: {}
 
 ## Enables a HA Proxy for better LoadBalancing / Sentinel Master support. Automatically proxies to Redis master.
@@ -89,7 +92,7 @@ haproxy:
   servicePort: 6379
   # -- Modify HAProxy deployment container port
   containerPort: 6379
-  ## Enable TLS termination on HAproxy, This will create a volume mount
+  # -- Enable TLS termination on HAproxy, This will create a volume mount
   tls:
     # -- If "true" this will enable TLS termination on haproxy
     enabled: false
@@ -100,6 +103,7 @@ haproxy:
     # -- Path to mount the secret that contains the certificates. haproxy
     certMountPath: /tmp/
 
+  # -- Enable read-only redis-slaves
   readOnly:
     # -- Enable if you want a dedicated port in haproxy for redis-slaves
     enabled: false
