@@ -210,7 +210,7 @@ haproxy:
       timeout: ""
       # -- Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
       endpointAdditionalProperties: {}
-      # for to not check if api has "monitoring.coreos.com/v1"
+      # -- Disable API Check on ServiceMonitor
       disableAPICheck: false
   init:
     # -- Extra init resources

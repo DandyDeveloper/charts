@@ -255,7 +255,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.metrics.port` | HAProxy prometheus metrics scraping port | int | `9101` |
 | `haproxy.metrics.portName` | HAProxy metrics scraping port name | string | `"http-exporter-port"` |
 | `haproxy.metrics.scrapePath` | HAProxy prometheus metrics scraping path | string | `"/metrics"` |
-| `haproxy.metrics.serviceMonitor.disableAPICheck` |  | bool | `false` |
+| `haproxy.metrics.serviceMonitor.disableAPICheck` | Disable API Check on ServiceMonitor | bool | `false` |
 | `haproxy.metrics.serviceMonitor.enabled` | When set true then use a ServiceMonitor to configure scraping | bool | `false` |
 | `haproxy.metrics.serviceMonitor.endpointAdditionalProperties` | Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more. | object | `{}` |
 | `haproxy.metrics.serviceMonitor.interval` | Set how frequently Prometheus should scrape (default is 30s) | string | `""` |
