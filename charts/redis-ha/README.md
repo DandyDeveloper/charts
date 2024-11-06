@@ -255,6 +255,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.metrics.port` | HAProxy prometheus metrics scraping port | int | `9101` |
 | `haproxy.metrics.portName` | HAProxy metrics scraping port name | string | `"http-exporter-port"` |
 | `haproxy.metrics.scrapePath` | HAProxy prometheus metrics scraping path | string | `"/metrics"` |
+| `haproxy.metrics.serviceMonitor.disableAPICheck` | Disable API Check on ServiceMonitor | bool | `false` |
 | `haproxy.metrics.serviceMonitor.enabled` | When set true then use a ServiceMonitor to configure scraping | bool | `false` |
 | `haproxy.metrics.serviceMonitor.endpointAdditionalProperties` | Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more. | object | `{}` |
 | `haproxy.metrics.serviceMonitor.interval` | Set how frequently Prometheus should scrape (default is 30s) | string | `""` |
@@ -324,6 +325,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.resources` | cpu/memory resource limits/requests | object | `{}` |
 | `exporter.scrapePath` | Exporter scrape path | string | `"/metrics"` |
 | `exporter.script` | A custom custom Lua script that will be mounted to exporter for collection of custom metrics. Creates a ConfigMap and sets env var `REDIS_EXPORTER_SCRIPT`. | string | `""` |
+| `exporter.serviceMonitor.disableAPICheck` | Disable API Check on ServiceMonitor | bool | `false` |
 | `exporter.serviceMonitor.enabled` | When set true then use a ServiceMonitor to configure scraping | bool | `false` |
 | `exporter.serviceMonitor.endpointAdditionalProperties` | Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more. | object | `{}` |
 | `exporter.serviceMonitor.interval` | Set how frequently Prometheus should scrape (default is 30s) | string | `""` |

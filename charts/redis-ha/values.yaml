@@ -210,6 +210,8 @@ haproxy:
       timeout: ""
       # -- Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
       endpointAdditionalProperties: {}
+      # -- Disable API Check on ServiceMonitor
+      disableAPICheck: false
   init:
     # -- Extra init resources
     resources: {}
@@ -762,6 +764,8 @@ exporter:
     timeout: ""
     # -- Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
     endpointAdditionalProperties: {}
+    # -- Disable API Check on ServiceMonitor
+    disableAPICheck: false
 
   # prometheus exporter SCANS redis db which can take some time
   # allow different probe settings to not let container crashloop
