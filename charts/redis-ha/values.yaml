@@ -764,7 +764,7 @@ exporter:
     timeout: ""
     # -- Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more.
     endpointAdditionalProperties: {}
-    # for to not check if api has "monitoring.coreos.com/v1"
+    # -- Disable API Check on ServiceMonitor
     disableAPICheck: false
 
   # prometheus exporter SCANS redis db which can take some time
