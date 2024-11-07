@@ -21,7 +21,7 @@ image:
 # -- Full name of the Redis HA Resources
 fullNameOverride: ""
 
-# -- Name override for Redis HA resources 
+# -- Name override for Redis HA resources
 nameOverride: ""
 
 ## Reference to one or more secrets to be used when pulling images
