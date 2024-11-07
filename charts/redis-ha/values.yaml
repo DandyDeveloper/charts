@@ -18,6 +18,12 @@ image:
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
+# -- Full name of the Redis HA Resources
+fullNameOverride: ""
+
+# -- Name override for Redis HA resources
+nameOverride: ""
+
 ## Reference to one or more secrets to be used when pulling images
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 ## This imagePullSecrets is only for redis images
