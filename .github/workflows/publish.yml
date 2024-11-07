@@ -41,7 +41,7 @@ jobs:
       - name: Run chart-releaser (OCI)
         uses: bitdeps/helm-oci-charts-releaser@v0.1.0
         with:
-            oci_registry: ghcr.io/username
+            oci_registry: ghcr.io/dandydeveloper/charts
             oci_username: ${{ secrets.USERNAME }}
             oci_password: ${{ secrets.CR_TOKEN }}
             github_token: ${{ secrets.CR_TOKEN }}
