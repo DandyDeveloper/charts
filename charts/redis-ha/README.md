@@ -78,6 +78,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `extraInitContainers` | Extra init containers to include in StatefulSet | list | `[]` |
 | `extraLabels` | Labels added here are applied to all created resources | object | `{}` |
 | `extraVolumes` | Extra volumes to include in StatefulSet | list | `[]` |
+| `fullNameOverride` | Full name of the Redis HA Resources | string | `""` |
 | `global.compatibility` | Openshift compatibility options | object | `{"openshift":{"adaptSecurityContext":"auto"}}` |
 | `global.priorityClassName` | Default priority class for all components | string | `""` |
 | `hardAntiAffinity` | Whether the Redis server pods should be forced to run on separate nodes. # This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred. # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature | bool | `true` |
@@ -89,6 +90,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
+| `nameOverride` | Name override for Redis HA resources  | string | `""` |
 | `networkPolicy.annotations` | Annotations for NetworkPolicy | object | `{}` |
 | `networkPolicy.egressRules` | user can define egress rules too, uses the same structure as ingressRules | list | `[{"ports":[{"port":53,"protocol":"UDP"},{"port":53,"protocol":"TCP"}],"selectors":[{"namespaceSelector":{}},{"ipBlock":{"cidr":"169.254.0.0/16"}}]}]` |
 | `networkPolicy.egressRules[0].selectors[0]` | Allow all destinations for DNS traffic | object | `{"namespaceSelector":{}}` |
