@@ -1,13 +1,17 @@
 name: Publish Charts to /docs
+
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches:
+    - master
+
 jobs:
   release:
-    # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
-    # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
     permissions:
       contents: write
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,3 +37,11 @@ jobs:
         uses: helm/chart-releaser-action@v1.6.0
         env:
           CR_TOKEN: "${{ secrets.CR_TOKEN }}"
+
+      - name: Run chart-releaser (OCI)
+        uses: bitdeps/helm-oci-charts-releaser@v0.1.0
+        with:
+            oci_registry: ghcr.io/username
+            oci_username: ${{ secrets.USERNAME }}
+            oci_password: ${{ secrets.CR_TOKEN }}
+            github_token: ${{ secrets.CR_TOKEN }}
