@@ -3,6 +3,9 @@ name: Publish Charts to /docs
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches:
+    - master
 
 jobs:
   release:
