@@ -146,16 +146,18 @@ spec:
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8888
+            port: probe
           initialDelaySeconds: 5
           periodSeconds: 3
         readinessProbe:
           httpGet:
             path: /healthz
-            port: 8888
+            port: probe
           initialDelaySeconds: 5
           periodSeconds: 3
         ports:
+        - name: probe
+          containerPort: 8888
         - name: redis
           containerPort: {{ default "6379" .Values.haproxy.containerPort }}
         {{- if .Values.haproxy.readOnly.enabled }}
