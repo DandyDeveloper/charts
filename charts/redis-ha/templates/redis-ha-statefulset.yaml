@@ -1,5 +1,6 @@
 {{- $regexRestoreS3 := "^s3://.+|^S3://.+" -}}
 {{- $regexRestoreSSH := "^.+@.+:.+" -}}
+{{- $regexRestoreRedis := "^redis://(?:[A-Za-z0-9_]+(?::[^@]+)?@)?[A-Za-z0-9.-]+(?::\\d{1,5})?(?:/\\d+)?$" -}}
 
 apiVersion: apps/v1
 kind: StatefulSet
@@ -242,6 +243,34 @@ spec:
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
+        volumeMounts:
+        - name: data
+          mountPath: /data
+{{- end }}
+{{ if regexFind $regexRestoreRedis (toString .Values.restore.redis.source) }}
+      - name: restore-redis
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.init.resources | indent 10 }}
+        command:
+        - sh
+        args:
+        - "-c"
+        - "echo $HOSTNAME | grep -q 'ha-server-0' \
+          && nc -w 5 -vz {{ regexReplaceAll  "^redis:\\/\\/(.*)" .Values.restore.redis.source "${1}" }} \
+          && test ! -s /data/dump.rdb \
+          && timeout {{ .Values.restore.timeout }} \
+          redis-cli -u {{ .Values.restore.redis.source }} --rdb /data/dump.rdb_ \
+          && test -s /data/dump.rdb_ \
+          && if test -s /data/dump.rdb; \
+              then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
+          && mv -v /data/dump.rdb_ /data/dump.rdb || true"
+        {{- if .Values.restore.existingSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.existingSecret }}
+        {{- end }}
         volumeMounts:
         - name: data
           mountPath: /data

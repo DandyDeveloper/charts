@@ -889,6 +889,8 @@ tls:
 # EXAMPLE source for s3 restore: 's3://bucket/dump.rdb'
 # REQUIRED for ssh restore: 'key' should be in one line including CR i.e. '-----BEGIN RSA PRIVATE KEY-----\n...\n...\n...\n-----END RSA PRIVATE KEY-----'
 # EXAMPLE source for ssh restore: 'user@server:/path/dump.rdb'
+# REQUIRED for redis restore: 'source' should be in form of redis connection uri: 'redis://[username:password@]host:port[/db]'
+# EXAMPLE source for redis restore: 'redis://username:password@localhost:6379'
 restore:
   # -- Timeout for the restore
   timeout: 600
@@ -914,6 +916,8 @@ restore:
     # Key should be in one line separated with \n.
     # i.e. `-----BEGIN RSA PRIVATE KEY-----\n...\n...\n-----END RSA PRIVATE KEY-----`
     key: ""
+  redis:
+    source: ""
 
 ## Custom PrometheusRule to be defined
 ## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
