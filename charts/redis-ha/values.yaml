@@ -127,7 +127,7 @@ haproxy:
     # -- HAProxy Image Repository
     repository: public.ecr.aws/docker/library/haproxy
     # -- HAProxy Image Tag
-    tag: 2.9.4-alpine
+    tag: 3.0.7-alpine
     # -- HAProxy Image PullPolicy
     pullPolicy: IfNotPresent
 
@@ -700,9 +700,9 @@ exporter:
   # -- If `true`, the prometheus exporter sidecar is enabled
   enabled: false
   # -- Exporter image
-  image: oliver006/redis_exporter
+  image: quay.io/oliver006/redis_exporter
   # -- Exporter image tag
-  tag: v1.57.0
+  tag: v1.67.0
   # -- Exporter image pullPolicy
   pullPolicy: IfNotPresent
 
