@@ -534,7 +534,7 @@
       {{- if .Values.haproxy.tls.enabled }}
       bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{ else }}
-      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.redis.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ if ne (int $root.Values.redis.port) 0 }}{{ $root.Values.redis.port }}{{ else }}{{ $root.Values.redis.tlsPort }}{{ end }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{- end }}
       use_backend bk_redis_master
     {{- if .Values.haproxy.readOnly.enabled }}
