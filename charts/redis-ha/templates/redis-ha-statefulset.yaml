@@ -8,7 +8,6 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-server
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{ template "redis-ha.fullname" . }}: replica
     {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
