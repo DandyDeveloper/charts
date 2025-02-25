@@ -37,7 +37,7 @@ jobs:
           CR_TOKEN: "${{ secrets.CR_TOKEN }}"
 
       - name: Run chart-releaser (OCI)
-        uses: bitdeps/helm-oci-charts-releaser@v0.3.0
+        uses: appany/helm-oci-chart-releaser@v0.3.0
         with:
           registry: ghcr.io
           repository: dandydeveloper
