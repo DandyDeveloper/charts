@@ -418,15 +418,15 @@ redis:
     # -- Enable Startup Probe
     enabled: true
     # -- Initial delay in seconds for startup probe
-    initialDelaySeconds: 5
+    initialDelaySeconds: 30
     # -- Period in seconds after which startup probe will be repeated
-    periodSeconds: 10
+    periodSeconds: 15
     # -- Timeout seconds for startup probe
     timeoutSeconds: 15
     # -- Success threshold for startup probe
     successThreshold: 1
     # -- Failure threshold for startup probe
-    failureThreshold: 3
+    failureThreshold: 5
 
   # -- Array with commands to disable
   disableCommands:
