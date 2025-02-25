@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  prepare:
+  release:
     runs-on: ubuntu-latest
 
     permissions:
@@ -52,12 +52,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_TOKEN }}
 
-      - name: Push charts to GHCR
+      - name: Push charts to GHCR # Can't use variables in the push due to case sensitivty.
         run: |
           shopt -s nullglob
           for pkg in .cr-release-packages/*; do
             if [ -z "${pkg:-}" ]; then
               break
             fi
-            helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
+            helm push "${pkg}" "oci://ghcr.io/dandydeveloper/charts"
           done
