@@ -19,7 +19,7 @@ image:
   pullPolicy: IfNotPresent
 
 # -- Full name of the Redis HA Resources
-fullNameOverride: ""
+fullnameOverride: ""
 
 # -- Name override for Redis HA resources
 nameOverride: ""
