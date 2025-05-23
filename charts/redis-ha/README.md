@@ -67,9 +67,9 @@ The following table lists the configurable parameters of the Redis chart and the
 | `auth` | Configures redis with AUTH (requirepass & masterauth conf params) | bool | `false` |
 | `authKey` | Defines the key holding the redis password in existing secret. | string | `"auth"` |
 | `configmap.labels` | Custom labels for the redis configmap | object | `{}` |
-| `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.5.0"}` |
+| `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.10.0"}` |
 | `configmapTest.image.repository` | Repository of the configmap shellcheck test image. | string | `"koalaman/shellcheck"` |
-| `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.5.0"` |
+| `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.10.0"` |
 | `configmapTest.resources` | Resources for the ConfigMap test pod | object | `{}` |
 | `containerSecurityContext` | Security context to be added to the Redis containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `emptyDir` | Configuration of `emptyDir`, used only if persistentVolume is disabled and no hostPath specified | object | `{}` |
@@ -78,7 +78,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `extraInitContainers` | Extra init containers to include in StatefulSet | list | `[]` |
 | `extraLabels` | Labels added here are applied to all created resources | object | `{}` |
 | `extraVolumes` | Extra volumes to include in StatefulSet | list | `[]` |
-| `fullNameOverride` | Full name of the Redis HA Resources | string | `""` |
+| `fullnameOverride` | Full name of the Redis HA Resources | string | `""` |
 | `global.compatibility` | Openshift compatibility options | object | `{"openshift":{"adaptSecurityContext":"auto"}}` |
 | `global.priorityClassName` | Default priority class for all components | string | `""` |
 | `hardAntiAffinity` | Whether the Redis server pods should be forced to run on separate nodes. # This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred. # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature | bool | `true` |
@@ -86,7 +86,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `hostPath.path` | Use this path on the host for data storage. path is evaluated as template so placeholders are replaced | string | `""` |
 | `image.pullPolicy` | Redis image pull policy | string | `"IfNotPresent"` |
 | `image.repository` | Redis image repository | string | `"public.ecr.aws/docker/library/redis"` |
-| `image.tag` | Redis image tag | string | `"7.2.4-alpine"` |
+| `image.tag` | Redis image tag | string | `"7.2.7-alpine"` |
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
@@ -165,7 +165,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `schedulerName` | Use an alternate scheduler, e.g. "stork". ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/ | string | `""` |
 | `securityContext` | Security context to be added to the Redis StatefulSet. | object | `{"fsGroup":1000,"runAsNonRoot":true,"runAsUser":1000}` |
 | `serviceAccount.annotations` | Annotations to be added to the service account for the redis statefulset | object | `{}` |
-| `serviceAccount.automountToken` | opt in/out of automounting API credentials into container. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ | bool | `false` |
+| `serviceAccount.automountToken` | opt in/out of automounting API credentials into container. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ | bool | `true` |
 | `serviceAccount.create` | Specifies whether a ServiceAccount should be created | bool | `true` |
 | `serviceAccount.name` | The name of the ServiceAccount to use. If not set and create is true, a name is generated using the redis-ha.fullname template | string | `""` |
 | `serviceLabels` | Custom labels for redis service | object | `{}` |
