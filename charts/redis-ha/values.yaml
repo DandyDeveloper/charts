@@ -615,7 +615,13 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
-
+  ## Assuming your kubelet allows it, you can the following instructions to configure
+  ## specific sysctl parameters
+  ##
+  # sysctls:
+  # - name: net.core.somaxconn
+  #   value: '10000'
+  
 # -- Security context to be added to the Redis containers.
 containerSecurityContext:
   runAsUser: 1000
@@ -626,13 +632,6 @@ containerSecurityContext:
   capabilities:
     drop:
     - ALL
-
-  ## Assuming your kubelet allows it, you can the following instructions to configure
-  ## specific sysctl parameters
-  ##
-  # sysctls:
-  # - name: net.core.somaxconn
-  #   value: '10000'
 
 ## Node labels, affinity, and tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
