@@ -78,7 +78,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `extraInitContainers` | Extra init containers to include in StatefulSet | list | `[]` |
 | `extraLabels` | Labels added here are applied to all created resources | object | `{}` |
 | `extraVolumes` | Extra volumes to include in StatefulSet | list | `[]` |
-| `fullNameOverride` | Full name of the Redis HA Resources | string | `""` |
+| `fullnameOverride` | Full name of the Redis HA Resources | string | `""` |
 | `global.compatibility` | Openshift compatibility options | object | `{"openshift":{"adaptSecurityContext":"auto"}}` |
 | `global.priorityClassName` | Default priority class for all components | string | `""` |
 | `hardAntiAffinity` | Whether the Redis server pods should be forced to run on separate nodes. # This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred. # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature | bool | `true` |
