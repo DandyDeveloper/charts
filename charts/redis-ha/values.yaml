@@ -185,7 +185,7 @@ haproxy:
   serviceAccount:
     # -- Specifies whether a ServiceAccount should be created
     create: true
-    automountToken: false
+    automountToken: true
 
   ## Official HAProxy embedded prometheus metrics settings.
   ## Ref: https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter

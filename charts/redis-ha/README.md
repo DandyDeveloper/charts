@@ -165,7 +165,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `schedulerName` | Use an alternate scheduler, e.g. "stork". ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/ | string | `""` |
 | `securityContext` | Security context to be added to the Redis StatefulSet. | object | `{"fsGroup":1000,"runAsNonRoot":true,"runAsUser":1000}` |
 | `serviceAccount.annotations` | Annotations to be added to the service account for the redis statefulset | object | `{}` |
-| `serviceAccount.automountToken` | opt in/out of automounting API credentials into container. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ | bool | `false` |
+| `serviceAccount.automountToken` | opt in/out of automounting API credentials into container. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ | bool | `true` |
 | `serviceAccount.create` | Specifies whether a ServiceAccount should be created | bool | `true` |
 | `serviceAccount.name` | The name of the ServiceAccount to use. If not set and create is true, a name is generated using the redis-ha.fullname template | string | `""` |
 | `serviceLabels` | Custom labels for redis service | object | `{}` |
