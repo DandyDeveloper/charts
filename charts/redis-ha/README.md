@@ -241,6 +241,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.containerPort` | Modify HAProxy deployment container port | int | `6379` |
 | `haproxy.containerSecurityContext` | Security context to be added to the HAProxy containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `haproxy.customConfig` | Allows for custom config-haproxy.cfg file to be applied. If this is used then default config will be overwriten | string | `nil` |
+| `haproxy.deploymentAnnotations` | HAProxy template deployment annotations | object | `{}` |
 | `haproxy.deploymentStrategy` | Deployment strategy for the haproxy deployment | object | `{"type":"RollingUpdate"}` |
 | `haproxy.emptyDir` | Configuration of `emptyDir` | object | `{}` |
 | `haproxy.enabled` | Enabled HAProxy LoadBalancing/Proxy | bool | `false` |

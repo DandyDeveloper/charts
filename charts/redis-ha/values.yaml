@@ -141,6 +141,10 @@ haproxy:
 
   # -- HAProxy template annotations
   annotations: {}
+
+  # -- HAProxy deployment annotations
+  deploymentAnnotations: {}
+
   # -- HAProxy resources
   resources: {}
   # -- Configuration of `emptyDir`
