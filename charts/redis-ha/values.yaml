@@ -1006,5 +1006,6 @@ networkPolicy:
 splitBrainDetection:
   # -- Interval between redis sentinel and server split brain checks (in seconds)
   interval: 60
+  retryInterval: 10
   # -- splitBrainDetection resources
   resources: {}
