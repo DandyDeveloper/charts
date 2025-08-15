@@ -55,6 +55,9 @@ priorityClassName: ""
 # -- Custom labels for the redis pod
 labels: {}
 
+# -- Pod annotations for the redis pod
+podAnnotations: {}
+
 # -- Custom labels for redis service
 serviceLabels: {}
 
@@ -640,6 +643,9 @@ containerSecurityContext:
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 # -- Node labels for pod assignment
 nodeSelector: {}
+
+# -- Tolerations for pod assignment
+tolerations: []
 
 # -- Whether the Redis server pods should be forced to run on separate nodes.
 ## This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred.
