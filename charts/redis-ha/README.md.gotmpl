@@ -22,6 +22,7 @@ This chart bootstraps a [Redis](https://redis.io) highly available master/slave 
 
 * Kubernetes 1.8+ with Beta APIs enabled
 * PV provisioner support in the underlying infrastructure
+* Helm v3+
 
 ## Upgrading the Chart
 
