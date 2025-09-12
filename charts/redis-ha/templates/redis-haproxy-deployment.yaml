@@ -9,6 +9,12 @@ metadata:
     {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
+  {{- if .Values.haproxy.deploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := .Values.haproxy.deploymentAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   {{- with .Values.haproxy.deploymentStrategy }}
   strategy:
