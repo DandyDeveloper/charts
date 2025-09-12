@@ -6,6 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
+    component: haproxy
     {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
@@ -26,12 +27,14 @@ spec:
     matchLabels:
       app: {{ template "redis-ha.name" . }}-haproxy
       release: {{ .Release.Name }}
+      component: haproxy
   template:
     metadata:
       name: {{ template "redis-ha.fullname" . }}-haproxy
       labels:
         app: {{ template "redis-ha.name" . }}-haproxy
         release: {{ .Release.Name }}
+        component: haproxy
         {{- range $key, $value := .Values.haproxy.labels }}
         {{ $key }}: {{ $value | toString }}
         {{- end }}
@@ -77,6 +80,7 @@ spec:
                 matchLabels:
                   app: {{ template "redis-ha.name" . }}-haproxy
                   release: {{ .Release.Name }}
+                  component: haproxy
               topologyKey: kubernetes.io/hostname
     {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -86,6 +90,7 @@ spec:
                   matchLabels:
                     app: {{ template "redis-ha.name" . }}-haproxy
                     release: {{ .Release.Name }}
+                    component: haproxy
                 topologyKey: kubernetes.io/hostname
     {{- end }}
     {{- end }}
@@ -98,6 +103,7 @@ spec:
           matchLabels:
             app: {{ template "redis-ha.name" . }}-haproxy
             release: {{ .Release.Name }}
+            component: haproxy
       {{- end }}
       initContainers:
       - name: config-init
