@@ -819,10 +819,13 @@ podDisruptionBudget: {}
 
 # -- Configures redis with AUTH (requirepass & masterauth conf params)
 auth: false
+
 # -- (string) A password that configures a `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`)
 redisPassword: ~
+
 # -- Annotations for auth secret
 authSecretAnnotations: {}
+
 ## Use existing secret containing key `authKey` (ignores redisPassword)
 ## Can also store AWS S3 or SSH secrets in this secret
 # -- An existing secret containing a key defined by `authKey` that configures `requirepass` and `masterauth` in the conf
