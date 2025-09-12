@@ -67,6 +67,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `affinity` | Override all other affinity settings for the Redis server pods with a string. | string | `""` |
 | `auth` | Configures redis with AUTH (requirepass & masterauth conf params) | bool | `false` |
 | `authKey` | Defines the key holding the redis password in existing secret. | string | `"auth"` |
+| `authSecretAnnotations` | Annotations for auth secret | object | `{}` |
 | `configmap.labels` | Custom labels for the redis configmap | object | `{}` |
 | `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.10.0"}` |
 | `configmapTest.image.repository` | Repository of the configmap shellcheck test image. | string | `"koalaman/shellcheck"` |
@@ -173,6 +174,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `serviceLabels` | Custom labels for redis service | object | `{}` |
 | `splitBrainDetection.interval` | Interval between redis sentinel and server split brain checks (in seconds) | int | `60` |
 | `splitBrainDetection.resources` | splitBrainDetection resources | object | `{}` |
+| `splitBrainDetection.retryInterval` |  | int | `10` |
 | `sysctlImage.command` | sysctlImage command to execute | list | `[]` |
 | `sysctlImage.enabled` | Enable an init container to modify Kernel settings | bool | `false` |
 | `sysctlImage.mountHostSys` | Mount the host `/sys` folder to `/host-sys` | bool | `false` |
@@ -461,14 +463,17 @@ Should your Pod require additional egress rules, define them in a `egressRules` 
 
 ## Sentinel and redis server split brain detection
 
-Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Majority of original discussion on the problem has happened at the <https://github.com/DandyDeveloper/charts/issues/121>.
+Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Majority of original discussion on the problem has happened at the #121.
 
 The proposed solution is currently implemented as a sidecar container that runs a bash script with the following logic:
-1. At intervals defined by `splitBrainDetection.interval`, the sidecar checks which node is recognized as master by Sentinel.
+
+1. At intervals defined by splitBrainDetection.interval, the sidecar checks which node is recognized as master by Sentinel.
 2. If the current pod is the master according to Sentinel, it verifies that the local Redis server is also running as master.
 3. If the current pod is not the master, it ensures the local Redis server is replicating from the correct master node.
-4. If any of these checks fail, the sidecar will retry the check at intervals defined by `splitBrainDetection.retryInterval`.
+4. If any of these checks fail, the sidecar will retry the check at intervals defined by splitBrainDetection.retryInterval.
 5. If the checks continue to fail after the retry attempts, the sidecar triggers a reinitialization: it regenerates the Redis configuration and instructs the Redis server to shut down. Kubernetes will then automatically restart the container.
+
+# Change Log
 
 ## 4.14.9 - ** POTENTIAL BREAKING CHANGE. **
 Introduced the ability to change the Haproxy Deployment container pod
