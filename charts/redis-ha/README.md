@@ -91,7 +91,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
-| `nameOverride` | Name override for Redis HA resources  | string | `""` |
+| `nameOverride` | Name override for Redis HA resources | string | `""` |
 | `networkPolicy.annotations` | Annotations for NetworkPolicy | object | `{}` |
 | `networkPolicy.egressRules` | user can define egress rules too, uses the same structure as ingressRules | list | `[{"ports":[{"port":53,"protocol":"UDP"},{"port":53,"protocol":"TCP"}],"selectors":[{"namespaceSelector":{}},{"ipBlock":{"cidr":"169.254.0.0/16"}}]}]` |
 | `networkPolicy.egressRules[0].selectors[0]` | Allow all destinations for DNS traffic | object | `{"namespaceSelector":{}}` |
@@ -141,11 +141,11 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.readinessProbe.successThreshold` | Success threshold for readiness probe | int | `1` |
 | `redis.readinessProbe.timeoutSeconds` | Timeout seconds for readiness probe | int | `15` |
 | `redis.resources` | CPU/Memory for master/slave nodes resource requests/limits | object | `{}` |
-| `redis.startupProbe` | Startup probe parameters for redis container | object | `{"enabled":true,"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":15}` |
+| `redis.startupProbe` | Startup probe parameters for redis container | object | `{"enabled":true,"failureThreshold":5,"initialDelaySeconds":30,"periodSeconds":15,"successThreshold":1,"timeoutSeconds":15}` |
 | `redis.startupProbe.enabled` | Enable Startup Probe | bool | `true` |
-| `redis.startupProbe.failureThreshold` | Failure threshold for startup probe | int | `3` |
-| `redis.startupProbe.initialDelaySeconds` | Initial delay in seconds for startup probe | int | `5` |
-| `redis.startupProbe.periodSeconds` | Period in seconds after which startup probe will be repeated | int | `10` |
+| `redis.startupProbe.failureThreshold` | Failure threshold for startup probe | int | `5` |
+| `redis.startupProbe.initialDelaySeconds` | Initial delay in seconds for startup probe | int | `30` |
+| `redis.startupProbe.periodSeconds` | Period in seconds after which startup probe will be repeated | int | `15` |
 | `redis.startupProbe.successThreshold` | Success threshold for startup probe | int | `1` |
 | `redis.startupProbe.timeoutSeconds` | Timeout seconds for startup probe | int | `15` |
 | `redis.terminationGracePeriodSeconds` | Increase terminationGracePeriodSeconds to allow writing large RDB snapshots. (k8s default is 30s) ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced | int | `60` |
@@ -155,6 +155,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redisPassword` | A password that configures a `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`) | string | `nil` |
 | `replicas` | Number of redis master/slave | int | `3` |
 | `restore.existingSecret` | Set existingSecret to true to use secret specified in existingSecret above | bool | `false` |
+| `restore.redis.source` |  | string | `""` |
 | `restore.s3.access_key` | Restore init container - AWS AWS_ACCESS_KEY_ID to access restore.s3.source | string | `""` |
 | `restore.s3.region` | Restore init container - AWS AWS_REGION to access restore.s3.source | string | `""` |
 | `restore.s3.secret_key` | Restore init container - AWS AWS_SECRET_ACCESS_KEY to access restore.s3.source | string | `""` |
@@ -166,7 +167,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `schedulerName` | Use an alternate scheduler, e.g. "stork". ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/ | string | `""` |
 | `securityContext` | Security context to be added to the Redis StatefulSet. | object | `{"fsGroup":1000,"runAsNonRoot":true,"runAsUser":1000}` |
 | `serviceAccount.annotations` | Annotations to be added to the service account for the redis statefulset | object | `{}` |
-| `serviceAccount.automountToken` | opt in/out of automounting API credentials into container. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ | bool | `true` |
+| `serviceAccount.automountToken` | opt in/out of automounting API credentials into container. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ | bool | `false` |
 | `serviceAccount.create` | Specifies whether a ServiceAccount should be created | bool | `true` |
 | `serviceAccount.name` | The name of the ServiceAccount to use. If not set and create is true, a name is generated using the redis-ha.fullname template | string | `""` |
 | `serviceLabels` | Custom labels for redis service | object | `{}` |
@@ -184,6 +185,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `tls.certFile` | Name of certificate file | string | `"redis.crt"` |
 | `tls.dhParamsFile` | Name of Diffie-Hellman (DH) key exchange parameters file (Example: redis.dh) | string | `nil` |
 | `tls.keyFile` | Name of key file | string | `"redis.key"` |
+| `tolerations` |  | list | `[]` |
 | `topologySpreadConstraints.enabled` | Enable topology spread constraints | bool | `false` |
 | `topologySpreadConstraints.maxSkew` | Max skew of pods tolerated | string | `""` |
 | `topologySpreadConstraints.topologyKey` | Topology key for spread constraints | string | `""` |
@@ -242,7 +244,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.containerPort` | Modify HAProxy deployment container port | int | `6379` |
 | `haproxy.containerSecurityContext` | Security context to be added to the HAProxy containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `haproxy.customConfig` | Allows for custom config-haproxy.cfg file to be applied. If this is used then default config will be overwriten | string | `nil` |
-| `haproxy.deploymentAnnotations` | HAProxy template deployment annotations | object | `{}` |
+| `haproxy.deploymentAnnotations` | HAProxy deployment annotations | object | `{}` |
 | `haproxy.deploymentStrategy` | Deployment strategy for the haproxy deployment | object | `{"type":"RollingUpdate"}` |
 | `haproxy.emptyDir` | Configuration of `emptyDir` | object | `{}` |
 | `haproxy.enabled` | Enabled HAProxy LoadBalancing/Proxy | bool | `false` |
@@ -250,7 +252,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.hardAntiAffinity` | Whether the haproxy pods should be forced to run on separate nodes. | bool | `true` |
 | `haproxy.image.pullPolicy` | HAProxy Image PullPolicy | string | `"IfNotPresent"` |
 | `haproxy.image.repository` | HAProxy Image Repository | string | `"public.ecr.aws/docker/library/haproxy"` |
-| `haproxy.image.tag` | HAProxy Image Tag | string | `"2.9.4-alpine"` |
+| `haproxy.image.tag` | HAProxy Image Tag | string | `"3.0.8-alpine"` |
 | `haproxy.imagePullSecrets` | Reference to one or more secrets to be used when pulling images ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ | list | `[]` |
 | `haproxy.init.resources` | Extra init resources | object | `{}` |
 | `haproxy.labels` | Custom labels for the haproxy pod | object | `{}` |
@@ -288,7 +290,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.service.loadBalancerSourceRanges` | List of CIDR's allowed to connect to LoadBalancer | list | `[]` |
 | `haproxy.service.nodePort` | HAProxy service nodePort value (haproxy.service.type must be NodePort) | int | `nil` |
 | `haproxy.service.type` | HAProxy service type "ClusterIP", "LoadBalancer" or "NodePort" | string | `"ClusterIP"` |
-| `haproxy.serviceAccount.automountToken` |  | bool | `false` |
+| `haproxy.serviceAccount.automountToken` |  | bool | `true` |
 | `haproxy.serviceAccount.create` | Specifies whether a ServiceAccount should be created | bool | `true` |
 | `haproxy.serviceAccountName` | HAProxy serviceAccountName | string | `"redis-sa"` |
 | `haproxy.servicePort` | Modify HAProxy service port | int | `6379` |
@@ -311,7 +313,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.address` | Address/Host for Redis instance. Exists to circumvent issues with IPv6 dns resolution that occurs on certain environments | string | `"localhost"` |
 | `exporter.enabled` | If `true`, the prometheus exporter sidecar is enabled | bool | `false` |
 | `exporter.extraArgs` | Additional args for redis exporter | object | `{}` |
-| `exporter.image` | Exporter image | string | `"oliver006/redis_exporter"` |
+| `exporter.image` | Exporter image | string | `"quay.io/oliver006/redis_exporter"` |
 | `exporter.livenessProbe.httpGet.path` | Exporter liveness probe httpGet path | string | `"/metrics"` |
 | `exporter.livenessProbe.httpGet.port` | Exporter liveness probe httpGet port | int | `9121` |
 | `exporter.livenessProbe.initialDelaySeconds` | Initial delay in seconds for liveness probe of exporter | int | `15` |
@@ -337,7 +339,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.serviceMonitor.namespace` | Set the namespace the ServiceMonitor should be deployed | string | `.Release.Namespace` |
 | `exporter.serviceMonitor.telemetryPath` | Set path to redis-exporter telemtery-path (default is /metrics) | string | `""` |
 | `exporter.serviceMonitor.timeout` | Set timeout for scrape (default is 10s) | string | `""` |
-| `exporter.tag` | Exporter image tag | string | `"v1.57.0"` |
+| `exporter.tag` | Exporter image tag | string | `"v1.67.0"` |
 | `prometheusRule.additionalLabels` | Additional labels to be set in metadata. | object | `{}` |
 | `prometheusRule.enabled` | If true, creates a Prometheus Operator PrometheusRule. | bool | `false` |
 | `prometheusRule.interval` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). | string | `"10s"` |
@@ -485,12 +487,3 @@ As a result, from this version onwards Kubernetes versions older than 1.19 will 
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs](https://github.com/norwoodj/helm-docs)
-
-## 4.34.1 - Upgrade may complain about selector label changes being immutable
-This version introduced changes to the selector labels for the Deployments. Depending on the policies in your cluster, you may see an error like this when upgrading:
-
-```
-Error: UPGRADE FAILED: cannot patch "redis-redis-ha-haproxy" with kind Deployment: Deployment.apps "redis-redis-ha-haproxy" is invalid: spec.selector: Invalid value: v1.LabelSelector{MatchLabels:map[string]string{"app":"redis-ha-haproxy", "component":"haproxy", "release":"redis"}, MatchExpressions:[]v1.LabelSelectorRequirement(nil)}: field is immutable
-```
-
-In these cases, you'll need to delete the Deployment for the haproxy, or simple do a forceful upgrade. 
