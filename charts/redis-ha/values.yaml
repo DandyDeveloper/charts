@@ -1021,6 +1021,3 @@ splitBrainDetection:
   retryInterval: 10
   # -- splitBrainDetection resources
   resources: {}
-
-# Array of extra objects to deploy with the release
-extraDeploy: []
