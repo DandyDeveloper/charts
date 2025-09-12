@@ -14,7 +14,7 @@ image:
   # -- Redis image repository
   repository: public.ecr.aws/docker/library/redis
   # -- Redis image tag
-  tag: 7.2.7-alpine
+  tag: 8.2.1-alpine
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
@@ -141,6 +141,10 @@ haproxy:
 
   # -- HAProxy template annotations
   annotations: {}
+
+  # -- HAProxy deployment annotations
+  deploymentAnnotations: {}
+
   # -- HAProxy resources
   resources: {}
   # -- Configuration of `emptyDir`
@@ -640,6 +644,10 @@ containerSecurityContext:
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 # -- Node labels for pod assignment
 nodeSelector: {}
+
+## -- Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
 
 # -- Whether the Redis server pods should be forced to run on separate nodes.
 ## This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred.
