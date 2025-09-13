@@ -3,7 +3,7 @@ name: grafana-agent
 description: Deploy an instance of the Grafana agent on all appropriate nodes for scraping Prometheus metrics.
 type: application
 home: https://grafana.com/docs/agent/latest/
-version: 0.19.1
+version: 0.19.2
 appVersion: "v0.20.0"
 keywords:
 - monitoring
@@ -11,7 +11,7 @@ keywords:
 - cortex
 dependencies:
 - name: consul
-  version: 0.33.0
+  version: 1.3.2
   repository: https://helm.releases.hashicorp.com
   condition: scrapingServiceMode.enabled
 maintainers:

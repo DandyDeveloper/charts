@@ -4,6 +4,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: {{ template "redis-ha.fullname" . }}-network-policy
+  namespace: {{ .Release.Namespace | quote }}
 {{- if .Values.networkPolicy.annotations }}
   annotations:
     {{- range $key, $value := .Values.networkPolicy.annotations }}
@@ -33,13 +34,6 @@ spec:
         - port: {{ .Values.redis.port }}
           protocol: TCP
         - port: {{ .Values.sentinel.port }}
-          protocol: TCP
-    - to:
-      - namespaceSelector: {}
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
           protocol: TCP
 {{-  range $rule := .Values.networkPolicy.egressRules }}
     - to:

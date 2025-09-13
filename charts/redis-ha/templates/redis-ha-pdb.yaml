@@ -1,5 +1,5 @@
 {{- if .Values.podDisruptionBudget -}}
-apiVersion: policy/v1beta1
+apiVersion: {{ template "redis-ha.podDisruptionBudget.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ template "redis-ha.fullname" . }}-pdb
@@ -12,9 +12,6 @@ metadata:
 spec:
   selector:
     matchLabels:
-      # The replica label is set on StatefulSet pods but not the Test pods
-      # We want to avoid including the Test pods in the budget
-      {{ template "redis-ha.fullname" . }}: replica
       release: {{ .Release.Name }}
       app: {{ template "redis-ha.name" . }}
 {{ toYaml .Values.podDisruptionBudget | indent 2 }}

@@ -1,5 +1,5 @@
 {{- if .Values.haproxy.podDisruptionBudget -}}
-apiVersion: policy/v1beta1
+apiVersion: {{ template "redis-ha.podDisruptionBudget.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ template "redis-ha.fullname" . }}-haproxy-pdb
@@ -14,5 +14,6 @@ spec:
     matchLabels:
       release: {{ .Release.Name }}
       app: {{ template "redis-ha.name" . }}-haproxy
+      component: haproxy
 {{ toYaml .Values.haproxy.podDisruptionBudget | indent 2 }}
 {{- end -}}

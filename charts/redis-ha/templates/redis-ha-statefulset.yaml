@@ -1,5 +1,6 @@
 {{- $regexRestoreS3 := "^s3://.+|^S3://.+" -}}
 {{- $regexRestoreSSH := "^.+@.+:.+" -}}
+{{- $regexRestoreRedis := "^redis://(?:[A-Za-z0-9_]+(?::[^@]+)?@)?[A-Za-z0-9.-]+(?::\\d{1,5})?(?:/\\d+)?$" -}}
 
 apiVersion: apps/v1
 kind: StatefulSet
@@ -24,6 +25,9 @@ spec:
   podManagementPolicy: {{ .Values.podManagementPolicy }}
   updateStrategy:
     type: {{ .Values.redis.updateStrategy.type }}
+  {{- if .Values.redis.minReadySeconds }}
+  minReadySeconds: {{ .Values.redis.minReadySeconds }}
+  {{- end }}
   template:
     metadata:
       annotations:
@@ -105,8 +109,7 @@ spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
       {{- end }}
-      securityContext:
-{{ toYaml .Values.securityContext | indent 8 }}
+      securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.securityContext "context" $) | nindent 8 }}
       serviceAccountName: {{ template "redis-ha.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automountToken }}
       initContainers:
@@ -114,29 +117,22 @@ spec:
       - name: init-sysctl
         image: {{ template "redis.sysctl.image" . }}
         imagePullPolicy: {{ .Values.sysctlImage.pullPolicy }}
-        resources:
-{{ toYaml .Values.sysctlImage.resources | indent 10 }}
+        resources: {{ toYaml .Values.sysctlImage.resources | nindent 10 }}
         {{- if .Values.sysctlImage.mountHostSys }}
         volumeMounts:
         - name: host-sys
           mountPath: /host-sys
         {{- end }}
-        command:
-{{ toYaml .Values.sysctlImage.command | indent 10 }}
-        securityContext:
-          runAsNonRoot: false
-          privileged: true
-          runAsUser: 0
+        command: {{ toYaml .Values.sysctlImage.command | nindent 10 }}
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
       {{- end }}
 {{- if and .Values.hostPath.path .Values.hostPath.chown }}
       - name: hostpath-chown
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        securityContext:
-          runAsNonRoot: false
-          runAsUser: 0
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
         command:
         - chown
-        - "{{ .Values.securityContext.runAsUser }}"
+        - "{{ .Values.containerSecurityContext.runAsUser }}"
         - /data
         volumeMounts:
         - name: data
@@ -151,6 +147,7 @@ spec:
         - sh
         args:
         - /readonly-config/init.sh
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
         env:
 {{- $replicas := int (toString .Values.replicas) -}}
 {{- range $i := until $replicas }}
@@ -238,9 +235,7 @@ spec:
            && if test -s /data/dump.rdb; \
               then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
            && mv -v /data/dump.rdb_ /data/dump.rdb"
-        securityContext:
-          runAsNonRoot: false
-          runAsUser: 0
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
         envFrom:
         - secretRef:
           {{- if .Values.restore.existingSecret }}
@@ -248,6 +243,34 @@ spec:
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
+        volumeMounts:
+        - name: data
+          mountPath: /data
+{{- end }}
+{{ if regexFind $regexRestoreRedis (toString .Values.restore.redis.source) }}
+      - name: restore-redis
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.init.resources | indent 10 }}
+        command:
+        - sh
+        args:
+        - "-c"
+        - "echo $HOSTNAME | grep -q 'ha-server-0' \
+          && nc -w 5 -vz {{ regexReplaceAll  "^redis:\\/\\/(.*)" .Values.restore.redis.source "${1}" }} \
+          && test ! -s /data/dump.rdb \
+          && timeout {{ .Values.restore.timeout }} \
+          redis-cli -u {{ .Values.restore.redis.source }} --rdb /data/dump.rdb_ \
+          && test -s /data/dump.rdb_ \
+          && if test -s /data/dump.rdb; \
+              then cp -v /data/dump.rdb /data/dump.rdb_orig; fi \
+          && mv -v /data/dump.rdb_ /data/dump.rdb || true"
+        {{- if .Values.restore.existingSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.existingSecret }}
+        {{- end }}
         volumeMounts:
         - name: data
           mountPath: /data
@@ -260,9 +283,18 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
-        - redis-server
+        {{- if .Values.redis.customCommand }}
+{{ toYaml .Values.redis.customCommand | indent 10 }}
+        {{- else }}
+          - redis-server
+        {{- end }}
         args:
-        - /data/conf/redis.conf
+        {{- if .Values.redis.customArgs }}
+{{ toYaml .Values.redis.customArgs | indent 10 }}
+        {{- else }}
+          - /data/conf/redis.conf
+        {{- end }}
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
         {{- if .Values.auth }}
         env:
         - name: AUTH
@@ -275,6 +307,11 @@ spec:
             {{- end }}
               key: {{ .Values.authKey }}
         {{- end }}
+        {{- if .Values.redis.envFrom }}
+        envFrom:
+{{ toYaml .Values.redis.envFrom | indent 10 }}
+        {{- end }}
+        {{- if .Values.redis.livenessProbe.enabled }}
         livenessProbe:
           initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.redis.livenessProbe.periodSeconds }}
@@ -286,6 +323,8 @@ spec:
               - sh
               - -c
               - /health/redis_liveness.sh
+        {{- end }}
+        {{- if .Values.redis.readinessProbe.enabled }}
         readinessProbe:
           initialDelaySeconds: {{ .Values.redis.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.redis.readinessProbe.periodSeconds }}
@@ -297,6 +336,20 @@ spec:
               - sh
               - -c
               - /health/redis_readiness.sh
+        {{- end }}
+        {{- if .Values.redis.startupProbe.enabled }}
+        startupProbe:
+          initialDelaySeconds: {{ .Values.redis.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.redis.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.redis.startupProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.redis.startupProbe.successThreshold }}
+          failureThreshold: {{ .Values.redis.startupProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/redis_readiness.sh
+        {{- end }}
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
         ports:
@@ -329,9 +382,18 @@ spec:
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
+        {{- if .Values.sentinel.customCommand }}
+{{ toYaml .Values.sentinel.customCommand | indent 10 }}
+        {{- else }}
           - redis-sentinel
+        {{- end }}
         args:
+        {{- if .Values.sentinel.customArgs }}
+{{ toYaml .Values.sentinel.customArgs | indent 10 }}
+        {{- else }}
           - /data/conf/sentinel.conf
+        {{- end }}
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
 {{- if or .Values.auth .Values.sentinel.auth}}
         env:
   {{- if .Values.auth }}
@@ -357,6 +419,7 @@ spec:
               key: {{ .Values.sentinel.authKey }}
   {{- end }}
 {{- end }}
+        {{- if .Values.sentinel.livenessProbe.enabled }}
         livenessProbe:
           initialDelaySeconds: {{ .Values.sentinel.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.sentinel.livenessProbe.periodSeconds }}
@@ -368,6 +431,8 @@ spec:
               - sh
               - -c
               - /health/sentinel_liveness.sh
+        {{- end }}
+        {{- if .Values.sentinel.readinessProbe.enabled }}
         readinessProbe:
           initialDelaySeconds: {{ .Values.sentinel.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.sentinel.readinessProbe.periodSeconds }}
@@ -379,6 +444,20 @@ spec:
               - sh
               - -c
               - /health/sentinel_liveness.sh
+        {{- end }}
+        {{- if .Values.sentinel.startupProbe.enabled }}
+        startupProbe:
+          initialDelaySeconds: {{ .Values.sentinel.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.sentinel.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.sentinel.startupProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.sentinel.startupProbe.successThreshold }}
+          failureThreshold: {{ .Values.sentinel.startupProbe.failureThreshold }}
+          exec:
+            command:
+              - sh
+              - -c
+              - /health/sentinel_liveness.sh
+        {{- end }}
         resources:
 {{ toYaml .Values.sentinel.resources | indent 10 }}
         ports:
@@ -412,6 +491,7 @@ spec:
           - sh
         args:
           - /readonly-config/fix-split-brain.sh
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
         env:
 {{- $replicas := int (toString .Values.replicas) -}}
 {{- range $i := until $replicas }}
@@ -461,6 +541,7 @@ spec:
         {{- range $key, $value := .Values.exporter.extraArgs }}
           - --{{ $key }}={{ $value }}
         {{- end }}
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
         env:
           - name: REDIS_ADDR
           {{- if .Values.exporter.sslEnabled }}
@@ -492,19 +573,9 @@ spec:
             value: /tls-certs/{{ .Values.tls.caCertFile }}
         {{- end }}
         livenessProbe:
-          httpGet:
-            path: {{ .Values.exporter.scrapePath }}
-            port: {{ .Values.exporter.port }}
-          initialDelaySeconds: {{ .Values.exporter.livenessProbe.initialDelaySeconds }}
-          timeoutSeconds: {{ .Values.exporter.livenessProbe.timeoutSeconds }}
-          periodSeconds: {{ .Values.exporter.livenessProbe.periodSeconds }}
+{{ toYaml .Values.exporter.livenessProbe | indent 10 }}
         readinessProbe:
-          httpGet:
-            path: {{ .Values.exporter.scrapePath }}
-            port: {{ .Values.exporter.port }}
-          initialDelaySeconds: {{ .Values.exporter.readinessProbe.initialDelaySeconds }}
-          timeoutSeconds: {{ .Values.exporter.readinessProbe.timeoutSeconds }}
-          periodSeconds: {{ .Values.exporter.readinessProbe.periodSeconds }}
+{{ toYaml .Values.exporter.readinessProbe | indent 10 }}
         resources:
 {{ toYaml .Values.exporter.resources | indent 10 }}
         ports:
@@ -523,9 +594,9 @@ spec:
 {{- if .Values.extraContainers }}
 {{- toYaml .Values.extraContainers | nindent 6 }}
 {{- end -}}
-{{- if .Values.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName }}
-{{- end }}
+      {{- with .Values.priorityClassName | default .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       volumes:
       - name: config
         configMap:
@@ -561,12 +632,16 @@ spec:
 {{- end -}}
 {{- if .Values.persistentVolume.enabled }}
   volumeClaimTemplates:
-  - metadata:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
       name: data
       annotations:
       {{- range $key, $value := .Values.persistentVolume.annotations }}
         {{ $key }}: {{ $value }}
       {{- end }}
+      labels: {{- toYaml .Values.persistentVolume.labels | nindent 8 }}
+
     spec:
       accessModes:
       {{- range .Values.persistentVolume.accessModes }}
