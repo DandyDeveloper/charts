@@ -3,6 +3,34 @@ entries:
   grafana-agent:
   - apiVersion: v2
     appVersion: v0.20.0
+    created: "2025-09-13T00:10:48.643110029Z"
+    dependencies:
+    - condition: scrapingServiceMode.enabled
+      name: consul
+      repository: https://helm.releases.hashicorp.com
+      version: 1.3.2
+    description: Deploy an instance of the Grafana agent on all appropriate nodes
+      for scraping Prometheus metrics.
+    digest: d338b3f3fcacea14307b345e152dd17551e9392fd06c0651e99f5696491cd0e3
+    home: https://grafana.com/docs/agent/latest/
+    keywords:
+    - monitoring
+    - prometheus
+    - cortex
+    maintainers:
+    - email: aaron.layfield@gmail.com
+      name: dandydeveloper
+    name: grafana-agent
+    sources:
+    - https://grafana.com/docs/agent/latest/
+    - https://github.com/DandyDeveloper/charts/blob/master/charts/grafana-agent
+    - https://github.com/hashicorp/consul
+    type: application
+    urls:
+    - https://github.com/DandyDeveloper/charts/releases/download/grafana-agent-0.19.2/grafana-agent-0.19.2.tgz
+    version: 0.19.2
+  - apiVersion: v2
+    appVersion: v0.20.0
     created: "2024-02-05T17:55:29.127832592Z"
     dependencies:
     - condition: scrapingServiceMode.enabled
@@ -3722,4 +3750,4 @@ entries:
     urls:
     - redis-ha-4.4.2.tgz
     version: 4.4.2
-generated: "2025-09-13T00:08:59.859520238Z"
+generated: "2025-09-13T00:10:48.643360099Z"
