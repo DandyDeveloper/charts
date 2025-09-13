@@ -338,7 +338,9 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.serviceMonitor.endpointAdditionalProperties` | Set additional properties for the ServiceMonitor endpoints such as relabeling, scrapeTimeout, tlsConfig, and more. | object | `{}` |
 | `exporter.serviceMonitor.interval` | Set how frequently Prometheus should scrape (default is 30s) | string | `""` |
 | `exporter.serviceMonitor.labels` | Set labels for the ServiceMonitor, use this to define your scrape label for Prometheus Operator | object | `{}` |
+| `exporter.serviceMonitor.metricRelabelings` |  | list | `[]` |
 | `exporter.serviceMonitor.namespace` | Set the namespace the ServiceMonitor should be deployed | string | `.Release.Namespace` |
+| `exporter.serviceMonitor.relabelings` |  | list | `[]` |
 | `exporter.serviceMonitor.telemetryPath` | Set path to redis-exporter telemtery-path (default is /metrics) | string | `""` |
 | `exporter.serviceMonitor.timeout` | Set timeout for scrape (default is 10s) | string | `""` |
 | `exporter.tag` | Exporter image tag | string | `"v1.67.0"` |
