@@ -48,8 +48,8 @@ spec:
         prometheus.io/path: "{{ .Values.haproxy.metrics.scrapePath }}"
       {{- end }}
         checksum/config: {{ print (include "config-haproxy.cfg" .) (include "config-haproxy_init.sh" .) | sha256sum }}
-      {{- if .Values.haproxy.annotations }}
-{{ toYaml .Values.haproxy.annotations | indent 8 }}
+      {{- if .Values.haproxy.podAnnotations }}
+{{ toYaml .Values.haproxy.podAnnotations | indent 8 }}
       {{- end }}
     spec:
       # Needed when using unmodified rbac-setup.yml
