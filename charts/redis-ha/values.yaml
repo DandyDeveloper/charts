@@ -145,8 +145,12 @@ haproxy:
   # -- HAProxy deployment annotations
   deploymentAnnotations: {}
 
+  # -- Annotations to be added to the HAProxy deployment pods
+  podAnnotations: {}
+
   # -- HAProxy resources
   resources: {}
+
   # -- Configuration of `emptyDir`
   emptyDir: {}
 
@@ -480,6 +484,9 @@ redis:
 
   # -- Annotations for the redis statefulset
   annotations: {}
+
+  # -- Annotations to be added to the redis statefulset pods
+  podAnnotations: {}
 
   # -- Update strategy for Redis StatefulSet
   ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies

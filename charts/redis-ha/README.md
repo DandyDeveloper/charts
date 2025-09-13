@@ -133,6 +133,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
 | `redis.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
 | `redis.masterGroupName` | Redis convention for naming the cluster group: must match `^[\\w-\\.]+$` and can be templated | string | `"mymaster"` |
+| `redis.podAnnotations` | Annotations to be added to the redis statefulset pods | object | `{}` |
 | `redis.port` | Port to access the redis service | int | `6379` |
 | `redis.readinessProbe` | Readiness probe parameters for redis container | object | `{"enabled":true,"failureThreshold":5,"initialDelaySeconds":30,"periodSeconds":15,"successThreshold":1,"timeoutSeconds":15}` |
 | `redis.readinessProbe.enabled` | Enable the Readiness Probe | bool | `true` |
@@ -276,6 +277,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.networkPolicy.enabled` | whether NetworkPolicy for Haproxy should be created | bool | `false` |
 | `haproxy.networkPolicy.ingressRules` | user defined ingress rules that Haproxy should permit into. uses the format defined in https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors | list | `[]` |
 | `haproxy.networkPolicy.labels` | Labels for Haproxy NetworkPolicy | object | `{}` |
+| `haproxy.podAnnotations` | Annotations to be added to the HAProxy deployment pods | object | `{}` |
 | `haproxy.podDisruptionBudget` | Pod Disruption Budget ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/ | object | `{}` |
 | `haproxy.priorityClassName` | Kubernetes priorityClass name for the haproxy pod | string | `""` |
 | `haproxy.readOnly` | Enable read-only redis-slaves | object | `{"enabled":false,"port":6380}` |
