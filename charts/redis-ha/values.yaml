@@ -145,8 +145,12 @@ haproxy:
   # -- HAProxy deployment annotations
   deploymentAnnotations: {}
 
+  # -- Annotations to be added to the HAProxy deployment pods
+  podAnnotations: {}
+
   # -- HAProxy resources
   resources: {}
+
   # -- Configuration of `emptyDir`
   emptyDir: {}
 
