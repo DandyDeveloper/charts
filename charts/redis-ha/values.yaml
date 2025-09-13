@@ -14,12 +14,12 @@ image:
   # -- Redis image repository
   repository: public.ecr.aws/docker/library/redis
   # -- Redis image tag
-  tag: 7.2.7-alpine
+  tag: 8.2.1-alpine
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
 # -- Full name of the Redis HA Resources
-fullNameOverride: ""
+fullnameOverride: ""
 
 # -- Name override for Redis HA resources
 nameOverride: ""
@@ -142,8 +142,8 @@ haproxy:
   # -- HAProxy template annotations
   annotations: {}
 
-  # -- Annotations to be added to the HAProxy deployment pods
-  podAnnotations: {}
+  # -- HAProxy deployment annotations
+  deploymentAnnotations: {}
 
   # -- HAProxy resources
   resources: {}
@@ -189,7 +189,7 @@ haproxy:
   serviceAccount:
     # -- Specifies whether a ServiceAccount should be created
     create: true
-    automountToken: false
+    automountToken: true
 
   ## Official HAProxy embedded prometheus metrics settings.
   ## Ref: https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter
@@ -622,6 +622,13 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
   runAsNonRoot: true
+  ## Assuming your kubelet allows it, you can the following instructions to configure
+  ## specific sysctl parameters
+  ##
+  # sysctls:
+  # - name: net.core.somaxconn
+  #   value: '10000'
+
 
 # -- Security context to be added to the Redis containers.
 containerSecurityContext:
@@ -634,12 +641,6 @@ containerSecurityContext:
     drop:
     - ALL
 
-  ## Assuming your kubelet allows it, you can the following instructions to configure
-  ## specific sysctl parameters
-  ##
-  # sysctls:
-  # - name: net.core.somaxconn
-  #   value: '10000'
 
 ## Node labels, affinity, and tolerations for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
@@ -647,6 +648,10 @@ containerSecurityContext:
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 # -- Node labels for pod assignment
 nodeSelector: {}
+
+## -- Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
 
 # -- Whether the Redis server pods should be forced to run on separate nodes.
 ## This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred.
@@ -818,8 +823,12 @@ podDisruptionBudget: {}
 
 # -- Configures redis with AUTH (requirepass & masterauth conf params)
 auth: false
+
 # -- (string) A password that configures a `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`)
 redisPassword: ~
+
+# -- Annotations for auth secret
+authSecretAnnotations: {}
 
 ## Use existing secret containing key `authKey` (ignores redisPassword)
 ## Can also store AWS S3 or SSH secrets in this secret
@@ -1013,5 +1022,6 @@ networkPolicy:
 splitBrainDetection:
   # -- Interval between redis sentinel and server split brain checks (in seconds)
   interval: 60
+  retryInterval: 10
   # -- splitBrainDetection resources
   resources: {}

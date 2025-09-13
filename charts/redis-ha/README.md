@@ -22,6 +22,7 @@ This chart bootstraps a [Redis](https://redis.io) highly available master/slave 
 
 * Kubernetes 1.8+ with Beta APIs enabled
 * PV provisioner support in the underlying infrastructure
+* Helm v3+
 
 ## Upgrading the Chart
 
@@ -66,6 +67,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `affinity` | Override all other affinity settings for the Redis server pods with a string. | string | `""` |
 | `auth` | Configures redis with AUTH (requirepass & masterauth conf params) | bool | `false` |
 | `authKey` | Defines the key holding the redis password in existing secret. | string | `"auth"` |
+| `authSecretAnnotations` | Annotations for auth secret | object | `{}` |
 | `configmap.labels` | Custom labels for the redis configmap | object | `{}` |
 | `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.10.0"}` |
 | `configmapTest.image.repository` | Repository of the configmap shellcheck test image. | string | `"koalaman/shellcheck"` |
@@ -78,7 +80,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `extraInitContainers` | Extra init containers to include in StatefulSet | list | `[]` |
 | `extraLabels` | Labels added here are applied to all created resources | object | `{}` |
 | `extraVolumes` | Extra volumes to include in StatefulSet | list | `[]` |
-| `fullNameOverride` | Full name of the Redis HA Resources | string | `""` |
+| `fullnameOverride` | Full name of the Redis HA Resources | string | `""` |
 | `global.compatibility` | Openshift compatibility options | object | `{"openshift":{"adaptSecurityContext":"auto"}}` |
 | `global.priorityClassName` | Default priority class for all components | string | `""` |
 | `hardAntiAffinity` | Whether the Redis server pods should be forced to run on separate nodes. # This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred. # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature | bool | `true` |
@@ -86,7 +88,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `hostPath.path` | Use this path on the host for data storage. path is evaluated as template so placeholders are replaced | string | `""` |
 | `image.pullPolicy` | Redis image pull policy | string | `"IfNotPresent"` |
 | `image.repository` | Redis image repository | string | `"public.ecr.aws/docker/library/redis"` |
-| `image.tag` | Redis image tag | string | `"7.2.7-alpine"` |
+| `image.tag` | Redis image tag | string | `"8.2.1-alpine"` |
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
@@ -173,6 +175,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `serviceLabels` | Custom labels for redis service | object | `{}` |
 | `splitBrainDetection.interval` | Interval between redis sentinel and server split brain checks (in seconds) | int | `60` |
 | `splitBrainDetection.resources` | splitBrainDetection resources | object | `{}` |
+| `splitBrainDetection.retryInterval` |  | int | `10` |
 | `sysctlImage.command` | sysctlImage command to execute | list | `[]` |
 | `sysctlImage.enabled` | Enable an init container to modify Kernel settings | bool | `false` |
 | `sysctlImage.mountHostSys` | Mount the host `/sys` folder to `/host-sys` | bool | `false` |
@@ -185,6 +188,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `tls.certFile` | Name of certificate file | string | `"redis.crt"` |
 | `tls.dhParamsFile` | Name of Diffie-Hellman (DH) key exchange parameters file (Example: redis.dh) | string | `nil` |
 | `tls.keyFile` | Name of key file | string | `"redis.key"` |
+| `tolerations` |  | list | `[]` |
 | `topologySpreadConstraints.enabled` | Enable topology spread constraints | bool | `false` |
 | `topologySpreadConstraints.maxSkew` | Max skew of pods tolerated | string | `""` |
 | `topologySpreadConstraints.topologyKey` | Topology key for spread constraints | string | `""` |
@@ -243,6 +247,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.containerPort` | Modify HAProxy deployment container port | int | `6379` |
 | `haproxy.containerSecurityContext` | Security context to be added to the HAProxy containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `haproxy.customConfig` | Allows for custom config-haproxy.cfg file to be applied. If this is used then default config will be overwriten | string | `nil` |
+| `haproxy.deploymentAnnotations` | HAProxy deployment annotations | object | `{}` |
 | `haproxy.deploymentStrategy` | Deployment strategy for the haproxy deployment | object | `{"type":"RollingUpdate"}` |
 | `haproxy.emptyDir` | Configuration of `emptyDir` | object | `{}` |
 | `haproxy.enabled` | Enabled HAProxy LoadBalancing/Proxy | bool | `false` |
@@ -289,7 +294,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.service.loadBalancerSourceRanges` | List of CIDR's allowed to connect to LoadBalancer | list | `[]` |
 | `haproxy.service.nodePort` | HAProxy service nodePort value (haproxy.service.type must be NodePort) | int | `nil` |
 | `haproxy.service.type` | HAProxy service type "ClusterIP", "LoadBalancer" or "NodePort" | string | `"ClusterIP"` |
-| `haproxy.serviceAccount.automountToken` |  | bool | `false` |
+| `haproxy.serviceAccount.automountToken` |  | bool | `true` |
 | `haproxy.serviceAccount.create` | Specifies whether a ServiceAccount should be created | bool | `true` |
 | `haproxy.serviceAccountName` | HAProxy serviceAccountName | string | `"redis-sa"` |
 | `haproxy.servicePort` | Modify HAProxy service port | int | `6379` |
@@ -460,15 +465,15 @@ Should your Pod require additional egress rules, define them in a `egressRules` 
 
 ## Sentinel and redis server split brain detection
 
-Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Majority of original discussion on the problem has happened at the <https://github.com/DandyDeveloper/charts/issues/121>.
+Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Majority of original discussion on the problem has happened at the #121.
 
 The proposed solution is currently implemented as a sidecar container that runs a bash script with the following logic:
 
-1. Every `splitBrainDetection.interval` seconds a master (as known by sentinel) is determined
-1. If it is the current node: ensure the redis server's role is master as well.
-1. If it is not the current node: ensure the redis server also replicates from the same node.
-
-If any of the checks above fails - the redis server reinitialisation happens (it regenerates configs the same way it's done during the pod init), and then the redis server is instructed to shutdown. Then kubernetes restarts the container immediately.
+1. At intervals defined by splitBrainDetection.interval, the sidecar checks which node is recognized as master by Sentinel.
+2. If the current pod is the master according to Sentinel, it verifies that the local Redis server is also running as master.
+3. If the current pod is not the master, it ensures the local Redis server is replicating from the correct master node.
+4. If any of these checks fail, the sidecar will retry the check at intervals defined by splitBrainDetection.retryInterval.
+5. If the checks continue to fail after the retry attempts, the sidecar triggers a reinitialization: it regenerates the Redis configuration and instructs the Redis server to shut down. Kubernetes will then automatically restart the container.
 
 # Change Log
 
