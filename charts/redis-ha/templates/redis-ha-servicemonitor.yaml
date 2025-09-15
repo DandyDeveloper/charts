@@ -1,4 +1,4 @@
-{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ( .Values.exporter.serviceMonitor.enabled ) ( .Values.exporter.enabled ) }}
+{{- if and ( or .Values.exporter.serviceMonitor.disableAPICheck ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ) ( .Values.exporter.serviceMonitor.enabled ) ( .Values.exporter.enabled ) }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -23,6 +23,17 @@ spec:
 {{- end }}
 {{- if .Values.exporter.serviceMonitor.timeout }}
     scrapeTimeout: {{ .Values.exporter.serviceMonitor.timeout }}
+{{- end }}
+{{- with .Values.exporter.serviceMonitor.endpointAdditionalProperties }}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- if .Values.exporter.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+    {{- toYaml .Values.exporter.serviceMonitor.metricRelabelings | nindent 6 }}
+{{- end }}
+{{- if .Values.exporter.serviceMonitor.relabelings }}
+    relabelings:
+    {{- toYaml .Values.exporter.serviceMonitor.relabelings | nindent 6 }}
 {{- end }}
   jobLabel: {{ template "redis-ha.fullname" . }}
   namespaceSelector:

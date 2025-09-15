@@ -1,15 +1,63 @@
 name: Publish Charts to /docs
+
 on:
   push:
     branches: [ master ]
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    outputs:
+      changed_charts: ${{ steps.chart-releaser.outputs.changed_charts }}
+      version: ${{ steps.chart-releaser.outputs.chart_version }}
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Package and Publish charts
-      uses: J12934/helm-gh-pages-action@master
-      with:
-        deploy-branch: gh-pages
-        access-token: "${{ secrets.CR_TOKEN }}"
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4.3.0
+        with:
+          version: v3.12.0
+
+      - name: Install Helm Deps
+        run: |
+          for dir in $(ls -d charts/*/); do
+            helm dependency list $dir 2> /dev/null | tail +2 | head -n -1 | awk '{ print "helm repo add " $1 " " $3 }' | while read cmd; do $cmd; done
+          done
+
+      - name: Run chart-releaser
+        id: chart-releaser
+        uses: helm/chart-releaser-action@v1.7.0
+        env:
+          CR_TOKEN: "${{ secrets.CR_TOKEN }}"
+          CR_GENERATE_RELEASE_NOTES: true
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_TOKEN }}
+
+      - name: Push charts to GHCR # Can't use variables in the push due to case sensitivty.
+        run: |
+          shopt -s nullglob
+          for pkg in .cr-release-packages/*; do
+            if [ -z "${pkg:-}" ]; then
+              break
+            fi
+            helm push "${pkg}" "oci://ghcr.io/dandydeveloper/charts"
+          done
