@@ -376,6 +376,10 @@ redis:
   # - secretRef:
   #     name: add-env-secret
 
+  # -- Configure the 'minReadySeconds' parameter to StatefulSet
+  # ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minreadyseconds
+  minReadySeconds: 0
+
   ## Configures redis with tls-port parameter
   # -- (int) TLS Port to access the redis service
   tlsPort: ~

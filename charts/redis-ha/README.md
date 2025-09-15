@@ -133,6 +133,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
 | `redis.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
 | `redis.masterGroupName` | Redis convention for naming the cluster group: must match `^[\\w-\\.]+$` and can be templated | string | `"mymaster"` |
+| `redis.minReadySeconds` | Configure the 'minReadySeconds' parameter to StatefulSet ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#minreadyseconds | int | `0` |
 | `redis.podAnnotations` | Annotations to be added to the redis statefulset pods | object | `{}` |
 | `redis.port` | Port to access the redis service | int | `6379` |
 | `redis.readinessProbe` | Readiness probe parameters for redis container | object | `{"enabled":true,"failureThreshold":5,"initialDelaySeconds":30,"periodSeconds":15,"successThreshold":1,"timeoutSeconds":15}` |

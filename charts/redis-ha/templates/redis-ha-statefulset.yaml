@@ -32,8 +32,8 @@ spec:
     metadata:
       annotations:
         checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .)| sha256sum }}
-      {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | indent 8 }}
+      {{- if .Values.redis.podAnnotations }}
+{{ toYaml .Values.redis.podAnnotations | indent 8 }}
       {{- end }}
       {{- if and (.Values.exporter.enabled) (not .Values.exporter.serviceMonitor.enabled) }}
         prometheus.io/port: "{{ .Values.exporter.port }}"
@@ -205,7 +205,7 @@ spec:
         envFrom:
         - secretRef:
           {{- if tpl (.Values.restore.existingSecret | default "" ) . }}
-            name: {{ tpl (.Values.existingSecret | default "" ) . }} # This one is suspicious, one would expect restore.existingSecret as well
+            name: {{ tpl (.Values.restore.existingSecret | default "" ) . }}
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
@@ -239,7 +239,7 @@ spec:
         envFrom:
         - secretRef:
           {{- if tpl (.Values.restore.existingSecret | default "" ) . }}
-            name: {{ tpl (.Values.existingSecret | default "" ) . }} # This one is suspicious, one would expect restore.existingSecret as well
+            name: {{ tpl (.Values.restore.existingSecret | default "" ) . }}
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
