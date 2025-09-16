@@ -204,8 +204,8 @@ spec:
            && mv -v /data/dump.rdb_ /data/dump.rdb"
         envFrom:
         - secretRef:
-          {{- if tpl (.Values.restore.existingSecret | default "" ) . }}
-            name: {{ tpl (.Values.restore.existingSecret | default "" ) . }}
+          {{- if .Values.restore.existingSecret }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }}
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
@@ -238,8 +238,8 @@ spec:
         securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
         envFrom:
         - secretRef:
-          {{- if tpl (.Values.restore.existingSecret | default "" ) . }}
-            name: {{ tpl (.Values.restore.existingSecret | default "" ) . }}
+          {{- if .Values.restore.existingSecret }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }}
           {{- else }}
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
@@ -269,7 +269,7 @@ spec:
         {{- if .Values.restore.existingSecret }}
         envFrom:
         - secretRef:
-            name: {{ .Values.existingSecret }}
+            name: {{ tpl (.Values.existingSecret | default "" ) . }}
         {{- end }}
         volumeMounts:
         - name: data

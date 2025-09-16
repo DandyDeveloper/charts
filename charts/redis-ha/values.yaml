@@ -102,8 +102,8 @@ haproxy:
   tls:
     # -- If "true" this will enable TLS termination on haproxy
     enabled: false
-    ## Supports templates like "{{ .Release.Name }}-haproxy-tls"
     # -- Secret containing the .pem file
+    # Supports templates like "{{ .Release.Name }}-haproxy-tls"
     secretName: ""
     # -- Key file name
     keyName:
@@ -532,10 +532,9 @@ sentinel:
   password: ~
   # password: password
 
-  ## Use existing secret containing key `authKey` (ignores sentinel.password).
-  ## Supports templates like "{{ .Release.Name }}-sentinel-creds"
   # -- An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass`
   # in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`)
+  # Supports templates like "{{ .Release.Name }}-sentinel-creds"
   existingSecret: ""
 
   ## Defines the key holding the sentinel password in existing secret.
