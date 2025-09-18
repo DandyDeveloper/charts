@@ -31,8 +31,8 @@ spec:
             matchLabels:
               release: {{ .Release.Name }}
               app: {{ template "redis-ha.name" . }}
-      ports:
-      {{- include "redis-ports" . | nindent 6 }}
+      ports: 
+      {{- include "redis-ports" $root | indent 8 }}
     - to:
         - namespaceSelector: {}
       ports:
@@ -52,8 +52,8 @@ spec:
             matchLabels:
               release: {{ .Release.Name }}
               app: {{ template "redis-ha.name" . }}
-      ports:
-      {{- include "redis-ports" . | nindent 8 }}
+      ports: 
+      {{- include "redis-ports" $root | indent 8 }}
     {{-  range $rule := .Values.haproxy.networkPolicy.ingressRules }}
     - from:
         {{- (tpl (toYaml $rule.selectors) $) | nindent 8 }}
@@ -61,6 +61,6 @@ spec:
         {{- if $rule.ports }}
         {{- toYaml $rule.ports | nindent 8 }}
         {{- end }}
-        {{- include "redis-ports" . | nindent 8 }}
+        {{- include "redis-ports" $root | indent 8 }}
     {{- end }}
 {{- end }}

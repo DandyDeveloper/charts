@@ -30,8 +30,7 @@ spec:
           matchLabels:
             release: {{ .Release.Name }}
             app: {{ template "redis-ha.name" . }}
-      ports:
-      {{- include "redis-ports" . | nindent 6 }}
+      ports: {{- include "redis-ports" . | indent 8 }}
 {{-  range $rule := .Values.networkPolicy.egressRules }}
     - to:
 {{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
@@ -44,16 +43,14 @@ spec:
           matchLabels:
             release: {{ .Release.Name }}
             app: {{ template "redis-ha.name" . }}
-      ports: 
-      {{- include "redis-ports" . | nindent 6 }}
+      ports: {{- include "redis-ports" . | indent 8 }}
 {{- if .Values.haproxy.enabled }}
     - from:
         - podSelector:
             matchLabels:
               release: {{ .Release.Name }}
               app: {{ template "redis-ha.name" . }}-haproxy
-      ports:
-      {{- include "redis-ports" . | nindent 6 }}
+      ports: {{- include "redis-ports" . | indent 8 }}
 {{- end }}
 {{-  range $rule := .Values.networkPolicy.ingressRules }}
     - from:
@@ -62,7 +59,7 @@ spec:
 {{- if $rule.ports }}
 {{ toYaml $rule.ports | indent 7 }}
 {{- else }}
-      {{- include "redis-ports" . | nindent 6 }}
+      {{- include "redis-ports" $root | indent 8 }}
 {{- end }}
 {{- end }}
 {{- end }}
