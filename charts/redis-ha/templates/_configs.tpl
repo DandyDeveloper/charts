@@ -68,9 +68,9 @@
     {{- end }}
     {{- range $key, $value := .Values.sentinel.config }}
     {{- if eq "maxclients" $key  }}
-        {{ $key }} {{ $value }}
+    {{ $key }} {{ $value }}
     {{- else }}
-        sentinel {{ $key }} {{ template "redis-ha.masterGroupName" $ }} {{ $value }}
+    sentinel {{ $key }} {{ template "redis-ha.masterGroupName" $ }} {{ $value }}
     {{- end }}
     {{- end }}
 {{- if .Values.auth }}
@@ -78,6 +78,12 @@
 {{- end }}
 {{- if .Values.sentinel.auth }}
     requirepass replace-default-sentinel-auth
+{{- end }}
+{{- if .Values.sentinel.resolveHostnames }}
+    sentinel resolve-hostnames yes
+{{- end }}
+{{- if .Values.sentinel.announceHostnames }}
+    sentinel announce-hostnames yes
 {{- end }}
 {{- end }}
 {{- end }}
