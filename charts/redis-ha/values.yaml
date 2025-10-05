@@ -509,6 +509,7 @@ sentinel:
   port: 26379
 
   ## Configure the 'bind' directive to bind to a list of network interfaces
+  bind: ~
   # bind: 0.0.0.0
 
   ## Configures sentinel with tls-port parameter
