@@ -14,7 +14,7 @@ image:
   # -- Redis image repository
   repository: public.ecr.aws/docker/library/redis
   # -- Redis image tag
-  tag: 8.2.1-alpine
+  tag: 8.2.2-alpine
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
