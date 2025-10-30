@@ -576,8 +576,8 @@
       tcp-check expect string REPLACE_ANNOUNCE{{ $i }}
       tcp-check send QUIT\r\n
       {{- range $i := until $replicas }}
-      {{- if .Values.sentinel.resolveHostnames }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ .Release.Namespace }}.svc:26379 check inter {{ $root.Values.haproxy.checkInterval }}
+      {{- if $.Values.sentinel.resolveHostnames }}
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:26379 check inter {{ $root.Values.haproxy.checkInterval }}
       {{- else }}
       server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:26379 check inter {{ $root.Values.haproxy.checkInterval }}
       {{- end }}
@@ -620,8 +620,8 @@
       tcp-check expect string +OK
       {{- range $i := until $replicas }}
       use-server R{{ $i }} if { srv_is_up(R{{ $i }}) } { nbsrv(check_if_redis_is_master_{{ $i }}) ge 2 }
-      {{- if .Values.sentinel.resolveHostnames }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ .Release.Namespace }}.svc:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
+      {{- if $.Values.sentinel.resolveHostnames }}
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
       {{- else }}
       server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
       {{- end }}
@@ -646,8 +646,8 @@
       tcp-check send QUIT\r\n
       tcp-check expect string +OK
       {{- range $i := until $replicas }}
-      {{- if .Values.sentinel.resolveHostnames }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ .Release.Namespace }}.svc:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
+      {{- if $.Values.sentinel.resolveHostnames }}
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
       {{- else }}
       server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
       {{- end }}
