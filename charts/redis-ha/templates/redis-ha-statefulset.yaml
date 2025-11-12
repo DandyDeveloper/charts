@@ -484,6 +484,30 @@ spec:
       - name: split-brain-fix
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.splitBrainDetection.livenessProbe.enabled }}
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.splitBrainDetection.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.splitBrainDetection.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.splitBrainDetection.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.splitBrainDetection.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.splitBrainDetection.livenessProbe.failureThreshold }}
+          exec:
+            command:
+              - cat
+              - /readonly-config/redis.conf
+        {{- end }}
+        {{- if .Values.splitBrainDetection.readinessProbe.enabled }}
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.splitBrainDetection.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.splitBrainDetection.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.splitBrainDetection.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.splitBrainDetection.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.splitBrainDetection.readinessProbe.failureThreshold }}
+          exec:
+            command:
+              - cat
+              - /readonly-config/redis.conf
+        {{- end }}
         resources: {{ toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         command:
           - sh
