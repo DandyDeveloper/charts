@@ -505,8 +505,9 @@ spec:
           failureThreshold: {{ .Values.splitBrainDetection.readinessProbe.failureThreshold }}
           exec:
             command:
-              - cat
-              - /readonly-config/redis.conf
+              - pgrep
+              - -f
+              - fix-split-brain.sh
         {{- end }}
         resources: {{ toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         command:
