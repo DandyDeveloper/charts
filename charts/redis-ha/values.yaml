@@ -1067,7 +1067,7 @@ splitBrainDetection:
     # -- Failure threshold for liveness probe
     failureThreshold: 5
 
-  # readiness probe parameters for splt brain container
+  # readiness probe parameters for split brain container
   readinessProbe:
     enabled: true
     # -- Initial delay in seconds for readiness probe
