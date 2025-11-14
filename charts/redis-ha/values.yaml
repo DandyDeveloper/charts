@@ -1077,6 +1077,6 @@ splitBrainDetection:
     # -- Timeout seconds for readiness probe
     timeoutSeconds: 15
     # -- Success threshold for readiness probe
-    successThreshold: 3
+    successThreshold: 1
     # -- Failure threshold for readiness probe
     failureThreshold: 5
