@@ -5,7 +5,7 @@ keywords:
 - redis
 - keyvalue
 - database
-version: 4.35.3
+version: 4.35.4
 appVersion: 8.2.2
 description: This Helm chart provides a highly available Redis implementation with a master/slave configuration and uses Sentinel sidecars for failover management
 icon: https://img.icons8.com/external-tal-revivo-shadow-tal-revivo/24/external-redis-an-in-memory-data-structure-project-implementing-a-distributed-logo-shadow-tal-revivo.png

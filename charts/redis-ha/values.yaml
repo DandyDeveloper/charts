@@ -109,13 +109,22 @@ haproxy:
     keyName:
     # -- Path to mount the secret that contains the certificates. haproxy
     certMountPath: /tmp/
-
   # -- Enable read-only redis-slaves
   readOnly:
     # -- Enable if you want a dedicated port in haproxy for redis-slaves
     enabled: false
     # -- Port for the read-only redis-slaves
     port: 6380
+  # -- Additional ports to expose on HAProxy service and deployment
+  # Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort)
+  additionalPorts: []
+  # Example:
+  # additionalPorts:
+  #   - name: custom-port
+  #     containerPort: 8080
+  #     servicePort: 8080
+  #   - name: another-port
+  #     containerPort: 9090
   # -- Number of HAProxy instances
   replicas: 3
   # -- Deployment strategy for the haproxy deployment
