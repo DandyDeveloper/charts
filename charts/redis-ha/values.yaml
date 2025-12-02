@@ -1055,7 +1055,6 @@ splitBrainDetection:
   resources: {}
   # liveness probe parameters for split brain container
   livenessProbe:
-    enabled: true
     # -- Initial delay in seconds for liveness probe
     initialDelaySeconds: 30
     # -- Period in seconds after which liveness probe will be repeated
@@ -1066,10 +1065,13 @@ splitBrainDetection:
     successThreshold: 1
     # -- Failure threshold for liveness probe
     failureThreshold: 5
+    exec:
+      command:
+        - cat
+        - /readonly-config/redis.conf
 
   # readiness probe parameters for split brain container
   readinessProbe:
-    enabled: true
     # -- Initial delay in seconds for readiness probe
     initialDelaySeconds: 30
     # -- Period in seconds after which readiness probe will be repeated
@@ -1080,3 +1082,8 @@ splitBrainDetection:
     successThreshold: 1
     # -- Failure threshold for readiness probe
     failureThreshold: 5
+    exec:
+      command:
+        - pgrep
+        - -f
+        - fix-split-brain.sh
