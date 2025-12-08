@@ -484,12 +484,8 @@ spec:
       - name: split-brain-fix
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.splitBrainDetection.livenessProbe }}
         livenessProbe: {{ .Values.splitBrainDetection.livenessProbe | toYaml | nindent 10 }}
-        {{- end }}
-        {{- if .Values.splitBrainDetection.readinessProbe }}
         readinessProbe: {{ .Values.splitBrainDetection.readinessProbe | toYaml | nindent 10 }}
-        {{- end }}
         resources: {{ toYaml .Values.splitBrainDetection.resources | nindent 10 }}
         command:
           - sh
