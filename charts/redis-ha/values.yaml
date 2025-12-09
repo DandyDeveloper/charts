@@ -24,6 +24,9 @@ fullnameOverride: ""
 # -- Name override for Redis HA resources
 nameOverride: ""
 
+# -- Release name override for Redis HA resources
+releaseOverride: ""
+
 ## Reference to one or more secrets to be used when pulling images
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 ## This imagePullSecrets is only for redis images

@@ -17,7 +17,7 @@ spec:
   tolerations:
 {{ toYaml .Values.tolerations | indent 4 }}
   containers:
-  - name: "{{ .Release.Name }}-service-test"
+  - name: "{{ default .Release.Name (.Values.releaseOverride) }}-service-test"
     image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
     command:
       - sh

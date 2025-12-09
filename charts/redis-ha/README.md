@@ -156,6 +156,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.tlsReplication` | Configures redis with tls-replication parameter, if true sets "tls-replication yes" in redis.conf | bool | `nil` |
 | `redis.updateStrategy` | Update strategy for Redis StatefulSet # ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies | object | `{"type":"RollingUpdate"}` |
 | `redisPassword` | A password that configures a `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`) | string | `nil` |
+| `releaseOverride` | Release name override for Redis HA resources | string | `""` |
 | `replicas` | Number of redis master/slave | int | `3` |
 | `restore.existingSecret` | Set existingSecret to true to use secret specified in existingSecret above | bool | `false` |
 | `restore.redis.source` |  | string | `""` |
