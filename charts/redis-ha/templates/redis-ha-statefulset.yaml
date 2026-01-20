@@ -31,7 +31,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .)| sha256sum }}
+        checksum/init-config: {{ print (include "config-redis.conf" .) (include "config-sentinel.conf" .) (include "config-init.sh" .) (include "fix-split-brain.sh" .) (include "redis_liveness.sh" .) (include "redis_readiness.sh" .) (include "sentinel_liveness.sh" .) (include "trigger-failover-if-master.sh" .) (include "redis-prestop.sh" .) | sha256sum }}
       {{- if .Values.redis.podAnnotations }}
 {{ toYaml .Values.redis.podAnnotations | indent 8 }}
       {{- end }}
@@ -475,6 +475,9 @@ spec:
         {{- end }}
         - mountPath: /health
           name: health
+        - name: config
+          mountPath: /readonly-config
+          readOnly: true
 {{- if .Values.sentinel.extraVolumeMounts }}
 {{- toYaml .Values.sentinel.extraVolumeMounts | nindent 8 }}
 {{- end }}

@@ -494,7 +494,11 @@ redis:
   lifecycle:
     preStop:
       exec:
-        command: ["/bin/sh", "/readonly-config/trigger-failover-if-master.sh"]
+        command: [
+          "/bin/sh",
+          "-c",
+          "sh /readonly-config/redis-prestop.sh > /proc/1/fd/1 2> /proc/1/fd/2"
+        ]
 
   # -- Annotations for the redis statefulset
   annotations: {}
@@ -638,7 +642,14 @@ sentinel:
 
   # -- Container Lifecycle Hooks for sentinel container.
   # Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
-  lifecycle: {}
+  lifecycle:
+    preStop:
+      exec:
+        command: [
+          "/bin/sh",
+          "-c",
+          "sh /readonly-config/trigger-failover-if-master.sh > /proc/1/fd/1 2> /proc/1/fd/2"
+        ]
 
   # -- additional volumeMounts for Sentinel container
   extraVolumeMounts: []
