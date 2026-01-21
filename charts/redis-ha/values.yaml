@@ -1102,6 +1102,5 @@ splitBrainDetection:
     failureThreshold: 5
     exec:
       command:
-        - pgrep
-        - -f
-        - fix-split-brain.sh
+        - pidof
+        - sh
