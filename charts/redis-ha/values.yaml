@@ -287,6 +287,15 @@ haproxy:
   # customConfig: |-
     # Define configuration here
 
+  ## Global HAProxy configuration section. This is inserted before the 'defaults' section.
+  ## Use this to configure global HAProxy settings like logging, performance tuning, etc.
+  # -- (string) Allows to place HAProxy global section configuration. Inserted before defaults section.
+  globalConfig: ~
+  # globalConfig: |-
+  #   global
+  #     log stdout format raw local0
+  #     maxconn 4096
+
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # -- (string) Allows to place any additional configuration section to add to the default config-haproxy.cfg
   extraConfig: ~

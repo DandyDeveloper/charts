@@ -543,6 +543,10 @@
 {{- if .Values.haproxy.customConfig }}
 {{ tpl .Values.haproxy.customConfig . | indent 4 }}
 {{- else }}
+{{- if .Values.haproxy.globalConfig }}
+    # Global configuration
+{{ tpl .Values.haproxy.globalConfig . | indent 4 }}
+{{- end }}
     defaults REDIS
       mode tcp
       timeout connect {{ .Values.haproxy.timeout.connect }}
