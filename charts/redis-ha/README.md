@@ -256,6 +256,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.emptyDir` | Configuration of `emptyDir` | object | `{}` |
 | `haproxy.enabled` | Enabled HAProxy LoadBalancing/Proxy | bool | `false` |
 | `haproxy.extraConfig` | Allows to place any additional configuration section to add to the default config-haproxy.cfg | string | `nil` |
+| `haproxy.globalConfig` | Allows to place HAProxy global section configuration. Inserted before defaults section. | string | `nil` |
 | `haproxy.hardAntiAffinity` | Whether the haproxy pods should be forced to run on separate nodes. | bool | `true` |
 | `haproxy.image.pullPolicy` | HAProxy Image PullPolicy | string | `"IfNotPresent"` |
 | `haproxy.image.repository` | HAProxy Image Repository | string | `"public.ecr.aws/docker/library/haproxy"` |
