@@ -1,0 +1,21 @@
+---
+## Enable HAProxy with backend TLS
+haproxy:
+  enabled: true
+  tls:
+    enabled: true
+    secretName: "test-tls-secret"
+    keyName: tls.pem
+  tlsPort: 6381
+
+redis:
+  tlsPort: 6479
+
+sentinel:
+  tlsPort: 26479
+
+tls:
+  secretName: "test-tls-secret"
+  certFile: tls.crt
+  keyFile: tls.key
+  caCertFile: ca.crt

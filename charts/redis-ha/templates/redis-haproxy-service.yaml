@@ -42,6 +42,12 @@ spec:
   {{- if and (eq .Values.haproxy.service.type "NodePort") .Values.haproxy.service.nodePort }}
     nodePort: {{ .Values.haproxy.service.nodePort }}
   {{- end }}
+{{- if and .Values.haproxy.tls.enabled .Values.haproxy.tlsPort }}
+  - name: tcp-haproxy-tls
+    port: {{ .Values.haproxy.tlsPort }}
+    protocol: TCP
+    targetPort: redis-tls
+{{- end }}
 {{- if .Values.haproxy.readOnly.enabled }}
   - name: tcp-haproxyreadonly
     port: {{ .Values.haproxy.readOnly.port }}

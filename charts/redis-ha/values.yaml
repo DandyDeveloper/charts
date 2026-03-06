@@ -58,6 +58,12 @@ labels: {}
 # -- Custom labels for redis service
 serviceLabels: {}
 
+# -- Custom annotations for redis services
+serviceAnnotations: {}
+
+# -- Annotations to be added to the test pod
+podAnnotations: {}
+
 ## Custom labels for the redis configmap
 configmap:
   # -- Custom labels for the redis configmap
@@ -98,6 +104,10 @@ haproxy:
   servicePort: 6379
   # -- Modify HAProxy deployment container port
   containerPort: 6379
+  # -- (int) Dedicated TLS port for HAProxy frontend.
+  # When set together with haproxy.tls.enabled, plaintext stays on containerPort and TLS binds to tlsPort.
+  # When not set, haproxy.tls.enabled replaces plaintext with TLS on containerPort (current behavior).
+  tlsPort: ~
   # -- Enable TLS termination on HAproxy, This will create a volume mount
   tls:
     # -- If "true" this will enable TLS termination on haproxy
@@ -105,8 +115,8 @@ haproxy:
     # -- Secret containing the .pem file
     # Supports templates like "{{ .Release.Name }}-haproxy-tls"
     secretName: ""
-    # -- Key file name
-    keyName:
+    # -- Key file name (PEM bundle containing cert and private key)
+    keyName: tls.pem
     # -- Path to mount the secret that contains the certificates. haproxy
     certMountPath: /tmp/
   # -- Enable read-only redis-slaves
@@ -148,9 +158,6 @@ haproxy:
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
   # - name: "image-pull-secret"
-
-  # -- HAProxy template annotations
-  annotations: {}
 
   # -- HAProxy deployment annotations
   deploymentAnnotations: {}
@@ -260,14 +267,19 @@ haproxy:
     runAsUser: 99
     fsGroup: 99
     runAsNonRoot: true
+    # sysctls:
+    # - name: net.core.somaxconn
+    #   value: '10000'
 
   # -- Security context to be added to the HAProxy containers.
   containerSecurityContext:
+    # runAsUser: 99
     runAsNonRoot: true
     allowPrivilegeEscalation: false
     seccompProfile:
       type: RuntimeDefault
     capabilities:
+      # add: []
       drop:
       - ALL
 
@@ -278,7 +290,7 @@ haproxy:
   additionalAffinities: {}
 
   # -- Override all other affinity settings for the haproxy pods with a string.
-  affinity: |
+  affinity: ""
 
   ## Custom config-haproxy.cfg files used to override default settings. If this file is
   ## specified then the config-haproxy.cfg above will be ignored.
@@ -497,6 +509,15 @@ redis:
     preStop:
       exec:
         command: ["/bin/sh", "/readonly-config/trigger-failover-if-master.sh"]
+      # httpGet:
+      #   path: /
+      #   port: 8080
+    # postStart:
+    #   exec:
+    #     command: []
+    #   httpGet:
+    #     path: /
+    #     port: 8080
 
   # -- Annotations for the redis statefulset
   annotations: {}
@@ -668,6 +689,7 @@ containerSecurityContext:
   seccompProfile:
     type: RuntimeDefault
   capabilities:
+    # add: []
     drop:
     - ALL
 
@@ -705,7 +727,7 @@ additionalAffinities: {}
 ##
 
 # -- Override all other affinity settings for the Redis server pods with a string.
-affinity: |
+affinity: ""
 ##
 ## Example:
 ## affinity: |
@@ -760,7 +782,8 @@ exporter:
   address: localhost
 
   ## Set this to true if you want to connect to redis tls port
-  # sslEnabled: true
+  # -- (bool) Enable SSL for exporter connection to redis
+  sslEnabled: false
 
   # -- cpu/memory resource limits/requests
   resources: {}
@@ -934,7 +957,8 @@ tls:
   ## The secret should contains keys named by "tls.certFile" - the certificate, "tls.keyFile" - the private key, "tls.caCertFile" - the certificate of CA and "tls.dhParamsFile" - the dh parameter file
   ## Supports templates like "{{ .Release.Name }}-tls"
   ## This secret will be generated using files from certs folder if the secretName is not set and redis.tlsPort is set
-  # secretName: tls-secret
+  # -- (string) Name of existing secret with TLS certificates. Supports templates.
+  secretName: ""
 
   # -- Name of certificate file
   certFile: redis.crt

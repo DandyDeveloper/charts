@@ -1,0 +1,2227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "global": {
+      "type": "object",
+      "properties": {
+        "priorityClassName": {
+          "type": "string",
+          "description": "Default priority class for all components",
+          "default": ""
+        },
+        "compatibility": {
+          "type": "object",
+          "properties": {
+            "openshift": {
+              "type": "object",
+              "properties": {
+                "adaptSecurityContext": {
+                  "type": "string",
+                  "description": "Openshift compatibility option for security context adaptation",
+                  "default": "auto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "Redis image repository",
+          "default": "public.ecr.aws/docker/library/redis"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Redis image tag",
+          "default": "8.2.4-alpine"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "description": "Redis image pull policy",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ],
+          "default": "IfNotPresent"
+        }
+      }
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Full name of the Redis HA Resources",
+      "default": ""
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Name override for Redis HA resources",
+      "default": ""
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "description": "Reference to one or more secrets to be used when pulling redis images",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "replicas": {
+      "type": "integer",
+      "description": "Number of redis master/slave",
+      "default": 3
+    },
+    "podManagementPolicy": {
+      "type": "string",
+      "description": "The statefulset pod management policy",
+      "enum": [
+        "OrderedReady",
+        "Parallel"
+      ],
+      "default": "OrderedReady"
+    },
+    "ro_replicas": {
+      "type": "string",
+      "description": "Comma separated list of slaves which never get promoted to be master. Count starts with 0. Allowed values 1-9.",
+      "default": ""
+    },
+    "priorityClassName": {
+      "type": "string",
+      "description": "Kubernetes priorityClass name for the redis-ha-server pod",
+      "default": ""
+    },
+    "labels": {
+      "type": "object",
+      "description": "Custom labels for the redis pod",
+      "default": {}
+    },
+    "serviceLabels": {
+      "type": "object",
+      "description": "Custom labels for redis service",
+      "default": {}
+    },
+    "serviceAnnotations": {
+      "type": "object",
+      "description": "Custom annotations for redis services",
+      "default": {}
+    },
+    "podAnnotations": {
+      "type": "object",
+      "description": "Annotations to be added to the test pod",
+      "default": {}
+    },
+    "configmap": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "description": "Custom labels for the redis configmap",
+          "default": {}
+        }
+      }
+    },
+    "configmapTest": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Repository of the configmap shellcheck test image",
+              "default": "koalaman/shellcheck"
+            },
+            "tag": {
+              "type": "string",
+              "description": "Tag of the configmap shellcheck test image",
+              "default": "v0.10.0"
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "description": "Resources for the ConfigMap test pod",
+          "default": {}
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Specifies whether a ServiceAccount should be created",
+          "default": true
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the ServiceAccount to use",
+          "default": ""
+        },
+        "automountToken": {
+          "type": "boolean",
+          "description": "Opt in/out of automounting API credentials into container",
+          "default": false
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations to be added to the service account for the redis statefulset",
+          "default": {}
+        }
+      }
+    },
+    "haproxy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable HAProxy LoadBalancing/Proxy",
+          "default": false
+        },
+        "servicePort": {
+          "type": "integer",
+          "description": "HAProxy service port",
+          "default": 6379
+        },
+        "containerPort": {
+          "type": "integer",
+          "description": "HAProxy deployment container port",
+          "default": 6379
+        },
+        "tlsPort": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Dedicated TLS port for HAProxy frontend. When set together with haproxy.tls.enabled, plaintext stays on containerPort and TLS binds to tlsPort. When not set, haproxy.tls.enabled replaces plaintext with TLS on containerPort.",
+          "default": null
+        },
+        "tls": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable TLS termination on HAProxy",
+              "default": false
+            },
+            "secretName": {
+              "type": "string",
+              "description": "Secret containing the .pem file",
+              "default": ""
+            },
+            "keyName": {
+              "type": "string",
+              "description": "Key file name (PEM bundle containing cert and private key)",
+              "default": "tls.pem"
+            },
+            "certMountPath": {
+              "type": "string",
+              "description": "Path to mount the secret that contains the certificates",
+              "default": "/tmp/"
+            }
+          }
+        },
+        "readOnly": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable dedicated port in HAProxy for redis-slaves",
+              "default": false
+            },
+            "port": {
+              "type": "integer",
+              "description": "Port for the read-only redis-slaves",
+              "default": 6380
+            }
+          }
+        },
+        "additionalPorts": {
+          "type": "array",
+          "description": "Additional ports to expose on HAProxy service and deployment",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "containerPort": {
+                "type": "integer"
+              },
+              "servicePort": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "name",
+              "containerPort"
+            ]
+          },
+          "default": []
+        },
+        "replicas": {
+          "type": "integer",
+          "description": "Number of HAProxy instances",
+          "default": 3
+        },
+        "deploymentStrategy": {
+          "type": "object",
+          "description": "Deployment strategy for the HAProxy deployment",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Deployment strategy type",
+              "enum": [
+                "RollingUpdate",
+                "Recreate"
+              ],
+              "default": "RollingUpdate"
+            },
+            "rollingUpdate": {
+              "type": "object",
+              "properties": {
+                "maxSurge": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ],
+                  "description": "Max surge for rolling update"
+                },
+                "maxUnavailable": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ],
+                  "description": "Max unavailable for rolling update"
+                }
+              }
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "HAProxy image repository",
+              "default": "public.ecr.aws/docker/library/haproxy"
+            },
+            "tag": {
+              "type": "string",
+              "description": "HAProxy image tag",
+              "default": "3.0.8-alpine"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "HAProxy image pull policy",
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ],
+              "default": "IfNotPresent"
+            }
+          }
+        },
+        "labels": {
+          "type": "object",
+          "description": "Custom labels for the HAProxy pod",
+          "default": {}
+        },
+        "imagePullSecrets": {
+          "type": "array",
+          "description": "Reference to one or more secrets to be used when pulling images",
+          "default": []
+        },
+        "deploymentAnnotations": {
+          "type": "object",
+          "description": "HAProxy deployment annotations",
+          "default": {}
+        },
+        "podAnnotations": {
+          "type": "object",
+          "description": "Annotations to be added to the HAProxy deployment pods",
+          "default": {}
+        },
+        "resources": {
+          "type": "object",
+          "description": "HAProxy resources",
+          "default": {}
+        },
+        "emptyDir": {
+          "type": "object",
+          "description": "Configuration of emptyDir",
+          "default": {}
+        },
+        "podDisruptionBudget": {
+          "type": "object",
+          "description": "Pod Disruption Budget",
+          "properties": {
+            "maxUnavailable": {
+              "type": "integer",
+              "description": "Max unavailable pods"
+            },
+            "minAvailable": {
+              "type": "integer",
+              "description": "Min available pods"
+            }
+          }
+        },
+        "stickyBalancing": {
+          "type": "boolean",
+          "description": "HAProxy sticky load balancing to Redis nodes",
+          "default": false
+        },
+        "priorityClassName": {
+          "type": "string",
+          "description": "Kubernetes priorityClass name for the HAProxy pod",
+          "default": ""
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "HAProxy service type",
+              "enum": [
+                "ClusterIP",
+                "LoadBalancer",
+                "NodePort"
+              ],
+              "default": "ClusterIP"
+            },
+            "nodePort": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "HAProxy service nodePort value",
+              "default": null
+            },
+            "loadBalancerIP": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "HAProxy service loadbalancer IP",
+              "default": null
+            },
+            "externalTrafficPolicy": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "HAProxy service externalTrafficPolicy value",
+              "default": null
+            },
+            "externalIPs": {
+              "type": "object",
+              "description": "HAProxy external IPs",
+              "default": {}
+            },
+            "labels": {
+              "type": "object",
+              "description": "HAProxy service labels",
+              "default": {}
+            },
+            "annotations": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "description": "HAProxy service annotations",
+              "default": null
+            },
+            "loadBalancerSourceRanges": {
+              "type": "array",
+              "description": "List of CIDRs allowed to connect to LoadBalancer",
+              "default": []
+            }
+          }
+        },
+        "serviceAccountName": {
+          "type": "string",
+          "description": "HAProxy serviceAccountName",
+          "default": "redis-sa"
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "description": "Specifies whether a ServiceAccount should be created",
+              "default": true
+            },
+            "automountToken": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "HAProxy enable prometheus metric scraping",
+              "default": false
+            },
+            "port": {
+              "type": "integer",
+              "description": "HAProxy prometheus metrics scraping port",
+              "default": 9101
+            },
+            "portName": {
+              "type": "string",
+              "description": "HAProxy metrics scraping port name",
+              "default": "http-exporter-port"
+            },
+            "scrapePath": {
+              "type": "string",
+              "description": "HAProxy prometheus metrics scraping path",
+              "default": "/metrics"
+            },
+            "serviceMonitor": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Use a ServiceMonitor to configure scraping",
+                  "default": false
+                },
+                "namespace": {
+                  "type": "string",
+                  "description": "Namespace for the ServiceMonitor",
+                  "default": ""
+                },
+                "interval": {
+                  "type": "string",
+                  "description": "Scrape frequency for Prometheus",
+                  "default": ""
+                },
+                "telemetryPath": {
+                  "type": "string",
+                  "description": "Path to redis-exporter telemetry-path",
+                  "default": ""
+                },
+                "labels": {
+                  "type": "object",
+                  "description": "Labels for the ServiceMonitor",
+                  "default": {}
+                },
+                "timeout": {
+                  "type": "string",
+                  "description": "Timeout for scrape",
+                  "default": ""
+                },
+                "endpointAdditionalProperties": {
+                  "type": "object",
+                  "description": "Additional properties for ServiceMonitor endpoints",
+                  "default": {}
+                },
+                "disableAPICheck": {
+                  "type": "boolean",
+                  "description": "Disable API Check on ServiceMonitor",
+                  "default": false
+                }
+              }
+            }
+          }
+        },
+        "init": {
+          "type": "object",
+          "properties": {
+            "resources": {
+              "type": "object",
+              "description": "Extra init resources",
+              "default": {}
+            }
+          }
+        },
+        "timeout": {
+          "type": "object",
+          "properties": {
+            "connect": {
+              "type": "string",
+              "description": "haproxy.cfg timeout connect setting",
+              "default": "4s"
+            },
+            "server": {
+              "type": "string",
+              "description": "haproxy.cfg timeout server setting",
+              "default": "330s"
+            },
+            "client": {
+              "type": "string",
+              "description": "haproxy.cfg timeout client setting",
+              "default": "330s"
+            },
+            "check": {
+              "type": "string",
+              "description": "haproxy.cfg timeout check setting",
+              "default": "2s"
+            },
+            "tunnel": {
+              "type": "string",
+              "description": "haproxy.cfg timeout tunnel setting",
+              "default": "1h"
+            }
+          }
+        },
+        "checkInterval": {
+          "type": "string",
+          "description": "haproxy.cfg check inter setting",
+          "default": "1s"
+        },
+        "checkFall": {
+          "type": "integer",
+          "description": "haproxy.cfg check fall setting",
+          "default": 1
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Security context for the HAProxy deployment",
+          "properties": {
+            "runAsUser": {
+              "type": "integer",
+              "description": "User ID to run as",
+              "default": 99
+            },
+            "fsGroup": {
+              "type": "integer",
+              "description": "Filesystem group ID",
+              "default": 99
+            },
+            "runAsNonRoot": {
+              "type": "boolean",
+              "description": "Run as non-root user",
+              "default": true
+            },
+            "sysctls": {
+              "type": "array",
+              "description": "Sysctl parameters",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "containerSecurityContext": {
+          "type": "object",
+          "description": "Security context for the HAProxy containers",
+          "properties": {
+            "runAsUser": {
+              "type": "integer",
+              "description": "User ID to run as"
+            },
+            "runAsNonRoot": {
+              "type": "boolean",
+              "description": "Run as non-root user",
+              "default": true
+            },
+            "allowPrivilegeEscalation": {
+              "type": "boolean",
+              "description": "Allow privilege escalation",
+              "default": false
+            },
+            "seccompProfile": {
+              "type": "object",
+              "description": "Seccomp profile",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Seccomp profile type",
+                  "default": "RuntimeDefault"
+                }
+              }
+            },
+            "capabilities": {
+              "type": "object",
+              "description": "Linux capabilities",
+              "properties": {
+                "drop": {
+                  "type": "array",
+                  "description": "Capabilities to drop",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [
+                    "ALL"
+                  ]
+                },
+                "add": {
+                  "type": "array",
+                  "description": "Capabilities to add",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "hardAntiAffinity": {
+          "type": "boolean",
+          "description": "Whether the HAProxy pods should be forced to run on separate nodes",
+          "default": true
+        },
+        "additionalAffinities": {
+          "type": "object",
+          "description": "Additional affinities to add to the HAProxy pods",
+          "default": {}
+        },
+        "affinity": {
+          "type": "string",
+          "description": "Override all other affinity settings for the HAProxy pods",
+          "default": ""
+        },
+        "customConfig": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Custom config-haproxy.cfg file to override default settings",
+          "default": null
+        },
+        "extraConfig": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Additional configuration section to add to the default config-haproxy.cfg",
+          "default": null
+        },
+        "lifecycle": {
+          "type": "object",
+          "description": "Container lifecycle hooks",
+          "default": {}
+        },
+        "tests": {
+          "type": "object",
+          "properties": {
+            "resources": {
+              "type": "object",
+              "description": "Pod resources for the tests against HAProxy",
+              "default": {}
+            }
+          }
+        },
+        "IPv6": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable HAProxy parameters to bind and consume IPv6 addresses",
+              "default": true
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether NetworkPolicy for HAProxy should be created",
+              "default": false
+            },
+            "annotations": {
+              "type": "object",
+              "description": "Annotations for HAProxy NetworkPolicy",
+              "default": {}
+            },
+            "labels": {
+              "type": "object",
+              "description": "Labels for HAProxy NetworkPolicy",
+              "default": {}
+            },
+            "ingressRules": {
+              "type": "array",
+              "description": "User defined ingress rules that HAProxy should permit",
+              "items": {
+                "type": "object"
+              },
+              "default": []
+            },
+            "egressRules": {
+              "type": "array",
+              "description": "User defined egress rules for HAProxy",
+              "items": {
+                "type": "object"
+              },
+              "default": []
+            }
+          }
+        }
+      }
+    },
+    "rbac": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create and use RBAC resources",
+          "default": true
+        }
+      }
+    },
+    "sysctlImage": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable an init container to modify Kernel settings",
+          "default": false
+        },
+        "command": {
+          "type": "array",
+          "description": "sysctlImage command to execute",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "registry": {
+          "type": "string",
+          "description": "sysctlImage Init container registry",
+          "default": "public.ecr.aws/docker/library"
+        },
+        "repository": {
+          "type": "string",
+          "description": "sysctlImage Init container name",
+          "default": "busybox"
+        },
+        "tag": {
+          "type": "string",
+          "description": "sysctlImage Init container tag",
+          "default": "1.34.1"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "description": "sysctlImage Init container pull policy",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ],
+          "default": "Always"
+        },
+        "mountHostSys": {
+          "type": "boolean",
+          "description": "Mount the host /sys folder to /host-sys",
+          "default": false
+        },
+        "resources": {
+          "type": "object",
+          "description": "sysctlImage resources",
+          "default": {}
+        }
+      }
+    },
+    "schedulerName": {
+      "type": "string",
+      "description": "Use an alternate scheduler",
+      "default": ""
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "description": "Port to access the redis service",
+          "default": 6379
+        },
+        "masterGroupName": {
+          "type": "string",
+          "description": "Redis convention for naming the cluster group",
+          "default": "mymaster"
+        },
+        "customCommand": {
+          "type": "array",
+          "description": "Allows overriding the redis container command",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "customArgs": {
+          "type": "array",
+          "description": "Allows overriding the redis container arguments",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "envFrom": {
+          "type": "array",
+          "description": "Load environment variables from ConfigMap/Secret",
+          "items": {
+            "type": "object"
+          },
+          "default": []
+        },
+        "minReadySeconds": {
+          "type": "integer",
+          "description": "Configure the minReadySeconds parameter to StatefulSet",
+          "default": 0
+        },
+        "tlsPort": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "TLS Port to access the redis service",
+          "default": null
+        },
+        "tlsReplication": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Configures redis with tls-replication parameter",
+          "default": null
+        },
+        "authClients": {
+          "type": "string",
+          "description": "Disable client side certificates authentication when set to 'no'",
+          "default": ""
+        },
+        "terminationGracePeriodSeconds": {
+          "type": "integer",
+          "description": "Increase terminationGracePeriodSeconds to allow writing large RDB snapshots",
+          "default": 60
+        },
+        "livenessProbe": {
+          "type": "object",
+          "description": "Liveness probe parameters for redis container",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable the Liveness Probe",
+              "default": true
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "description": "Initial delay in seconds for liveness probe",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "description": "Period in seconds after which liveness probe will be repeated",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "description": "Timeout seconds for liveness probe",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "description": "Success threshold for liveness probe",
+              "default": 1
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "description": "Failure threshold for liveness probe",
+              "default": 5
+            }
+          }
+        },
+        "readinessProbe": {
+          "type": "object",
+          "description": "Readiness probe parameters for redis container",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable the Readiness Probe",
+              "default": true
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "description": "Initial delay in seconds for readiness probe",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "description": "Period in seconds after which readiness probe will be repeated",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "description": "Timeout seconds for readiness probe",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "description": "Success threshold for readiness probe",
+              "default": 1
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "description": "Failure threshold for readiness probe",
+              "default": 5
+            }
+          }
+        },
+        "startupProbe": {
+          "type": "object",
+          "description": "Startup probe parameters for redis container",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Startup Probe",
+              "default": true
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "description": "Initial delay in seconds for startup probe",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "description": "Period in seconds after which startup probe will be repeated",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "description": "Timeout seconds for startup probe",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "description": "Success threshold for startup probe",
+              "default": 1
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "description": "Failure threshold for startup probe",
+              "default": 5
+            }
+          }
+        },
+        "disableCommands": {
+          "type": "array",
+          "description": "Array with commands to disable",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "FLUSHDB",
+            "FLUSHALL"
+          ]
+        },
+        "config": {
+          "type": "object",
+          "description": "Any valid redis config options applied to each server. For multi-value configs use list instead of string.",
+          "properties": {
+            "min-replicas-to-write": {
+              "type": "integer",
+              "description": "Minimum number of replicas that must acknowledge a write",
+              "default": 1
+            },
+            "min-replicas-max-lag": {
+              "type": "integer",
+              "description": "Maximum lag in seconds for replica to be considered healthy",
+              "default": 5
+            },
+            "maxmemory": {
+              "type": "string",
+              "description": "Max memory to use for each redis instance. Default is unlimited.",
+              "default": "0"
+            },
+            "maxmemory-policy": {
+              "type": "string",
+              "description": "Max memory policy to use for each redis instance",
+              "default": "volatile-lru"
+            },
+            "save": {
+              "type": [
+                "string",
+                "array"
+              ],
+              "description": "Determines if scheduled RDB backups are created",
+              "default": "900 1"
+            },
+            "repl-diskless-sync": {
+              "type": "string",
+              "description": "When enabled, directly sends the RDB over the wire to slaves",
+              "default": "yes"
+            },
+            "rdbcompression": {
+              "type": "string",
+              "description": "Enable RDB compression",
+              "default": "yes"
+            },
+            "rdbchecksum": {
+              "type": "string",
+              "description": "Enable RDB checksum",
+              "default": "yes"
+            }
+          },
+          "additionalProperties": {
+            "type": [
+              "string",
+              "integer",
+              "boolean",
+              "array"
+            ]
+          }
+        },
+        "customConfig": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Custom redis.conf files to be applied. If used then redis.config is ignored",
+          "default": null
+        },
+        "resources": {
+          "type": "object",
+          "description": "CPU/Memory for master/slave nodes resource requests/limits",
+          "default": {}
+        },
+        "lifecycle": {
+          "type": "object",
+          "description": "Container Lifecycle Hooks for redis container",
+          "properties": {
+            "preStop": {
+              "type": "object",
+              "description": "Pre-stop lifecycle hook",
+              "properties": {
+                "exec": {
+                  "type": "object",
+                  "properties": {
+                    "command": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "default": [
+                        "/bin/sh",
+                        "/readonly-config/trigger-failover-if-master.sh"
+                      ]
+                    }
+                  }
+                },
+                "httpGet": {
+                  "type": "object"
+                }
+              }
+            },
+            "postStart": {
+              "type": "object",
+              "description": "Post-start lifecycle hook",
+              "properties": {
+                "exec": {
+                  "type": "object",
+                  "properties": {
+                    "command": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "httpGet": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the redis statefulset",
+          "default": {}
+        },
+        "podAnnotations": {
+          "type": "object",
+          "description": "Annotations to be added to the redis statefulset pods",
+          "default": {}
+        },
+        "updateStrategy": {
+          "type": "object",
+          "description": "Update strategy for Redis StatefulSet",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Update strategy type",
+              "enum": [
+                "RollingUpdate",
+                "OnDelete"
+              ],
+              "default": "RollingUpdate"
+            }
+          }
+        },
+        "extraVolumeMounts": {
+          "type": "array",
+          "description": "Additional volumeMounts for Redis container",
+          "items": {
+            "type": "object"
+          },
+          "default": []
+        }
+      }
+    },
+    "sentinel": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "description": "Port to access the sentinel service",
+          "default": 26379
+        },
+        "bind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Configure the bind directive to bind to a list of network interfaces",
+          "default": null
+        },
+        "tlsPort": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "TLS Port to access the sentinel service",
+          "default": null
+        },
+        "tlsReplication": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Configures sentinel with tls-replication parameter",
+          "default": null
+        },
+        "authClients": {
+          "type": "string",
+          "description": "Disable client side certificates authentication when set to 'no'",
+          "default": ""
+        },
+        "auth": {
+          "type": "boolean",
+          "description": "Enables or disables sentinel AUTH (Requires sentinel.password to be set)",
+          "default": false
+        },
+        "password": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "A password that configures a requirepass in the conf parameters",
+          "default": null
+        },
+        "resolveHostnames": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Configures sentinel with resolve-hostnames parameter",
+          "default": null
+        },
+        "announceHostnames": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Configures sentinel with announce-hostnames parameter",
+          "default": null
+        },
+        "existingSecret": {
+          "type": "string",
+          "description": "An existing secret containing a key defined by sentinel.authKey that configures requirepass",
+          "default": ""
+        },
+        "authKey": {
+          "type": "string",
+          "description": "The key holding the sentinel password in an existing secret",
+          "default": "sentinel-password"
+        },
+        "customCommand": {
+          "type": "array",
+          "description": "Allows overriding the sentinel container command",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "customArgs": {
+          "type": "array",
+          "description": "Allows overriding the sentinel container arguments",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "livenessProbe": {
+          "type": "object",
+          "description": "Liveness probe parameters for sentinel container",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable liveness probe",
+              "default": true
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "description": "Initial delay in seconds for liveness probe",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "description": "Period in seconds after which liveness probe will be repeated",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "description": "Timeout seconds for liveness probe",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "description": "Success threshold for liveness probe",
+              "default": 1
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "description": "Failure threshold for liveness probe",
+              "default": 5
+            }
+          }
+        },
+        "readinessProbe": {
+          "type": "object",
+          "description": "Readiness probe parameters for sentinel container",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable readiness probe",
+              "default": true
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "description": "Initial delay in seconds for readiness probe",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "description": "Period in seconds after which readiness probe will be repeated",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "description": "Timeout seconds for readiness probe",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "description": "Success threshold for readiness probe",
+              "default": 3
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "description": "Failure threshold for readiness probe",
+              "default": 5
+            }
+          }
+        },
+        "startupProbe": {
+          "type": "object",
+          "description": "Startup probe parameters for sentinel container",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Startup Probe",
+              "default": true
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "description": "Initial delay in seconds for startup probe",
+              "default": 5
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "description": "Period in seconds after which startup probe will be repeated",
+              "default": 10
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "description": "Timeout seconds for startup probe",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "description": "Success threshold for startup probe",
+              "default": 1
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "description": "Failure threshold for startup probe",
+              "default": 3
+            }
+          }
+        },
+        "quorum": {
+          "type": "integer",
+          "description": "Minimum number of nodes expected to be live",
+          "default": 2
+        },
+        "config": {
+          "type": "object",
+          "description": "Valid sentinel config options applied as config options to each sentinel.",
+          "properties": {
+            "down-after-milliseconds": {
+              "type": "integer",
+              "description": "Time in milliseconds to consider a node as down",
+              "default": 10000
+            },
+            "failover-timeout": {
+              "type": "integer",
+              "description": "Failover timeout value in milliseconds",
+              "default": 180000
+            },
+            "parallel-syncs": {
+              "type": "integer",
+              "description": "Number of replicas that can be reconfigured simultaneously during failover",
+              "default": 5
+            },
+            "maxclients": {
+              "type": "integer",
+              "description": "Maximum number of clients",
+              "default": 10000
+            }
+          },
+          "additionalProperties": {
+            "type": [
+              "string",
+              "integer",
+              "boolean"
+            ]
+          }
+        },
+        "customConfig": {
+          "type": "string",
+          "description": "Custom sentinel.conf files to be applied. If used then sentinel.config is ignored",
+          "default": ""
+        },
+        "resources": {
+          "type": "object",
+          "description": "CPU/Memory for sentinel node resource requests/limits",
+          "default": {}
+        },
+        "lifecycle": {
+          "type": "object",
+          "description": "Container Lifecycle Hooks for sentinel container",
+          "default": {}
+        },
+        "extraVolumeMounts": {
+          "type": "array",
+          "description": "Additional volumeMounts for Sentinel container",
+          "items": {
+            "type": "object"
+          },
+          "default": []
+        }
+      }
+    },
+    "securityContext": {
+      "type": "object",
+      "description": "Security context to be added to the Redis StatefulSet",
+      "properties": {
+        "runAsUser": {
+          "type": "integer",
+          "description": "User ID to run as",
+          "default": 1000
+        },
+        "fsGroup": {
+          "type": "integer",
+          "description": "Filesystem group ID",
+          "default": 1000
+        },
+        "runAsNonRoot": {
+          "type": "boolean",
+          "description": "Run as non-root user",
+          "default": true
+        },
+        "sysctls": {
+          "type": "array",
+          "description": "Sysctl parameters",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "containerSecurityContext": {
+      "type": "object",
+      "description": "Security context to be added to the Redis containers",
+      "properties": {
+        "runAsUser": {
+          "type": "integer",
+          "description": "User ID to run as",
+          "default": 1000
+        },
+        "runAsNonRoot": {
+          "type": "boolean",
+          "description": "Run as non-root user",
+          "default": true
+        },
+        "allowPrivilegeEscalation": {
+          "type": "boolean",
+          "description": "Allow privilege escalation",
+          "default": false
+        },
+        "seccompProfile": {
+          "type": "object",
+          "description": "Seccomp profile",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Seccomp profile type",
+              "default": "RuntimeDefault"
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "Linux capabilities",
+          "properties": {
+            "drop": {
+              "type": "array",
+              "description": "Capabilities to drop",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "ALL"
+              ]
+            },
+            "add": {
+              "type": "array",
+              "description": "Capabilities to add",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Node labels for pod assignment",
+      "default": {}
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations for pod assignment",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "hardAntiAffinity": {
+      "type": "boolean",
+      "description": "Whether the Redis server pods should be forced to run on separate nodes",
+      "default": true
+    },
+    "additionalAffinities": {
+      "type": "object",
+      "description": "Additional affinities to add to the Redis server pods",
+      "default": {}
+    },
+    "affinity": {
+      "type": "string",
+      "description": "Override all other affinity settings for the Redis server pods",
+      "default": ""
+    },
+    "topologySpreadConstraints": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable topology spread constraints",
+          "default": false
+        },
+        "maxSkew": {
+          "type": "string",
+          "description": "Max skew of pods tolerated",
+          "default": ""
+        },
+        "topologyKey": {
+          "type": "string",
+          "description": "Topology key for spread constraints",
+          "default": ""
+        },
+        "whenUnsatisfiable": {
+          "type": "string",
+          "description": "Enforcement policy, hard or soft",
+          "default": ""
+        }
+      }
+    },
+    "exporter": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "If true, the prometheus exporter sidecar is enabled",
+          "default": false
+        },
+        "image": {
+          "type": "string",
+          "description": "Exporter image",
+          "default": "quay.io/oliver006/redis_exporter"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Exporter image tag",
+          "default": "v1.80.2"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "description": "Exporter image pullPolicy",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ],
+          "default": "IfNotPresent"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Exporter port",
+          "default": 9121
+        },
+        "portName": {
+          "type": "string",
+          "description": "Exporter port name",
+          "default": "exporter-port"
+        },
+        "scrapePath": {
+          "type": "string",
+          "description": "Exporter scrape path",
+          "default": "/metrics"
+        },
+        "address": {
+          "type": "string",
+          "description": "Address/Host for Redis instance",
+          "default": "localhost"
+        },
+        "sslEnabled": {
+          "type": "boolean",
+          "description": "Set to true to connect to redis tls port",
+          "default": false
+        },
+        "resources": {
+          "type": "object",
+          "description": "cpu/memory resource limits/requests",
+          "default": {}
+        },
+        "extraArgs": {
+          "type": "object",
+          "description": "Additional args for redis exporter",
+          "default": {}
+        },
+        "script": {
+          "type": "string",
+          "description": "Custom Lua script for collection of custom metrics",
+          "default": ""
+        },
+        "serviceMonitor": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Use a ServiceMonitor to configure scraping",
+              "default": false
+            },
+            "namespace": {
+              "type": "string",
+              "description": "Namespace the ServiceMonitor should be deployed in",
+              "default": ""
+            },
+            "interval": {
+              "type": "string",
+              "description": "How frequently Prometheus should scrape",
+              "default": ""
+            },
+            "telemetryPath": {
+              "type": "string",
+              "description": "Path to redis-exporter telemetry-path",
+              "default": ""
+            },
+            "labels": {
+              "type": "object",
+              "description": "Labels for the ServiceMonitor",
+              "default": {}
+            },
+            "timeout": {
+              "type": "string",
+              "description": "Timeout for scrape",
+              "default": ""
+            },
+            "endpointAdditionalProperties": {
+              "type": "object",
+              "description": "Additional properties for ServiceMonitor endpoints",
+              "default": {}
+            },
+            "disableAPICheck": {
+              "type": "boolean",
+              "description": "Disable API Check on ServiceMonitor",
+              "default": false
+            },
+            "relabelings": {
+              "type": "array",
+              "description": "RelabelConfigs to apply to samples before scraping",
+              "items": {
+                "type": "object"
+              },
+              "default": []
+            },
+            "metricRelabelings": {
+              "type": "array",
+              "description": "MetricRelabelConfigs to apply to samples after scraping",
+              "items": {
+                "type": "object"
+              },
+              "default": []
+            }
+          }
+        },
+        "livenessProbe": {
+          "type": "object",
+          "description": "Liveness probe for exporter container",
+          "properties": {
+            "httpGet": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "default": "/metrics"
+                },
+                "port": {
+                  "type": "integer",
+                  "default": 9121
+                }
+              }
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "default": 3
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "default": 15
+            }
+          }
+        },
+        "readinessProbe": {
+          "type": "object",
+          "description": "Readiness probe for exporter container",
+          "properties": {
+            "httpGet": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "default": "/metrics"
+                },
+                "port": {
+                  "type": "integer",
+                  "default": 9121
+                }
+              }
+            },
+            "initialDelaySeconds": {
+              "type": "integer",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "default": 3
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "default": 2
+            }
+          }
+        }
+      }
+    },
+    "podDisruptionBudget": {
+      "type": "object",
+      "description": "Pod Disruption Budget rules",
+      "properties": {
+        "maxUnavailable": {
+          "type": "integer",
+          "description": "Max unavailable pods"
+        },
+        "minAvailable": {
+          "type": "integer",
+          "description": "Min available pods"
+        }
+      }
+    },
+    "auth": {
+      "type": "boolean",
+      "description": "Configures redis with AUTH (requirepass and masterauth conf params)",
+      "default": false
+    },
+    "redisPassword": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A password that configures a requirepass and masterauth in the conf parameters (Requires auth: enabled)",
+      "default": null
+    },
+    "authSecretAnnotations": {
+      "type": "object",
+      "description": "Annotations for auth secret",
+      "default": {}
+    },
+    "existingSecret": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "An existing secret containing a key defined by authKey that configures requirepass and masterauth",
+      "default": null
+    },
+    "authKey": {
+      "type": "string",
+      "description": "Defines the key holding the redis password in existing secret",
+      "default": "auth"
+    },
+    "persistentVolume": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable persistent volume",
+          "default": true
+        },
+        "storageClass": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "redis-ha data Persistent Volume Storage Class",
+          "default": null
+        },
+        "accessModes": {
+          "type": "array",
+          "description": "Persistent volume access modes",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "ReadWriteOnce"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "description": "Persistent volume size",
+          "default": "10Gi"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the volume",
+          "default": {}
+        },
+        "labels": {
+          "type": "object",
+          "description": "Labels for the volume",
+          "default": {}
+        }
+      }
+    },
+    "init": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "object",
+          "description": "Extra init resources",
+          "default": {}
+        }
+      }
+    },
+    "hostPath": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Use this path on the host for data storage. Path is evaluated as template",
+          "default": ""
+        },
+        "chown": {
+          "type": "boolean",
+          "description": "If true, an init-container with root permissions is launched to change the owner of the hostPath folder",
+          "default": true
+        }
+      }
+    },
+    "emptyDir": {
+      "type": "object",
+      "description": "Configuration of emptyDir, used only if persistentVolume is disabled and no hostPath specified",
+      "default": {}
+    },
+    "tls": {
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "type": "string",
+          "description": "Name of secret containing TLS certificates",
+          "default": ""
+        },
+        "certFile": {
+          "type": "string",
+          "description": "Name of certificate file",
+          "default": "redis.crt"
+        },
+        "keyFile": {
+          "type": "string",
+          "description": "Name of key file",
+          "default": "redis.key"
+        },
+        "dhParamsFile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Name of Diffie-Hellman (DH) key exchange parameters file",
+          "default": null
+        },
+        "caCertFile": {
+          "type": "string",
+          "description": "Name of CA certificate file",
+          "default": "ca.crt"
+        }
+      }
+    },
+    "restore": {
+      "type": "object",
+      "properties": {
+        "timeout": {
+          "type": "integer",
+          "description": "Timeout for the restore",
+          "default": 600
+        },
+        "existingSecret": {
+          "type": "boolean",
+          "description": "Set existingSecret to true to use secret specified in existingSecret above",
+          "default": false
+        },
+        "s3": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "description": "AWS S3 location of dump",
+              "default": ""
+            },
+            "access_key": {
+              "type": "string",
+              "description": "AWS AWS_ACCESS_KEY_ID to access restore.s3.source",
+              "default": ""
+            },
+            "secret_key": {
+              "type": "string",
+              "description": "AWS AWS_SECRET_ACCESS_KEY to access restore.s3.source",
+              "default": ""
+            },
+            "region": {
+              "type": "string",
+              "description": "AWS AWS_REGION to access restore.s3.source",
+              "default": ""
+            }
+          }
+        },
+        "ssh": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "description": "SSH scp location of dump",
+              "default": ""
+            },
+            "key": {
+              "type": "string",
+              "description": "SSH private key to scp restore.ssh.source to init container",
+              "default": ""
+            }
+          }
+        },
+        "redis": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "description": "Redis connection URI for restore",
+              "default": ""
+            }
+          }
+        }
+      }
+    },
+    "prometheusRule": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "If true, creates a Prometheus Operator PrometheusRule",
+          "default": false
+        },
+        "additionalLabels": {
+          "type": "object",
+          "description": "Additional labels to be set in metadata",
+          "default": {}
+        },
+        "namespace": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Namespace which Prometheus is running in",
+          "default": null
+        },
+        "interval": {
+          "type": "string",
+          "description": "How often rules in the group are evaluated",
+          "default": "10s"
+        },
+        "rules": {
+          "type": "array",
+          "description": "Rules spec template",
+          "items": {
+            "type": "object"
+          },
+          "default": []
+        }
+      }
+    },
+    "extraInitContainers": {
+      "type": "array",
+      "description": "Extra init containers to include in StatefulSet",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "extraContainers": {
+      "type": "array",
+      "description": "Extra containers to include in StatefulSet",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "extraVolumes": {
+      "type": "array",
+      "description": "Extra volumes to include in StatefulSet",
+      "items": {
+        "type": "object"
+      },
+      "default": []
+    },
+    "extraLabels": {
+      "type": "object",
+      "description": "Labels added to all created resources",
+      "default": {}
+    },
+    "networkPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether NetworkPolicy for Redis StatefulSets should be created",
+          "default": false
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for NetworkPolicy",
+          "default": {}
+        },
+        "labels": {
+          "type": "object",
+          "description": "Labels for NetworkPolicy",
+          "default": {}
+        },
+        "ingressRules": {
+          "type": "array",
+          "description": "User defined ingress rules that Redis should permit",
+          "items": {
+            "type": "object"
+          },
+          "default": []
+        },
+        "egressRules": {
+          "type": "array",
+          "description": "User defined egress rules, uses the same structure as ingressRules",
+          "items": {
+            "type": "object"
+          },
+          "default": [
+            {
+              "selectors": [
+                {
+                  "namespaceSelector": {}
+                },
+                {
+                  "ipBlock": {
+                    "cidr": "169.254.0.0/16"
+                  }
+                }
+              ],
+              "ports": [
+                {
+                  "port": 53,
+                  "protocol": "UDP"
+                },
+                {
+                  "port": 53,
+                  "protocol": "TCP"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "splitBrainDetection": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "integer",
+          "description": "Interval between redis sentinel and server split brain checks (in seconds)",
+          "default": 60
+        },
+        "retryInterval": {
+          "type": "integer",
+          "description": "Retry interval for split brain detection",
+          "default": 10
+        },
+        "resources": {
+          "type": "object",
+          "description": "splitBrainDetection resources",
+          "default": {}
+        },
+        "livenessProbe": {
+          "type": "object",
+          "description": "Liveness probe parameters for split brain container",
+          "properties": {
+            "initialDelaySeconds": {
+              "type": "integer",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "default": 1
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "default": 5
+            },
+            "exec": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [
+                    "cat",
+                    "/readonly-config/redis.conf"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "readinessProbe": {
+          "type": "object",
+          "description": "Readiness probe parameters for split brain container",
+          "properties": {
+            "initialDelaySeconds": {
+              "type": "integer",
+              "default": 30
+            },
+            "periodSeconds": {
+              "type": "integer",
+              "default": 15
+            },
+            "timeoutSeconds": {
+              "type": "integer",
+              "default": 15
+            },
+            "successThreshold": {
+              "type": "integer",
+              "default": 1
+            },
+            "failureThreshold": {
+              "type": "integer",
+              "default": 5
+            },
+            "exec": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [
+                    "sh",
+                    "-c",
+                    "test -d /proc/1"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
