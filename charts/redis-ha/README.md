@@ -88,7 +88,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `hostPath.path` | Use this path on the host for data storage. path is evaluated as template so placeholders are replaced | string | `""` |
 | `image.pullPolicy` | Redis image pull policy | string | `"IfNotPresent"` |
 | `image.repository` | Redis image repository | string | `"public.ecr.aws/docker/library/redis"` |
-| `image.tag` | Redis image tag | string | `"8.2.1-alpine"` |
+| `image.tag` | Redis image tag | string | `"8.2.4-alpine"` |
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
@@ -173,8 +173,22 @@ The following table lists the configurable parameters of the Redis chart and the
 | `serviceAccount.automountToken` | opt in/out of automounting API credentials into container. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/ | bool | `false` |
 | `serviceAccount.create` | Specifies whether a ServiceAccount should be created | bool | `true` |
 | `serviceAccount.name` | The name of the ServiceAccount to use. If not set and create is true, a name is generated using the redis-ha.fullname template | string | `""` |
+| `podAnnotations` | Annotations for redis statefulset pods (top-level) | object | `{}` |
+| `serviceAnnotations` | Custom annotations for redis services | object | `{}` |
 | `serviceLabels` | Custom labels for redis service | object | `{}` |
 | `splitBrainDetection.interval` | Interval between redis sentinel and server split brain checks (in seconds) | int | `60` |
+| `splitBrainDetection.livenessProbe.exec.command` | Command for liveness probe exec check | list | `["cat", "/readonly-config/redis.conf"]` |
+| `splitBrainDetection.livenessProbe.failureThreshold` | Failure threshold for liveness probe | int | `5` |
+| `splitBrainDetection.livenessProbe.initialDelaySeconds` | Initial delay in seconds for liveness probe | int | `30` |
+| `splitBrainDetection.livenessProbe.periodSeconds` | Period in seconds after which liveness probe will be repeated | int | `15` |
+| `splitBrainDetection.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
+| `splitBrainDetection.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
+| `splitBrainDetection.readinessProbe.exec.command` | Command for readiness probe exec check | list | `["sh", "-c", "test -d /proc/1"]` |
+| `splitBrainDetection.readinessProbe.failureThreshold` | Failure threshold for readiness probe | int | `5` |
+| `splitBrainDetection.readinessProbe.initialDelaySeconds` | Initial delay in seconds for readiness probe | int | `30` |
+| `splitBrainDetection.readinessProbe.periodSeconds` | Period in seconds after which readiness probe will be repeated | int | `15` |
+| `splitBrainDetection.readinessProbe.successThreshold` | Success threshold for readiness probe | int | `1` |
+| `splitBrainDetection.readinessProbe.timeoutSeconds` | Timeout seconds for readiness probe | int | `15` |
 | `splitBrainDetection.resources` | splitBrainDetection resources | object | `{}` |
 | `splitBrainDetection.retryInterval` |  | int | `10` |
 | `sysctlImage.command` | sysctlImage command to execute | list | `[]` |
@@ -187,6 +201,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sysctlImage.tag` | sysctlImage Init container tag | string | `"1.34.1"` |
 | `tls.caCertFile` | Name of CA certificate file | string | `"ca.crt"` |
 | `tls.certFile` | Name of certificate file | string | `"redis.crt"` |
+| `tls.secretName` | Name of existing secret with TLS certificates. Supports templates. | string | `""` |
 | `tls.dhParamsFile` | Name of Diffie-Hellman (DH) key exchange parameters file (Example: redis.dh) | string | `nil` |
 | `tls.keyFile` | Name of key file | string | `"redis.key"` |
 | `tolerations` |  | list | `[]` |
@@ -202,6 +217,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.auth` | Enables or disables sentinel AUTH (Requires `sentinel.password` to be set) | bool | `false` |
 | `sentinel.authClients` | It is possible to disable client side certificates authentication when "authClients" is set to "no" | string | `""` |
 | `sentinel.authKey` | The key holding the sentinel password in an existing secret. | string | `"sentinel-password"` |
+| `sentinel.bind` | Configure the bind directive for sentinel | string | `nil` |
 | `sentinel.config` | Valid sentinel config options in this section will be applied as config options to each sentinel (see below) | object | see values.yaml |
 | `sentinel.customArgs` |  | list | `[]` |
 | `sentinel.customCommand` |  | list | `[]` |
@@ -245,10 +261,10 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.additionalAffinities` | Additional affinities to add to the haproxy pods. | object | `{}` |
 | `haproxy.additionalPorts` | Additional ports to expose on HAProxy service and deployment. Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort) | list | `[]` |
 | `haproxy.affinity` | Override all other affinity settings for the haproxy pods with a string. | string | `""` |
-| `haproxy.annotations` | HAProxy template annotations | object | `{}` |
 | `haproxy.checkFall` | haproxy.cfg `check fall` setting | int | `1` |
 | `haproxy.checkInterval` | haproxy.cfg `check inter` setting | string | `"1s"` |
 | `haproxy.containerPort` | Modify HAProxy deployment container port | int | `6379` |
+| `haproxy.tlsPort` | Dedicated TLS port for HAProxy frontend. When set together with `haproxy.tls.enabled`, plaintext stays on `containerPort` and TLS binds to `tlsPort`. When not set, `haproxy.tls.enabled` replaces plaintext with TLS on `containerPort` (current behavior). | int | `nil` |
 | `haproxy.containerSecurityContext` | Security context to be added to the HAProxy containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `haproxy.customConfig` | Allows for custom config-haproxy.cfg file to be applied. If this is used then default config will be overwriten | string | `nil` |
 | `haproxy.deploymentAnnotations` | HAProxy deployment annotations | object | `{}` |
@@ -309,10 +325,10 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.timeout.connect` | haproxy.cfg `timeout connect` setting | string | `"4s"` |
 | `haproxy.timeout.server` | haproxy.cfg `timeout server` setting | string | `"330s"` |
 | `haproxy.timeout.tunnel` | haproxy.cfg `timeout tunnel` setting | string | `"1h"` |
-| `haproxy.tls` | Enable TLS termination on HAproxy, This will create a volume mount | object | `{"certMountPath":"/tmp/","enabled":false,"keyName":null,"secretName":""}` |
+| `haproxy.tls` | Enable TLS termination on HAproxy, This will create a volume mount | object | `{"certMountPath":"/tmp/","enabled":false,"keyName":"tls.pem","secretName":""}` |
 | `haproxy.tls.certMountPath` | Path to mount the secret that contains the certificates. haproxy | string | `"/tmp/"` |
 | `haproxy.tls.enabled` | If "true" this will enable TLS termination on haproxy | bool | `false` |
-| `haproxy.tls.keyName` | Key file name | string | `nil` |
+| `haproxy.tls.keyName` | Key file name (PEM bundle containing cert and private key) | string | `"tls.pem"` |
 | `haproxy.tls.secretName` | Secret containing the .pem file | string | `""` |
 
 ### Prometheus exporter parameters
@@ -350,7 +366,8 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.serviceMonitor.relabelings` |  | list | `[]` |
 | `exporter.serviceMonitor.telemetryPath` | Set path to redis-exporter telemtery-path (default is /metrics) | string | `""` |
 | `exporter.serviceMonitor.timeout` | Set timeout for scrape (default is 10s) | string | `""` |
-| `exporter.tag` | Exporter image tag | string | `"v1.67.0"` |
+| `exporter.sslEnabled` | Enable SSL for exporter connection to redis | bool | `false` |
+| `exporter.tag` | Exporter image tag | string | `"v1.80.2"` |
 | `prometheusRule.additionalLabels` | Additional labels to be set in metadata. | object | `{}` |
 | `prometheusRule.enabled` | If true, creates a Prometheus Operator PrometheusRule. | bool | `false` |
 | `prometheusRule.interval` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). | string | `"10s"` |

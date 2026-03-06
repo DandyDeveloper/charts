@@ -56,8 +56,21 @@ jobs:
         kubectl get nodes -o wide
         kubectl get pods -n kube-system
 
+    - name: Create test TLS secret
+      if: steps.list-changed.outputs.changed == 'true'
+      run: |
+        kubectl create namespace ct-test
+        openssl req -x509 -newkey rsa:2048 -keyout tls.key -out tls.crt \
+          -days 1 -nodes -subj "/CN=test"
+        cat tls.crt tls.key > tls.pem
+        cp tls.crt ca.crt
+        kubectl create secret generic test-tls-secret \
+          --namespace ct-test \
+          --from-file=tls.crt --from-file=tls.key \
+          --from-file=ca.crt --from-file=tls.pem
+
     - name: Run chart-testing linting (lint)
       run: ct lint --config .ci/ct-config.yaml --chart-repos hashicorp=https://helm.releases.hashicorp.com
 
     - name: Run chart-testing (install)
-      run: ct install --config .ci/ct-config.yaml
+      run: ct install --config .ci/ct-config.yaml --namespace ct-test

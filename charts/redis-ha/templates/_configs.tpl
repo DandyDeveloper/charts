@@ -6,7 +6,7 @@
 {{- else }}
     dir "/data"
     port {{ .Values.redis.port }}
-    {{- if .Values.sentinel.tlsPort }}
+    {{- if .Values.redis.tlsPort }}
     tls-port {{ .Values.redis.tlsPort }}
     tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
     tls-key-file /tls-certs/{{ .Values.tls.keyFile }}
@@ -561,12 +561,16 @@
     {{- $fullName := include "redis-ha.fullname" . }}
     {{- $replicas := int (toString .Values.replicas) }}
     {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
+    {{- $sentinelPort := default .Values.sentinel.port .Values.sentinel.tlsPort }}
+    {{- $sentinelTLS := .Values.sentinel.tlsPort }}
+    {{- $redisPort := default .Values.redis.port .Values.redis.tlsPort }}
+    {{- $redisTLS := .Values.redis.tlsPort }}
     {{- range $i := until $replicas }}
     # Check Sentinel and whether they are nominated master
     backend check_if_redis_is_master_{{ $i }}
       mode tcp
       option tcp-check
-      tcp-check connect
+      tcp-check connect default
       {{- if $root.Values.sentinel.auth }}
       tcp-check send "AUTH ${SENTINELAUTH}"\r\n
       tcp-check expect string +OK
@@ -578,9 +582,9 @@
       tcp-check send QUIT\r\n
       {{- range $i := until $replicas }}
       {{- if $.Values.sentinel.resolveHostnames }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:26379 check inter {{ $root.Values.haproxy.checkInterval }}
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $sentinelPort }} check inter {{ $root.Values.haproxy.checkInterval }}{{ if $sentinelTLS }} ssl verify required ca-file /tls-certs/{{ $root.Values.tls.caCertFile }} crt /usr/local/etc/haproxy/backend-tls.pem{{ end }}
       {{- else }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:26379 check inter {{ $root.Values.haproxy.checkInterval }}
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $sentinelPort }} check inter {{ $root.Values.haproxy.checkInterval }}{{ if $sentinelTLS }} ssl verify required ca-file /tls-certs/{{ $root.Values.tls.caCertFile }} crt /usr/local/etc/haproxy/backend-tls.pem{{ end }}
       {{- end }}
       {{- end }}
     {{- end }}
@@ -588,9 +592,12 @@
     # decide redis backend to use
     #master
     frontend ft_redis_master
-      {{- if .Values.haproxy.tls.enabled }}
+      {{- if and .Values.haproxy.tls.enabled .Values.haproxy.tlsPort }}
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.haproxy.containerPort }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.haproxy.tlsPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
+      {{- else if .Values.haproxy.tls.enabled }}
       bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
-      {{ else }}
+      {{- else }}
       bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ if ne (int $root.Values.redis.port) 0 }}{{ $root.Values.redis.port }}{{ else }}{{ $root.Values.redis.tlsPort }}{{ end }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{- end }}
       use_backend bk_redis_master
@@ -608,7 +615,7 @@
       {{- end }}
       mode tcp
       option tcp-check
-      tcp-check connect
+      tcp-check connect default
       {{- if .Values.auth }}
       tcp-check send "AUTH ${AUTH}"\r\n
       tcp-check expect string +OK
@@ -622,9 +629,9 @@
       {{- range $i := until $replicas }}
       use-server R{{ $i }} if { srv_is_up(R{{ $i }}) } { nbsrv(check_if_redis_is_master_{{ $i }}) ge 2 }
       {{- if $.Values.sentinel.resolveHostnames }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $redisPort }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1{{ if $redisTLS }} ssl verify required ca-file /tls-certs/{{ $root.Values.tls.caCertFile }} crt /usr/local/etc/haproxy/backend-tls.pem{{ end }}
       {{- else }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $redisPort }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1{{ if $redisTLS }} ssl verify required ca-file /tls-certs/{{ $root.Values.tls.caCertFile }} crt /usr/local/etc/haproxy/backend-tls.pem{{ end }}
       {{- end }}
       {{- end }}
     {{- if .Values.haproxy.readOnly.enabled }}
@@ -635,7 +642,7 @@
       {{- end }}
       mode tcp
       option tcp-check
-      tcp-check connect
+      tcp-check connect default
       {{- if .Values.auth }}
       tcp-check send "AUTH ${AUTH}"\r\n
       tcp-check expect string +OK
@@ -648,9 +655,9 @@
       tcp-check expect string +OK
       {{- range $i := until $replicas }}
       {{- if $.Values.sentinel.resolveHostnames }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $redisPort }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1{{ if $redisTLS }} ssl verify required ca-file /tls-certs/{{ $root.Values.tls.caCertFile }} crt /usr/local/etc/haproxy/backend-tls.pem{{ end }}
       {{- else }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
+      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:{{ $redisPort }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1{{ if $redisTLS }} ssl verify required ca-file /tls-certs/{{ $root.Values.tls.caCertFile }} crt /usr/local/etc/haproxy/backend-tls.pem{{ end }}
       {{- end }}
       {{- end }}
     {{- end }}
@@ -674,6 +681,9 @@
 {{- define "config-haproxy_init.sh" }}
     HAPROXY_CONF=/data/haproxy.cfg
     cp /readonly/haproxy.cfg "$HAPROXY_CONF"
+    {{- if or .Values.redis.tlsPort .Values.sentinel.tlsPort }}
+    cat /tls-certs/{{ .Values.tls.certFile }} /tls-certs/{{ .Values.tls.keyFile }} > /data/backend-tls.pem
+    {{- end }}
     {{- $fullName := include "redis-ha.fullname" . }}
     {{- $replicas := int (toString .Values.replicas) }}
     {{- $resolveHostnames := .Values.sentinel.resolveHostnames }}

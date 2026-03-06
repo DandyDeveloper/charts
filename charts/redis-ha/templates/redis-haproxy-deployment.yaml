@@ -122,6 +122,11 @@ spec:
           readOnly: true
         - name: data
           mountPath: /data
+{{- if or .Values.redis.tlsPort .Values.sentinel.tlsPort }}
+        - name: tls-certs
+          mountPath: /tls-certs
+          readOnly: true
+{{- end }}
       {{- if .Values.haproxy.imagePullSecrets }}
       imagePullSecrets: {{ toYaml .Values.haproxy.imagePullSecrets | nindent 8 }}
       {{- end }}
@@ -172,6 +177,10 @@ spec:
           containerPort: 8888
         - name: redis
           containerPort: {{ default "6379" .Values.haproxy.containerPort }}
+        {{- if and .Values.haproxy.tls.enabled .Values.haproxy.tlsPort }}
+        - name: redis-tls
+          containerPort: {{ .Values.haproxy.tlsPort }}
+        {{- end }}
         {{- if .Values.haproxy.readOnly.enabled }}
         - name: readonlyport
           containerPort: {{ default "6380" .Values.haproxy.readOnly.port }}
@@ -195,6 +204,11 @@ spec:
         - name: pemfile
           mountPath: {{ .Values.haproxy.tls.certMountPath }}
 {{- end }}
+{{- if or .Values.redis.tlsPort .Values.sentinel.tlsPort }}
+        - name: tls-certs
+          mountPath: /tls-certs
+          readOnly: true
+{{- end }}
         lifecycle:
 {{ toYaml .Values.haproxy.lifecycle | indent 10 }}
       {{- with .Values.haproxy.priorityClassName | default .Values.global.priorityClassName }}
@@ -205,6 +219,11 @@ spec:
       - name: pemfile
         secret:
           secretName: {{ tpl .Values.haproxy.tls.secretName . }}
+{{- end }}
+{{- if or .Values.redis.tlsPort .Values.sentinel.tlsPort }}
+      - name: tls-certs
+        secret:
+          secretName: {{ tpl (.Values.tls.secretName | default (printf "%s-tls-secret" (include "redis-ha.fullname" .))) . }}
 {{- end }}
       - name: config-volume
         configMap:
