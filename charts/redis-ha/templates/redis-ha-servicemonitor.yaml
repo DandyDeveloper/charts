@@ -41,7 +41,7 @@ spec:
     - {{ .Release.Namespace | quote }}
   selector:
     matchLabels:
-      app: {{ template "redis-ha.name" . }}
-      release: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "redis-ha.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
       exporter: enabled
 {{- end }}

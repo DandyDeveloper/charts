@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "labels.standard" . | indent 4 }}
-    component: haproxy
+    app.kubernetes.io/component: haproxy
     {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
@@ -25,16 +25,16 @@ spec:
   replicas: {{ .Values.haproxy.replicas }}
   selector:
     matchLabels:
-      app: {{ template "redis-ha.name" . }}-haproxy
-      release: {{ .Release.Name }}
-      component: haproxy
+      app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: haproxy
   template:
     metadata:
       name: {{ template "redis-ha.fullname" . }}-haproxy
       labels:
-        app: {{ template "redis-ha.name" . }}-haproxy
-        release: {{ .Release.Name }}
-        component: haproxy
+        app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: haproxy
         {{- range $key, $value := .Values.haproxy.labels }}
         {{ $key }}: {{ $value | toString }}
         {{- end }}
@@ -78,9 +78,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  app: {{ template "redis-ha.name" . }}-haproxy
-                  release: {{ .Release.Name }}
-                  component: haproxy
+                  app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
+                  app.kubernetes.io/instance: {{ .Release.Name }}
+                  app.kubernetes.io/component: haproxy
               topologyKey: kubernetes.io/hostname
     {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -88,9 +88,9 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app: {{ template "redis-ha.name" . }}-haproxy
-                    release: {{ .Release.Name }}
-                    component: haproxy
+                    app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
+                    app.kubernetes.io/instance: {{ .Release.Name }}
+                    app.kubernetes.io/component: haproxy
                 topologyKey: kubernetes.io/hostname
     {{- end }}
     {{- end }}
@@ -101,9 +101,9 @@ spec:
         whenUnsatisfiable: {{ .Values.topologySpreadConstraints.whenUnsatisfiable | default "ScheduleAnyway" }}
         labelSelector:
           matchLabels:
-            app: {{ template "redis-ha.name" . }}-haproxy
-            release: {{ .Release.Name }}
-            component: haproxy
+            app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/component: haproxy
       {{- end }}
       initContainers:
       - name: config-init

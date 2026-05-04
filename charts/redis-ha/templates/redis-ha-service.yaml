@@ -53,5 +53,5 @@ spec:
     targetPort: {{ .Values.exporter.portName }}
 {{- end }}
   selector:
-    release: {{ .Release.Name }}
-    app: {{ template "redis-ha.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ template "redis-ha.name" . }}
