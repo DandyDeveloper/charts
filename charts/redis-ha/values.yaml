@@ -355,7 +355,7 @@ sysctlImage:
   # -- sysctlImage Init container name
   repository: busybox
   # -- sysctlImage Init container tag
-  tag: 1.34.1
+  tag: 1.37.0
   # -- sysctlImage Init container pull policy
   pullPolicy: Always
   # -- Mount the host `/sys` folder to `/host-sys`
