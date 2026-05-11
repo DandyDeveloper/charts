@@ -70,7 +70,7 @@ configmapTest:
     # -- Repository of the configmap shellcheck test image.
     repository: koalaman/shellcheck
     # -- Tag of the configmap shellcheck test image.
-    tag: v0.10.0
+    tag: v0.11.0
   # -- Resources for the ConfigMap test pod
   resources: {}
 
