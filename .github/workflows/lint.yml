@@ -1,0 +1,75 @@
+name: lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - uses: helm/chart-testing-action@v2.6.1
+
+      - name: helm lint
+        run: helm lint .
+
+      - name: ct lint
+        run: ct lint --config .ct.yaml --target-branch ${{ github.event.repository.default_branch }}
+
+      - name: Install helm-docs
+        run: |
+          HELM_DOCS_VERSION=1.14.2
+          curl -fsSL "https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin helm-docs
+
+      - name: helm-docs drift check
+        run: |
+          helm-docs --chart-search-root=. --template-files=README.md.gotmpl
+          if ! git diff --quiet README.md; then
+            echo "::error::README.md is out of date. Run 'helm-docs --chart-search-root=. --template-files=README.md.gotmpl' locally and commit the result."
+            git --no-pager diff README.md
+            exit 1
+          fi
+
+      - name: Shellcheck shipped scripts
+        run: |
+          set -euo pipefail
+          pip install --quiet pyyaml
+          mkdir -p .shellcheck
+          # Render with HAProxy enabled so haproxy_init.sh is included.
+          helm template release . --set haproxy.enabled=true > .shellcheck/rendered.yaml
+          python3 - <<'PY'
+          import os, yaml
+          os.makedirs('.shellcheck/scripts', exist_ok=True)
+          for doc in yaml.safe_load_all(open('.shellcheck/rendered.yaml')):
+              if not doc or doc.get('kind') != 'ConfigMap':
+                  continue
+              name = doc['metadata']['name']
+              for key, val in (doc.get('data') or {}).items():
+                  if key.endswith('.sh'):
+                      with open(f'.shellcheck/scripts/{name}__{key}', 'w') as f:
+                          f.write(val)
+          PY
+          fail=0
+          for f in .shellcheck/scripts/*.sh; do
+            echo "::group::shellcheck $(basename "$f")"
+            shellcheck --shell=sh "$f" || fail=1
+            echo "::endgroup::"
+          done
+          exit $fail

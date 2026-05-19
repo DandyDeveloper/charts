@@ -63,17 +63,6 @@ configmap:
   # -- Custom labels for the redis configmap
   labels: {}
 
-## ConfigMap Test Parameters
-configmapTest:
-  # -- Image for redis-ha-configmap-test hook
-  image:
-    # -- Repository of the configmap shellcheck test image.
-    repository: koalaman/shellcheck
-    # -- Tag of the configmap shellcheck test image.
-    tag: v0.10.0
-  # -- Resources for the ConfigMap test pod
-  resources: {}
-
 ## Pods Service Account
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:
@@ -340,28 +329,6 @@ haproxy:
 rbac:
   # -- Create and use RBAC resources
   create: true
-
-# NOT RECOMMENDED: Additional container in which you can execute arbitrary commands to update sysctl parameters
-# You can now use securityContext.sysctls to leverage this capability
-# Ref: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
-##
-sysctlImage:
-  # -- Enable an init container to modify Kernel settings
-  enabled: false
-  # -- sysctlImage command to execute
-  command: []
-  # -- sysctlImage Init container registry
-  registry: public.ecr.aws/docker/library
-  # -- sysctlImage Init container name
-  repository: busybox
-  # -- sysctlImage Init container tag
-  tag: 1.34.1
-  # -- sysctlImage Init container pull policy
-  pullPolicy: Always
-  # -- Mount the host `/sys` folder to `/host-sys`
-  mountHostSys: false
-  # -- sysctlImage resources
-  resources: {}
 
 # -- Use an alternate scheduler, e.g. "stork".
 # ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/

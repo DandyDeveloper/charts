@@ -1,0 +1,45 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Chart.yaml
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      # chart-releaser-action requires charts to live in subdirectories of charts_dir.
+      # Stage the root-level chart into .cr-staging/redis-ha/ to satisfy that.
+      - name: Stage chart for chart-releaser
+        run: |
+          mkdir -p .cr-staging/redis-ha
+          rsync -a \
+            --exclude='.cr-staging' \
+            --exclude='.git' \
+            --exclude='.github' \
+            ./ .cr-staging/redis-ha/
+
+      - uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: .cr-staging
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -421,7 +421,7 @@
       )
     }
     get_redis_role
-    if [[ "$is_master" -eq 1 ]]; then
+    if [ "$is_master" -eq 1 ]; then
       echo "This node is currently master, we trigger a failover."
       {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
       response=$(
@@ -437,12 +437,12 @@
         {{- end}}
           SENTINEL failover {{ $masterGroupName }}
       )
-      if [[ "$response" != "OK" ]] ; then
+      if [ "$response" != "OK" ] ; then
         echo "$response"
         exit 1
       fi
       timeout=30
-      while [[ "$is_master" -eq 1 && $timeout -gt 0 ]]; do
+      while [ "$is_master" -eq 1 ] && [ "$timeout" -gt 0 ]; do
         sleep 1
         get_redis_role
         timeout=$((timeout - 1))

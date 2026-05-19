@@ -113,19 +113,6 @@ spec:
       serviceAccountName: {{ template "redis-ha.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automountToken }}
       initContainers:
-      {{- if .Values.sysctlImage.enabled }}
-      - name: init-sysctl
-        image: {{ template "redis.sysctl.image" . }}
-        imagePullPolicy: {{ .Values.sysctlImage.pullPolicy }}
-        resources: {{ toYaml .Values.sysctlImage.resources | nindent 10 }}
-        {{- if .Values.sysctlImage.mountHostSys }}
-        volumeMounts:
-        - name: host-sys
-          mountPath: /host-sys
-        {{- end }}
-        command: {{ toYaml .Values.sysctlImage.command | nindent 10 }}
-        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
-      {{- end }}
 {{- if and .Values.hostPath.path .Values.hostPath.chown }}
       - name: hostpath-chown
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -599,11 +586,6 @@ spec:
       - name: config
         configMap:
           name: {{ template "redis-ha.fullname" . }}-configmap
-      {{- if .Values.sysctlImage.mountHostSys }}
-      - name: host-sys
-        hostPath:
-          path: /sys
-      {{- end }}
       {{- if .Values.exporter.script }}
       - name: script-mount
         configMap:

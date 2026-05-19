@@ -1,0 +1,8 @@
+remote: origin
+target-branch: main
+validate-maintainers: false
+helm-extra-args: --timeout 600s
+chart-dirs:
+  - .
+excluded-charts:
+  - .cr-staging

@@ -7,8 +7,8 @@
 ## TL;DR
 
 ```bash
-git clone https://github.com/corva-ai/redis-ha.git
-helm install my-release ./redis-ha
+helm repo add corva-ai https://corva-ai.github.io/redis-ha
+helm install my-release corva-ai/redis-ha
 ```
 
 By default this chart install 3 pods total:
@@ -22,7 +22,7 @@ This chart bootstraps a [Redis](https://redis.io) highly available master/slave 
 
 ## Prerequisites
 
-* Kubernetes 1.8+ with Beta APIs enabled
+* Kubernetes 1.25+ (enforced via `Chart.yaml: kubeVersion`; `policy/v1beta1` PodDisruptionBudget was removed in 1.25)
 * PV provisioner support in the underlying infrastructure
 * Helm v3+
 
@@ -36,14 +36,15 @@ Starting from version `4.x` HAProxy sidecar prometheus-exporter removed and repl
 
 ## Installing the Chart
 
-To install the chart from a local clone of this repository:
+Add the chart repository and install:
 
 ```bash
-git clone https://github.com/corva-ai/redis-ha.git
-helm install my-release ./redis-ha
+helm repo add corva-ai https://corva-ai.github.io/redis-ha
+helm repo update
+helm install my-release corva-ai/redis-ha
 ```
 
-You can also install directly from a packaged chart, a Git ref, or any internal Helm repository where this fork is published.
+You can also install directly from a local clone, a packaged `.tgz` (each release attaches one to its GitHub Release), or any internal Helm repository that mirrors this fork.
 
 The command deploys Redis on the Kubernetes cluster in the default configuration. By default this chart install one master pod containing redis master container and sentinel container along with 2 redis slave pods each containing their own sentinel sidecars. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
@@ -73,10 +74,6 @@ The following table lists the configurable parameters of the Redis chart and the
 | `authKey` | Defines the key holding the redis password in existing secret. | string | `"auth"` |
 | `authSecretAnnotations` | Annotations for auth secret | object | `{}` |
 | `configmap.labels` | Custom labels for the redis configmap | object | `{}` |
-| `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.10.0"}` |
-| `configmapTest.image.repository` | Repository of the configmap shellcheck test image. | string | `"koalaman/shellcheck"` |
-| `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.10.0"` |
-| `configmapTest.resources` | Resources for the ConfigMap test pod | object | `{}` |
 | `containerSecurityContext` | Security context to be added to the Redis containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `emptyDir` | Configuration of `emptyDir`, used only if persistentVolume is disabled and no hostPath specified | object | `{}` |
 | `existingSecret` | An existing secret containing a key defined by `authKey` that configures `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`, cannot be used in conjunction with `.Values.redisPassword`) | string | `nil` |
@@ -196,14 +193,6 @@ The following table lists the configurable parameters of the Redis chart and the
 | `splitBrainDetection.readinessProbe.timeoutSeconds` | Timeout seconds for readiness probe | int | `15` |
 | `splitBrainDetection.resources` | splitBrainDetection resources | object | `{}` |
 | `splitBrainDetection.retryInterval` |  | int | `10` |
-| `sysctlImage.command` | sysctlImage command to execute | list | `[]` |
-| `sysctlImage.enabled` | Enable an init container to modify Kernel settings | bool | `false` |
-| `sysctlImage.mountHostSys` | Mount the host `/sys` folder to `/host-sys` | bool | `false` |
-| `sysctlImage.pullPolicy` | sysctlImage Init container pull policy | string | `"Always"` |
-| `sysctlImage.registry` | sysctlImage Init container registry | string | `"public.ecr.aws/docker/library"` |
-| `sysctlImage.repository` | sysctlImage Init container name | string | `"busybox"` |
-| `sysctlImage.resources` | sysctlImage resources | object | `{}` |
-| `sysctlImage.tag` | sysctlImage Init container tag | string | `"1.34.1"` |
 | `tls.caCertFile` | Name of CA certificate file | string | `"ca.crt"` |
 | `tls.certFile` | Name of certificate file | string | `"redis.crt"` |
 | `tls.dhParamsFile` | Name of Diffie-Hellman (DH) key exchange parameters file (Example: redis.dh) | string | `nil` |
@@ -383,7 +372,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 $ helm install my-release \
   --set image=redis \
   --set tag=5.0.5-alpine \
-  ./redis-ha
+  corva-ai/redis-ha
 ```
 
 The above command sets the Redis server within `default` namespace.
@@ -391,7 +380,7 @@ The above command sets the Redis server within `default` namespace.
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
 
 ```bash
-helm install my-release -f values.yaml ./redis-ha
+helm install my-release -f values.yaml corva-ai/redis-ha
 ```
 
 > **Tip**: You can use the default [values.yaml](values.yaml)
@@ -433,20 +422,7 @@ If more control is needed from either the redis or sentinel config then an entir
 
 ## Host Kernel Settings
 
-Redis may require some changes in the kernel of the host machine to work as expected, in particular increasing the `somaxconn` value and disabling transparent huge pages.
-To do so, you can set up a privileged initContainer with the `sysctlImage` config values, for example:
-
-```yml
-sysctlImage:
-  enabled: true
-  mountHostSys: true
-  command:
-    - /bin/sh
-    - -xc
-    - |-
-      sysctl -w net.core.somaxconn=10000
-      echo never > /host-sys/kernel/mm/transparent_hugepage/enabled
-```
+Redis may require some changes in the kernel of the host machine to work as expected, in particular increasing the `somaxconn` value and disabling transparent huge pages. Use the Kubernetes-native `securityContext.sysctls` field (see `values.yaml`) to apply these settings via the kubelet.
 
 ## HAProxy startup
 
