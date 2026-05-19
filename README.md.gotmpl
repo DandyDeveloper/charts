@@ -34,6 +34,12 @@ Please note that there have been a number of changes simplifying the redis manag
 
 Starting from version `4.x` HAProxy sidecar prometheus-exporter removed and replaced by the embedded [HAProxy metrics endpoint](https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter), as a result when upgrading from version 3.x to 4.x section `haproxy.exporter` should be removed and the `haproxy.metrics` need to be configured for fit your needs.
 
+### Upgrading the chart from 4.35.x (this fork)
+
+This fork simplifies the rendered HAProxy `haproxy.cfg` for `haproxy.enabled=true`. The previous "Sentinel-quorum + role check" pattern, which baked announce-service IPs into the config at HAProxy startup via `REPLACE_ANNOUNCE<i>` substitution in `haproxy_init.sh`, is replaced by a role-only check. HAProxy now probes each replica directly with `INFO replication` and routes to whichever responds `role:master`. The `splitBrainDetection` sidecar continues to guard against a replica falsely advertising master. The same change drops the `check_if_redis_is_master_<i>` backends and the `use-server … nbsrv(...) ge 2` clause; the `haproxy_init.sh` initContainer keeps only the announce-service DNS wait. If you override `haproxy.customConfig` this change is transparent. If you previously relied on the Sentinel-quorum backends, restore that pattern via `haproxy.customConfig`.
+
+The Sentinel-driven graceful failover at pod-termination time has also been split across the two containers (ported from [`DandyDeveloper/charts#377`](https://github.com/DandyDeveloper/charts/pull/377)): the sentinel container's `preStop` now runs `trigger-failover-if-master.sh` (initiating the failover while Sentinel and its credentials are still alive), and the redis container's `preStop` runs `redis-prestop.sh` (waiting for the local role to flip before SIGTERM). If you override `redis.lifecycle` or `sentinel.lifecycle`, review the new defaults in `values.yaml`.
+
 ## Installing the Chart
 
 Add the chart repository and install:

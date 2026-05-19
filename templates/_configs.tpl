@@ -594,6 +594,10 @@
       timeout client {{ .Values.haproxy.timeout.client }}
       timeout check {{ .Values.haproxy.timeout.check }}
       timeout tunnel {{ .Values.haproxy.timeout.tunnel }}
+      option redispatch
+      option tcp-smart-connect
+      option tcp-smart-accept
+      retries 3
 
     listen health_check_http_url
       bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:8888  {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
@@ -604,30 +608,6 @@
     {{- $root := . }}
     {{- $fullName := include "redis-ha.fullname" . }}
     {{- $replicas := int (toString .Values.replicas) }}
-    {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
-    {{- range $i := until $replicas }}
-    # Check Sentinel and whether they are nominated master
-    backend check_if_redis_is_master_{{ $i }}
-      mode tcp
-      option tcp-check
-      tcp-check connect
-      {{- if $root.Values.sentinel.auth }}
-      tcp-check send "AUTH ${SENTINELAUTH}"\r\n
-      tcp-check expect string +OK
-      {{- end }}
-      tcp-check send PING\r\n
-      tcp-check expect string +PONG
-      tcp-check send SENTINEL\ get-master-addr-by-name\ {{ $masterGroupName }}\r\n
-      tcp-check expect string REPLACE_ANNOUNCE{{ $i }}
-      tcp-check send QUIT\r\n
-      {{- range $i := until $replicas }}
-      {{- if $.Values.sentinel.resolveHostnames }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:26379 check inter {{ $root.Values.haproxy.checkInterval }}
-      {{- else }}
-      server R{{ $i }} {{ $fullName }}-announce-{{ $i }}:26379 check inter {{ $root.Values.haproxy.checkInterval }}
-      {{- end }}
-      {{- end }}
-    {{- end }}
 
     # decide redis backend to use
     #master
@@ -664,7 +644,6 @@
       tcp-check send QUIT\r\n
       tcp-check expect string +OK
       {{- range $i := until $replicas }}
-      use-server R{{ $i }} if { srv_is_up(R{{ $i }}) } { nbsrv(check_if_redis_is_master_{{ $i }}) ge 2 }
       {{- if $.Values.sentinel.resolveHostnames }}
       server R{{ $i }} {{ $fullName }}-announce-{{ $i }}.{{ $.Release.Namespace }}.svc:{{ $root.Values.redis.port }} check inter {{ $root.Values.haproxy.checkInterval }} fall {{ $root.Values.haproxy.checkFall }} rise 1
       {{- else }}
@@ -722,23 +701,18 @@
     {{- $replicas := int (toString .Values.replicas) }}
     {{- $resolveHostnames := .Values.sentinel.resolveHostnames }}
     {{- $namespace := .Release.Namespace }}
+    {{- if not $resolveHostnames }}
     {{- range $i := until $replicas }}
-    {{- if $resolveHostnames }}
-    ANNOUNCE_IP{{ $i }}="{{ $fullName }}-announce-{{ $i }}.{{ $namespace }}.svc"
-    echo "Using hostname for {{ $fullName }}-announce-{{ $i }}.{{ $namespace }}.svc: $ANNOUNCE_IP{{ $i }}"
-    {{- else }}
+    # Wait for each announce-service DNS record to exist before HAProxy resolves them.
     for loop in $(seq 1 10); do
       getent hosts {{ $fullName }}-announce-{{ $i }} && break
       echo "Waiting for service {{ $fullName }}-announce-{{ $i }} to be ready ($loop) ..." && sleep 1
     done
-    ANNOUNCE_IP{{ $i }}=$(getent hosts "{{ $fullName }}-announce-{{ $i }}" | awk '{ print $1 }')
-    if [ -z "$ANNOUNCE_IP{{ $i }}" ]; then
+    if ! getent hosts "{{ $fullName }}-announce-{{ $i }}" >/dev/null; then
       echo "Could not resolve the announce address for {{ $fullName }}-announce-{{ $i }}"
       exit 1
     fi
     {{- end }}
-    sed -i "s/REPLACE_ANNOUNCE{{ $i }}/$ANNOUNCE_IP{{ $i }}/" "$HAPROXY_CONF"
-
     {{- end }}
 {{- end }}
 
