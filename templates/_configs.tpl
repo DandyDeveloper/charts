@@ -6,7 +6,7 @@
 {{- else }}
     dir "/data"
     port {{ .Values.redis.port }}
-    {{- if .Values.sentinel.tlsPort }}
+    {{- if .Values.redis.tlsPort }}
     tls-port {{ .Values.redis.tlsPort }}
     tls-cert-file /tls-certs/{{ .Values.tls.certFile }}
     tls-key-file /tls-certs/{{ .Values.tls.keyFile }}
@@ -721,7 +721,7 @@
 {{- end }}
 
 {{- define "redis_liveness.sh" }}
-    {{- if not (ne (int .Values.sentinel.port) 0) }}
+    {{- if eq (int .Values.redis.port) 0 }}
     TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
     {{- end }}
     response=$(
@@ -746,7 +746,7 @@
 {{- end }}
 
 {{- define "redis_readiness.sh" }}
-    {{- if not (ne (int .Values.sentinel.port) 0) }}
+    {{- if eq (int .Values.redis.port) 0 }}
     TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
     {{- end }}
     response=$(
