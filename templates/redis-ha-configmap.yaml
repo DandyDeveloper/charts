@@ -35,3 +35,7 @@ data:
 {{- include "config-haproxy_init.sh" . }}
   trigger-failover-if-master.sh: |
 {{- include "trigger-failover-if-master.sh" . }}
+  redis-prestop.sh: |
+{{- include "redis-prestop.sh" . }}
+  lib.sh: |
+{{- include "lib.sh" . }}

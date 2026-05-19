@@ -457,13 +457,20 @@ redis:
   #  limits:
   #    memory: 700Mi
 
-  # -- Container Lifecycle Hooks for redis container
+  # -- Container Lifecycle Hooks for redis container.
+  # The redis container's preStop waits for Sentinel-driven failover (initiated
+  # by the sentinel container's preStop, see `sentinel.lifecycle`) to flip the
+  # local role to replica before the container receives SIGTERM. Output is
+  # redirected to PID 1's stdout/stderr so kubelet captures the script logs.
   # Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
   # @default -- see values.yaml
   lifecycle:
     preStop:
       exec:
-        command: ["/bin/sh", "/readonly-config/trigger-failover-if-master.sh"]
+        command:
+          - /bin/sh
+          - -c
+          - sh /readonly-config/redis-prestop.sh > /proc/1/fd/1 2> /proc/1/fd/2
 
   # -- Annotations for the redis statefulset
   annotations: {}
@@ -606,8 +613,20 @@ sentinel:
   #    memory: 200Mi
 
   # -- Container Lifecycle Hooks for sentinel container.
+  # The sentinel container's preStop drives the actual Sentinel failover before
+  # the redis sidecar starts shutting down. Running it here (rather than on the
+  # redis container) ensures the local Sentinel is still alive and that
+  # SENTINELAUTH is in scope. Output is redirected to PID 1's fds so kubelet
+  # captures the logs.
   # Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
-  lifecycle: {}
+  # @default -- see values.yaml
+  lifecycle:
+    preStop:
+      exec:
+        command:
+          - /bin/sh
+          - -c
+          - sh /readonly-config/trigger-failover-if-master.sh > /proc/1/fd/1 2> /proc/1/fd/2
 
   # -- additional volumeMounts for Sentinel container
   extraVolumeMounts: []

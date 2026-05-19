@@ -125,7 +125,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.disableCommands` | Array with commands to disable | list | `["FLUSHDB","FLUSHALL"]` |
 | `redis.envFrom` | Load environment variables from ConfigMap/Secret | list | `[]` |
 | `redis.extraVolumeMounts` | additional volumeMounts for Redis container | list | `[]` |
-| `redis.lifecycle` | Container Lifecycle Hooks for redis container Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ | object | see values.yaml |
+| `redis.lifecycle` | Container Lifecycle Hooks for redis container. The redis container's preStop waits for Sentinel-driven failover (initiated by the sentinel container's preStop, see `sentinel.lifecycle`) to flip the local role to replica before the container receives SIGTERM. Output is redirected to PID 1's stdout/stderr so kubelet captures the script logs. Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ | object | see values.yaml |
 | `redis.livenessProbe` | Liveness probe parameters for redis container | object | `{"enabled":true,"failureThreshold":5,"initialDelaySeconds":30,"periodSeconds":15,"successThreshold":1,"timeoutSeconds":15}` |
 | `redis.livenessProbe.enabled` | Enable the Liveness Probe | bool | `true` |
 | `redis.livenessProbe.failureThreshold` | Failure threshold for liveness probe | int | `5` |
@@ -218,7 +218,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.customConfig` | Allows for custom sentinel.conf files to be applied. If this is used then `sentinel.config` is ignored | string | `""` |
 | `sentinel.existingSecret` | An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`) Supports templates like "{{ .Release.Name }}-sentinel-creds" | string | `""` |
 | `sentinel.extraVolumeMounts` | additional volumeMounts for Sentinel container | list | `[]` |
-| `sentinel.lifecycle` | Container Lifecycle Hooks for sentinel container. Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ | object | `{}` |
+| `sentinel.lifecycle` | Container Lifecycle Hooks for sentinel container. The sentinel container's preStop drives the actual Sentinel failover before the redis sidecar starts shutting down. Running it here (rather than on the redis container) ensures the local Sentinel is still alive and that SENTINELAUTH is in scope. Output is redirected to PID 1's fds so kubelet captures the logs. Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ | object | see values.yaml |
 | `sentinel.livenessProbe.enabled` |  | bool | `true` |
 | `sentinel.livenessProbe.failureThreshold` | Failure threshold for liveness probe | int | `5` |
 | `sentinel.livenessProbe.initialDelaySeconds` | Initial delay in seconds for liveness probe | int | `30` |

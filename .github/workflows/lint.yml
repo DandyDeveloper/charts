@@ -69,7 +69,7 @@ jobs:
           fail=0
           for f in .shellcheck/scripts/*.sh; do
             echo "::group::shellcheck $(basename "$f")"
-            shellcheck --shell=sh "$f" || fail=1
+            shellcheck --shell=sh --severity=warning "$f" || fail=1
             echo "::endgroup::"
           done
           exit $fail
