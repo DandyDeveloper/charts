@@ -1,0 +1,71 @@
+haproxy:
+  enabled: true
+  replicas: 3
+
+persistentVolume:
+  enabled: false
+
+redis:
+  minReadySeconds: 0
+  livenessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 12
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 12
+  startupProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 24
+
+sentinel:
+  quorum: 2
+  livenessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 12
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 12
+  startupProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 12
+  config:
+    down-after-milliseconds: 2000
+    failover-timeout: 20000
+    parallel-syncs: 1
+    maxclients: 10000
+
+splitBrainDetection:
+  interval: 5
+  retryInterval: 2
+  livenessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 12
+    exec:
+      command:
+        - cat
+        - /readonly-config/redis.conf
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 12
+    exec:
+      command:
+        - sh
+        - -c
+        - test -d /proc/1

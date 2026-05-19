@@ -1,0 +1,47 @@
+name: e2e
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_network_partition:
+        description: "Run the kind-only Docker/iptables network partition scenario"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: redis-ha-e2e
+          config: e2e/kind/multi-node.yaml
+
+      - name: Run manual e2e suite
+        env:
+          E2E_CREATE_KIND_CLUSTER: "false"
+          E2E_KIND_CLUSTER_NAME: redis-ha-e2e
+          E2E_ENABLE_KIND_PARTITION: "${{ inputs.run_network_partition }}"
+          E2E_REQUIRE_KIND_PARTITION: "${{ inputs.run_network_partition }}"
+          E2E_ARTIFACT_DIR: .e2e/artifacts/github
+        run: ./e2e/run.sh
+
+      - name: Upload e2e artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: redis-ha-e2e-artifacts
+          path: .e2e/artifacts/
+          if-no-files-found: ignore

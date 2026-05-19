@@ -2,6 +2,7 @@
 .shellcheck/
 .cr-staging/
 .kubeconform/
+.e2e/
 
 # Packaged Helm charts
 *.tgz
