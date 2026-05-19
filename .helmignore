@@ -21,5 +21,16 @@
 .idea/
 *.tmproj
 .vscode/
+.github/
+.e2e/
+.cr-index/
+.cr-release-packages/
+.cr-staging/
 ci/
+e2e/
 *.gotmpl
+AGENTS.md
+.ct.yaml
+.pre-commit-config.yaml
+cr.yaml
+renovate.json

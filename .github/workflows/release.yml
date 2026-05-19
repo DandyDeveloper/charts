@@ -1,6 +1,7 @@
 name: release
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -27,19 +28,16 @@ jobs:
         with:
           version: v3.16.3
 
-      # chart-releaser-action requires charts to live in subdirectories of charts_dir.
-      # Stage the root-level chart into .cr-staging/redis-ha/ to satisfy that.
-      - name: Stage chart for chart-releaser
+      - name: Package root chart
         run: |
-          mkdir -p .cr-staging/redis-ha
-          rsync -a \
-            --exclude='.cr-staging' \
-            --exclude='.git' \
-            --exclude='.github' \
-            ./ .cr-staging/redis-ha/
+          rm -rf .cr-release-packages .cr-index
+          mkdir -p .cr-release-packages
+          helm package . --destination .cr-release-packages
 
       - uses: helm/chart-releaser-action@v1.7.0
         with:
-          charts_dir: .cr-staging
+          config: cr.yaml
+          skip_packaging: true
+          skip_existing: true
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
