@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.x"
 
-      - uses: helm/chart-testing-action@v2.6.1
+      - uses: helm/chart-testing-action@v2.8.0
 
       - name: helm lint
         run: helm lint .

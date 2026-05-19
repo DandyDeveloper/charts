@@ -11,10 +11,13 @@ helm repo add corva-ai https://corva-ai.github.io/redis-ha
 helm install my-release corva-ai/redis-ha
 ```
 
-By default this chart install 3 pods total:
+By default this chart installs 3 pods total. Each pod contains three containers:
 
-* one pod containing a redis master and sentinel container (optional prometheus metrics exporter sidecar available)
-* two pods each containing a redis slave and sentinel containers (optional prometheus metrics exporter sidecars available)
+* `redis` (one acts as master on initial bring-up, the others as replicas — roles are managed by Sentinel)
+* `sentinel` sidecar for failover management
+* `split-brain-fix` sidecar that detects and reconciles cases where Sentinel and the local Redis disagree on which node is master (see [Sentinel and redis server split brain detection](#sentinel-and-redis-server-split-brain-detection) below)
+
+A Prometheus metrics exporter sidecar is also available via `exporter.enabled=true`.
 
 ## Introduction
 
@@ -28,11 +31,7 @@ This chart bootstraps a [Redis](https://redis.io) highly available master/slave 
 
 ## Upgrading the Chart
 
-Please note that there have been a number of changes simplifying the redis management strategy (for better failover and elections) in the 3.x version of this chart. These changes allow the use of official [redis](https://hub.docker.com/_/redis/) images that do not require special RBAC or ServiceAccount roles. As a result when upgrading from version >=2.0.1 to >=3.0.0 of this chart, `Role`, `RoleBinding`, and `ServiceAccount` resources should be deleted manually.
-
-### Upgrading the chart from 3.x to 4.x
-
-Starting from version `4.x` HAProxy sidecar prometheus-exporter removed and replaced by the embedded [HAProxy metrics endpoint](https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter), as a result when upgrading from version 3.x to 4.x section `haproxy.exporter` should be removed and the `haproxy.metrics` need to be configured for fit your needs.
+Migration notes for pre-fork chart versions (2.x → 3.x and 3.x → 4.x) are preserved in [CHANGELOG.md](CHANGELOG.md) under *Historical breaking changes*. The fork enforces `Helm v3+` and `Kubernetes 1.25+` via `Chart.yaml: kubeVersion`, so anyone landing here today should already be on a chart and platform version newer than those migrations addressed.
 
 ### Upgrading the chart from 4.35.x (this fork)
 
@@ -52,7 +51,7 @@ helm install my-release corva-ai/redis-ha
 
 You can also install directly from a local clone, a packaged `.tgz` (each release attaches one to its GitHub Release), or any internal Helm repository that mirrors this fork.
 
-The command deploys Redis on the Kubernetes cluster in the default configuration. By default this chart install one master pod containing redis master container and sentinel container along with 2 redis slave pods each containing their own sentinel sidecars. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+The command deploys Redis on the Kubernetes cluster in the default configuration. By default this chart installs three pods, each with a `redis` container, a `sentinel` sidecar, and a `split-brain-fix` sidecar (see the topology overview in [TL;DR](#tldr) above). The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
 > **Tip**: List all releases using `helm list`
 
@@ -142,19 +141,14 @@ For example `repl-timeout 60` would be added to the `redis.config` section of th
     repl-timeout: "60"
 ```
 
-Note:
+Use the current Redis directive names — for example `min-replicas-to-write` / `min-replicas-max-lag`:
 
-1. Some config options should be renamed by redis version，e.g.:
+```yml
+min-replicas-to-write: 1
+min-replicas-max-lag: 5
+```
 
-   ```yml
-   # In redis 5.x，see https://raw.githubusercontent.com/antirez/redis/5.0/redis.conf
-   min-replicas-to-write: 1
-   min-replicas-max-lag: 5
-
-   # In redis 4.x and redis 3.x，see https://raw.githubusercontent.com/antirez/redis/4.0/redis.conf and https://raw.githubusercontent.com/antirez/redis/3.0/redis.conf
-   min-slaves-to-write 1
-   min-slaves-max-lag 5
-   ```
+The chart's `appVersion` pins a Redis ≥ 7 image, so the legacy `min-slaves-*` names are no longer accepted.
 
 Sentinel options supported must be in the the `sentinel <option> <master-group-name> <value>` format. For example, `sentinel down-after-milliseconds 30000` would be added to the `sentinel.config` section of the `values.yaml` as:
 
@@ -170,12 +164,9 @@ Redis may require some changes in the kernel of the host machine to work as expe
 
 ## HAProxy startup
 
-When HAProxy is enabled, it will attempt to connect to each announce-service of each redis replica instance in its init container before starting.
-It will fail if announce-service IP is not available fast enough (10 seconds max by announce-service).
-A such case could happen if the orchestator is pending the nomination of redis pods.
-Risk is limited because announce-service is using `publishNotReadyAddresses: true`, although, in such case, HAProxy pod will be rescheduled afterward by the orchestrator.
+When HAProxy is enabled, an init container (`haproxy_init.sh`) waits for each redis announce-service DNS record to resolve before HAProxy starts, retrying up to 10 times at one-second intervals per service. If a record is still unresolvable after that, the init container exits non-zero and the HAProxy pod is restarted by the orchestrator. This can happen briefly when the redis StatefulSet is still scheduling its first pods; the announce-services use `publishNotReadyAddresses: true`, so the DNS records typically appear before redis pods are ready and the wait completes quickly.
 
-PodDisruptionBudgets are not configured by default, you may need to set the `haproxy.podDisruptionBudget` parameter in values.yaml to enable it.
+PodDisruptionBudgets for both the Redis StatefulSet and the HAProxy Deployment are enabled by default with `maxUnavailable: 1`. Override `podDisruptionBudget` (Redis) or `haproxy.podDisruptionBudget` (HAProxy) in `values.yaml` to change `maxUnavailable`/`minAvailable`, or set either to `{}` to disable the PDB entirely.
 
 ## Network policies
 
@@ -188,17 +179,18 @@ Templating is also supported in the selectors.
 See such a configuration below.
 
 ```yaml
-networkPolicy: true
+networkPolicy:
+  enabled: true
   ingressRules:
     - selectors:
-      - namespaceSelector:
-          matchLabels:
-            name: my-redis-client-namespace
-        podSelector:
-          matchLabels:
-            # template example
-            app: |-
-              {{ printf "{{- .App.Name }}" }}
+        - namespaceSelector:
+            matchLabels:
+              name: my-redis-client-namespace
+          podSelector:
+            matchLabels:
+              # template example
+              app: |-
+                {{ printf "{{- .App.Name }}" }}
       ## ports block is optional (defaults to below), define the block to override the defaults
       # ports:
       #   - port: 6379
@@ -211,7 +203,7 @@ Should your Pod require additional egress rules, define them in a `egressRules` 
 
 ## Sentinel and redis server split brain detection
 
-Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Majority of original discussion on the problem has happened at the #121.
+Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Most of the original discussion on the problem happened in upstream issue [DandyDeveloper/charts#121](https://github.com/DandyDeveloper/charts/issues/121).
 
 The proposed solution is currently implemented as a sidecar container that runs a bash script with the following logic:
 
@@ -221,20 +213,9 @@ The proposed solution is currently implemented as a sidecar container that runs 
 4. If any of these checks fail, the sidecar will retry the check at intervals defined by splitBrainDetection.retryInterval.
 5. If the checks continue to fail after the retry attempts, the sidecar triggers a reinitialization: it regenerates the Redis configuration and instructs the Redis server to shut down. Kubernetes will then automatically restart the container.
 
+## Change log
 
-# Change Log
-
-## 4.14.9 - ** POTENTIAL BREAKING CHANGE. **
-Introduced the ability to change the Haproxy Deployment container pod
-- Container port in redis-haproxy-deployment.yam has been changed. Was **redis.port** To **haproxy.containerPort**. Default value is 6379.
-- Port in redis-haproxy-service.yaml has been changed. Was **redis.port** To **haproxy.servicePort**. Default value is 6379.
-
-## 4.21.0 - BREAKING CHANGES (Kubernetes Deprecation)
-This version introduced the deprecation of the PSP and subsequently added fields to the securityContexts that were introduced in Kubernetes v1.19:
-
-https://kubernetes.io/docs/tutorials/security/seccomp/
-
-As a result, from this version onwards Kubernetes versions older than 1.19 will fail to install without the removal of `.Values.containerSecurityContext.seccompProfile` and `.Values.haproxy.containerSecurityContext.seccompProfile` (If HAProxy is enabled)
+See [CHANGELOG.md](CHANGELOG.md) for release history. Going forward, the changelog is generated automatically from [Conventional Commits](https://www.conventionalcommits.org/) by [release-please](https://github.com/googleapis/release-please); historical entries inherited from upstream are recorded in the same file under *Historical breaking changes*.
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs](https://github.com/norwoodj/helm-docs)
