@@ -201,6 +201,16 @@ networkPolicy:
 
 Should your Pod require additional egress rules, define them in a `egressRules` key which is structured identically to an `ingressRules` key.
 
+## Running on OpenShift
+
+The chart works under OpenShift's default `restricted-v2` SCC. `global.compatibility.openshift.adaptSecurityContext` (defaults to `auto`) controls the adaptation: at render time the chart strips `runAsUser`, `runAsGroup`, `fsGroup`, and `seLinuxOptions` from every security context, letting the SCC assign UIDs from the project's allowed range. Set it to `force` if you install through a tool that doesn't expose the OpenShift API capability to Helm (for example, some Argo CD setups), or to `disabled` to keep the hardcoded UID/GID on non-OpenShift clusters that look like OpenShift.
+
+Known limitations on OpenShift:
+
+* **`hostPath.chown: true` is rejected by `restricted-v2`.** The `hostpath-chown` init container has to run as UID 0 (chown requires root), so it bypasses the OpenShift adapter and fails admission. Either grant the chart's ServiceAccount `hostmount-anyuid` SCC, or — recommended — use a PVC (`persistentVolume.enabled: true`) so this init container is never rendered.
+* **`securityContext.sysctls` (under the Host Kernel Settings section above) won't be applied.** OpenShift locks down kubelet `allowed-unsafe-sysctls` by default. Use the [Node Tuning Operator](https://docs.openshift.com/container-platform/latest/scalability_and_performance/using-node-tuning-operator.html) for node-level kernel tuning instead.
+* **PVC ownership depends on the storage class.** With `fsGroup` stripped, the PV's mount ownership has to be reconciled by the CSI driver. Most current CSI drivers (ODF, AWS EBS CSI, Azure Disk CSI, etc.) honour the SCC-assigned UID range and `fsGroupChangePolicy` correctly, but if Redis fails to write to `/data`, either choose a storage class with `fsGroupChangePolicy: Always` or grant `nonroot-v2` SCC with a fixed UID range.
+
 ## Sentinel and redis server split brain detection
 
 Under not entirely known yet circumstances redis sentinel and its corresponding redis server reach a condition that this chart authors call "split brain" (for short). The observed behaviour is the following: the sentinel switches to the new re-elected master, but does not switch its redis server. Most of the original discussion on the problem happened in upstream issue [DandyDeveloper/charts#121](https://github.com/DandyDeveloper/charts/issues/121).

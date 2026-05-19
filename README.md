@@ -90,7 +90,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `global.compatibility` | Openshift compatibility options | object | `{"openshift":{"adaptSecurityContext":"auto"}}` |
 | `global.priorityClassName` | Default priority class for all components | string | `""` |
 | `hardAntiAffinity` | Whether the Redis server pods should be forced to run on separate nodes. # This is accomplished by setting their AntiAffinity with requiredDuringSchedulingIgnoredDuringExecution as opposed to preferred. # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#inter-pod-affinity-and-anti-affinity-beta-feature | bool | `true` |
-| `hostPath.chown` | if chown is true, an init-container with root permissions is launched to change the owner of the hostPath folder to the user defined in the security context | bool | `true` |
+| `hostPath.chown` | if chown is true, an init-container with root permissions is launched to change the owner of the hostPath folder to the user defined in the security context. NOTE: On OpenShift this init container will be rejected by the default `restricted-v2` SCC because it runs as UID 0. Either grant `hostmount-anyuid` to the chart's ServiceAccount, or — recommended — use a PVC (`persistentVolume.enabled: true`) instead of hostPath; the chart otherwise honours OpenShift-assigned UIDs via `global.compatibility.openshift.adaptSecurityContext`. | bool | `true` |
 | `hostPath.path` | Use this path on the host for data storage. path is evaluated as template so placeholders are replaced | string | `""` |
 | `image.pullPolicy` | Redis image pull policy | string | `"IfNotPresent"` |
 | `image.repository` | Redis image repository | string | `"public.ecr.aws/docker/library/redis"` |
@@ -463,6 +463,16 @@ networkPolicy:
 ```
 
 Should your Pod require additional egress rules, define them in a `egressRules` key which is structured identically to an `ingressRules` key.
+
+## Running on OpenShift
+
+The chart works under OpenShift's default `restricted-v2` SCC. `global.compatibility.openshift.adaptSecurityContext` (defaults to `auto`) controls the adaptation: at render time the chart strips `runAsUser`, `runAsGroup`, `fsGroup`, and `seLinuxOptions` from every security context, letting the SCC assign UIDs from the project's allowed range. Set it to `force` if you install through a tool that doesn't expose the OpenShift API capability to Helm (for example, some Argo CD setups), or to `disabled` to keep the hardcoded UID/GID on non-OpenShift clusters that look like OpenShift.
+
+Known limitations on OpenShift:
+
+* **`hostPath.chown: true` is rejected by `restricted-v2`.** The `hostpath-chown` init container has to run as UID 0 (chown requires root), so it bypasses the OpenShift adapter and fails admission. Either grant the chart's ServiceAccount `hostmount-anyuid` SCC, or — recommended — use a PVC (`persistentVolume.enabled: true`) so this init container is never rendered.
+* **`securityContext.sysctls` (under the Host Kernel Settings section above) won't be applied.** OpenShift locks down kubelet `allowed-unsafe-sysctls` by default. Use the [Node Tuning Operator](https://docs.openshift.com/container-platform/latest/scalability_and_performance/using-node-tuning-operator.html) for node-level kernel tuning instead.
+* **PVC ownership depends on the storage class.** With `fsGroup` stripped, the PV's mount ownership has to be reconciled by the CSI driver. Most current CSI drivers (ODF, AWS EBS CSI, Azure Disk CSI, etc.) honour the SCC-assigned UID range and `fsGroupChangePolicy` correctly, but if Redis fails to write to `/data`, either choose a storage class with `fsGroupChangePolicy: Always` or grant `nonroot-v2` SCC with a fixed UID range.
 
 ## Sentinel and redis server split brain detection
 

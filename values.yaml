@@ -925,7 +925,12 @@ hostPath:
 
   # -- if chown is true, an init-container with root permissions is launched to
   # change the owner of the hostPath folder to the user defined in the
-  # security context
+  # security context.
+  # NOTE: On OpenShift this init container will be rejected by the default
+  # `restricted-v2` SCC because it runs as UID 0. Either grant
+  # `hostmount-anyuid` to the chart's ServiceAccount, or — recommended — use a
+  # PVC (`persistentVolume.enabled: true`) instead of hostPath; the chart
+  # otherwise honours OpenShift-assigned UIDs via `global.compatibility.openshift.adaptSecurityContext`.
   chown: true
 
 # -- Configuration of `emptyDir`, used only if persistentVolume is disabled and no hostPath specified
