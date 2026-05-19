@@ -1,0 +1,9 @@
+# Exercise both Redis and Sentinel auth code paths. The passwords here are
+# intentionally weak placeholders for CI only — never use these values in a
+# real cluster.
+auth: true
+redisPassword: "ci-test-redis-password-do-not-use-in-production"
+
+sentinel:
+  auth: true
+  password: "ci-test-sentinel-password-do-not-use-in-production"

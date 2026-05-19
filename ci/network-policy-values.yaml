@@ -1,0 +1,21 @@
+# Exercise the NetworkPolicy templates for both the Redis StatefulSet and the
+# HAProxy Deployment. The ingress selector is a placeholder pod label that
+# would not match anything in a real test cluster — the goal is to verify
+# the templates render valid policy resources, not to validate runtime traffic.
+networkPolicy:
+  enabled: true
+  ingressRules:
+    - selectors:
+        - podSelector:
+            matchLabels:
+              app: ci-test-redis-client
+
+haproxy:
+  enabled: true
+  networkPolicy:
+    enabled: true
+    ingressRules:
+      - selectors:
+          - podSelector:
+              matchLabels:
+                app: ci-test-haproxy-client

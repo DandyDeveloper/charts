@@ -1,0 +1,3 @@
+# Exercise the chart with shipped defaults (no overrides). This guarantees
+# the out-of-the-box install path is covered by `ct install` and kubeconform.
+{}

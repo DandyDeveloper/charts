@@ -1,0 +1,8 @@
+# CODEOWNERS for corva-ai/redis-ha
+# Reference: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+#
+# The matching rule's owners are automatically requested as reviewers on every
+# pull request. Multiple matching rules apply most-specific-last.
+
+# Default owner for everything in the repository.
+* @corva-ai/redis-ha-maintainers

@@ -1,0 +1,17 @@
+# Local CI scratch directories (lint.yml shellcheck simulator, chart-releaser stager)
+.shellcheck/
+.cr-staging/
+.kubeconform/
+
+# Packaged Helm charts
+*.tgz
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS metadata
+.DS_Store
+Thumbs.db
