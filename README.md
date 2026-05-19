@@ -113,7 +113,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `persistentVolume.labels` | Labels for the volume | object | `{}` |
 | `persistentVolume.size` | Persistent volume size | string | `"10Gi"` |
 | `persistentVolume.storageClass` | redis-ha data Persistent Volume Storage Class | string | `nil` |
-| `podDisruptionBudget` | Pod Disruption Budget rules | object | `{}` |
+| `podDisruptionBudget` | Pod Disruption Budget for the Redis StatefulSet. Defaults to allowing at most one voluntary disruption at a time, so a node drain can never take down more than one replica concurrently (preserving Sentinel quorum on 3 replicas). Set to `{}` to disable the PDB, or override `maxUnavailable`/`minAvailable`. ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/ | object | `{"maxUnavailable":1}` |
 | `podManagementPolicy` | The statefulset pod management policy | string | `"OrderedReady"` |
 | `priorityClassName` | Kubernetes priorityClass name for the redis-ha-server pod | string | `""` |
 | `rbac.create` | Create and use RBAC resources | bool | `true` |
@@ -267,7 +267,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.containerSecurityContext` | Security context to be added to the HAProxy containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `haproxy.customConfig` | Allows for custom config-haproxy.cfg file to be applied. If this is used then default config will be overwriten | string | `nil` |
 | `haproxy.deploymentAnnotations` | HAProxy deployment annotations | object | `{}` |
-| `haproxy.deploymentStrategy` | Deployment strategy for the haproxy deployment | object | `{"type":"RollingUpdate"}` |
+| `haproxy.deploymentStrategy` | Deployment strategy for the haproxy deployment. Defaults to rolling one pod at a time with no surge, so the rollout never exceeds `haproxy.replicas` running pods (paired with the PDB below this keeps the announce-service IPs stable through a rollout). | object | `{"rollingUpdate":{"maxSurge":0,"maxUnavailable":1},"type":"RollingUpdate"}` |
 | `haproxy.emptyDir` | Configuration of `emptyDir` | object | `{}` |
 | `haproxy.enabled` | Enabled HAProxy LoadBalancing/Proxy | bool | `false` |
 | `haproxy.extraConfig` | Allows to place any additional configuration section to add to the default config-haproxy.cfg | string | `nil` |
@@ -297,7 +297,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.networkPolicy.ingressRules` | user defined ingress rules that Haproxy should permit into. uses the format defined in https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors | list | `[]` |
 | `haproxy.networkPolicy.labels` | Labels for Haproxy NetworkPolicy | object | `{}` |
 | `haproxy.podAnnotations` | Annotations to be added to the HAProxy deployment pods | object | `{}` |
-| `haproxy.podDisruptionBudget` | Pod Disruption Budget ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/ | object | `{}` |
+| `haproxy.podDisruptionBudget` | Pod Disruption Budget for HAProxy. Defaults to allowing at most one voluntary disruption (node drain, eviction) at a time. Set to `{}` to disable the PDB, or override `maxUnavailable`/`minAvailable`. ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/ | object | `{"maxUnavailable":1}` |
 | `haproxy.priorityClassName` | Kubernetes priorityClass name for the haproxy pod | string | `""` |
 | `haproxy.readOnly` | Enable read-only redis-slaves | object | `{"enabled":false,"port":6380}` |
 | `haproxy.readOnly.enabled` | Enable if you want a dedicated port in haproxy for redis-slaves | bool | `false` |

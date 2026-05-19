@@ -116,12 +116,15 @@ haproxy:
   #     containerPort: 9090
   # -- Number of HAProxy instances
   replicas: 3
-  # -- Deployment strategy for the haproxy deployment
+  # -- Deployment strategy for the haproxy deployment.
+  # Defaults to rolling one pod at a time with no surge, so the rollout never
+  # exceeds `haproxy.replicas` running pods (paired with the PDB below this keeps
+  # the announce-service IPs stable through a rollout).
   deploymentStrategy:
     type: RollingUpdate
-    # rollingUpdate:
-    #   maxSurge: 25%
-    #   maxUnavailable: 25%
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
   image:
     # -- HAProxy Image Repository
     repository: public.ecr.aws/docker/library/haproxy
@@ -153,12 +156,12 @@ haproxy:
   # -- Configuration of `emptyDir`
   emptyDir: {}
 
-  # -- Pod Disruption Budget
+  # -- Pod Disruption Budget for HAProxy. Defaults to allowing at most one
+  # voluntary disruption (node drain, eviction) at a time. Set to `{}` to
+  # disable the PDB, or override `maxUnavailable`/`minAvailable`.
   # ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
-  podDisruptionBudget: {}
-    # Use only one of the two
-    # maxUnavailable: 1
-    # minAvailable: 1
+  podDisruptionBudget:
+    maxUnavailable: 1
 
   ## Enable sticky sessions to Redis nodes via HAProxy
   ## Very useful for long-living connections as in case of Sentry for example
@@ -847,11 +850,13 @@ exporter:
     # -- Success threshold for readiness probe of exporter
     successThreshold: 2
 
-# -- Pod Disruption Budget rules
-podDisruptionBudget: {}
-  # Use only one of the two
-  # maxUnavailable: 1
-  # minAvailable: 1
+# -- Pod Disruption Budget for the Redis StatefulSet. Defaults to allowing at
+# most one voluntary disruption at a time, so a node drain can never take down
+# more than one replica concurrently (preserving Sentinel quorum on 3 replicas).
+# Set to `{}` to disable the PDB, or override `maxUnavailable`/`minAvailable`.
+# ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+podDisruptionBudget:
+  maxUnavailable: 1
 
 # -- Configures redis with AUTH (requirepass & masterauth conf params)
 auth: false
