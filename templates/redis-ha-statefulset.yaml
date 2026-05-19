@@ -116,11 +116,21 @@ spec:
 {{- if and .Values.hostPath.path .Values.hostPath.chown }}
       - name: hostpath-chown
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        # hostPath ownership changes require root; this init container is the
+        # only place in the pod that runs privileged. Main Redis/Sentinel
+        # containers stay non-root via `containerSecurityContext`.
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          runAsNonRoot: false
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
         resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - chown
-        - "{{ .Values.containerSecurityContext.runAsUser }}"
+        - "{{ .Values.containerSecurityContext.runAsUser }}:{{ default .Values.containerSecurityContext.runAsUser .Values.securityContext.fsGroup }}"
         - /data
         volumeMounts:
         - name: data

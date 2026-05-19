@@ -279,6 +279,17 @@ haproxy:
   # customConfig: |-
     # Define configuration here
 
+  ## Global HAProxy configuration section. Rendered before `defaults REDIS` when
+  ## `customConfig` is not set. Use this for ordering-sensitive directives such
+  ## as `log`, `maxconn`, `tune.*`, where appending via `extraConfig` (which
+  ## lands at the end of the file) is not enough.
+  # -- (string) Allows placing an HAProxy `global` section before the rendered defaults. Inserted only when `customConfig` is unset.
+  globalConfig: ~
+  # globalConfig: |-
+  #   global
+  #     log stdout format raw local0
+  #     maxconn 4096
+
   ## Place any additional configuration section to add to the default config-haproxy.cfg
   # -- (string) Allows to place any additional configuration section to add to the default config-haproxy.cfg
   extraConfig: ~

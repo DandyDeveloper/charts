@@ -95,7 +95,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `hostPath.path` | Use this path on the host for data storage. path is evaluated as template so placeholders are replaced | string | `""` |
 | `image.pullPolicy` | Redis image pull policy | string | `"IfNotPresent"` |
 | `image.repository` | Redis image repository | string | `"public.ecr.aws/docker/library/redis"` |
-| `image.tag` | Redis image tag | string | `"8.2.4-alpine"` |
+| `image.tag` | Redis image tag | string | `"8.6.3-alpine"` |
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
@@ -271,10 +271,11 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.emptyDir` | Configuration of `emptyDir` | object | `{}` |
 | `haproxy.enabled` | Enabled HAProxy LoadBalancing/Proxy | bool | `false` |
 | `haproxy.extraConfig` | Allows to place any additional configuration section to add to the default config-haproxy.cfg | string | `nil` |
+| `haproxy.globalConfig` | Allows placing an HAProxy `global` section before the rendered defaults. Inserted only when `customConfig` is unset. | string | `nil` |
 | `haproxy.hardAntiAffinity` | Whether the haproxy pods should be forced to run on separate nodes. | bool | `true` |
 | `haproxy.image.pullPolicy` | HAProxy Image PullPolicy | string | `"IfNotPresent"` |
 | `haproxy.image.repository` | HAProxy Image Repository | string | `"public.ecr.aws/docker/library/haproxy"` |
-| `haproxy.image.tag` | HAProxy Image Tag | string | `"3.0.8-alpine"` |
+| `haproxy.image.tag` | HAProxy Image Tag | string | `"3.3.10-alpine"` |
 | `haproxy.imagePullSecrets` | Reference to one or more secrets to be used when pulling images ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ | list | `[]` |
 | `haproxy.init.resources` | Extra init resources | object | `{}` |
 | `haproxy.labels` | Custom labels for the haproxy pod | object | `{}` |
@@ -365,7 +366,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.serviceMonitor.relabelings` |  | list | `[]` |
 | `exporter.serviceMonitor.telemetryPath` | Set path to redis-exporter telemtery-path (default is /metrics) | string | `""` |
 | `exporter.serviceMonitor.timeout` | Set timeout for scrape (default is 10s) | string | `""` |
-| `exporter.tag` | Exporter image tag | string | `"v1.80.2"` |
+| `exporter.tag` | Exporter image tag | string | `"v1.83.0-alpine"` |
 | `prometheusRule.additionalLabels` | Additional labels to be set in metadata. | object | `{}` |
 | `prometheusRule.enabled` | If true, creates a Prometheus Operator PrometheusRule. | bool | `false` |
 | `prometheusRule.interval` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). | string | `"10s"` |
