@@ -34,10 +34,28 @@ jobs:
           mkdir -p .cr-release-packages
           helm package . --destination .cr-release-packages
 
-      - uses: helm/chart-releaser-action@v1.7.0
+      - name: Install chart-releaser
+        uses: helm/chart-releaser-action@v1.7.0
         with:
-          config: cr.yaml
-          skip_packaging: true
-          skip_existing: true
+          install_only: true
+
+      - name: Release chart
+        run: |
+          owner="${GITHUB_REPOSITORY%%/*}"
+          repo="${GITHUB_REPOSITORY#*/}"
+
+          cr upload \
+            --owner "$owner" \
+            --git-repo "$repo" \
+            --commit "$GITHUB_SHA" \
+            --config cr.yaml \
+            --skip-existing
+
+          cr index \
+            --owner "$owner" \
+            --git-repo "$repo" \
+            --config cr.yaml \
+            --pages-branch gh-pages \
+            --push
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
