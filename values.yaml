@@ -234,14 +234,14 @@ haproxy:
   timeout:
     # -- haproxy.cfg `timeout connect` setting
     connect: 4s
-    # -- haproxy.cfg `timeout server` setting
-    server: 330s
-    # -- haproxy.cfg `timeout client` setting
-    client: 330s
+    # -- haproxy.cfg `timeout server` setting for idle Redis backend connections. Keep this equal to `timeout client` in TCP mode.
+    server: 24h
+    # -- haproxy.cfg `timeout client` setting for idle Redis client connections. Keep this equal to `timeout server` in TCP mode.
+    client: 24h
     # -- haproxy.cfg `timeout check` setting
     check: 2s
-    # -- haproxy.cfg `timeout tunnel` setting
-    tunnel: 1h
+    # -- haproxy.cfg `timeout tunnel` setting for established long-lived TCP streams.
+    tunnel: 24h
   # -- haproxy.cfg `check inter` setting
   checkInterval: 1s
   # -- haproxy.cfg `check fall` setting
@@ -443,6 +443,10 @@ redis:
   config:
     ## -- Additional redis conf options can be added below
     ## -- For all available options see http://download.redis.io/redis-stable/redis.conf
+    # -- Redis client idle timeout in seconds. `0` disables Redis-side idle disconnects; HAProxy may still enforce its own timeout.
+    timeout: "0"
+    # -- Redis TCP keepalive interval in seconds. Helps detect dead peers and keeps idle sockets visible to intermediate network devices.
+    tcp-keepalive: "300"
     min-replicas-to-write: 1
     # -- Value in seconds
     min-replicas-max-lag: 5

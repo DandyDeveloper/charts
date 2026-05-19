@@ -124,6 +124,8 @@ The following table lists the configurable parameters of the Redis chart and the
 | `redis.config.min-replicas-max-lag` | Value in seconds | int | `5` |
 | `redis.config.repl-diskless-sync` | When enabled, directly sends the RDB over the wire to slaves, without using the disk as intermediate storage. Default is false. | string | `"yes"` |
 | `redis.config.save` | Please note that local (on-disk) RDBs will still be created when re-syncing with a new slave. The only way to prevent this is to enable diskless replication. | string | `"900 1"` |
+| `redis.config.tcp-keepalive` | Redis TCP keepalive interval in seconds. Helps detect dead peers and keeps idle sockets visible to intermediate network devices. | string | `"300"` |
+| `redis.config.timeout` | Redis client idle timeout in seconds. `0` disables Redis-side idle disconnects; HAProxy may still enforce its own timeout. | string | `"0"` |
 | `redis.customArgs` | Allows overriding the redis container arguments | list | `[]` |
 | `redis.customCommand` | Allows overriding the redis container command | list | `[]` |
 | `redis.customConfig` | Allows for custom redis.conf files to be applied. If this is used then `redis.config` is ignored | string | `nil` |
@@ -320,10 +322,10 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.stickyBalancing` | HAProxy sticky load balancing to Redis nodes. Helps with connections shutdown. | bool | `false` |
 | `haproxy.tests.resources` | Pod resources for the tests against HAProxy. | object | `{}` |
 | `haproxy.timeout.check` | haproxy.cfg `timeout check` setting | string | `"2s"` |
-| `haproxy.timeout.client` | haproxy.cfg `timeout client` setting | string | `"330s"` |
+| `haproxy.timeout.client` | haproxy.cfg `timeout client` setting for idle Redis client connections. Keep this equal to `timeout server` in TCP mode. | string | `"24h"` |
 | `haproxy.timeout.connect` | haproxy.cfg `timeout connect` setting | string | `"4s"` |
-| `haproxy.timeout.server` | haproxy.cfg `timeout server` setting | string | `"330s"` |
-| `haproxy.timeout.tunnel` | haproxy.cfg `timeout tunnel` setting | string | `"1h"` |
+| `haproxy.timeout.server` | haproxy.cfg `timeout server` setting for idle Redis backend connections. Keep this equal to `timeout client` in TCP mode. | string | `"24h"` |
+| `haproxy.timeout.tunnel` | haproxy.cfg `timeout tunnel` setting for established long-lived TCP streams. | string | `"24h"` |
 | `haproxy.tls` | Enable TLS termination on HAproxy, This will create a volume mount | object | `{"certMountPath":"/tmp/","enabled":false,"keyName":null,"secretName":""}` |
 | `haproxy.tls.certMountPath` | Path to mount the secret that contains the certificates. haproxy | string | `"/tmp/"` |
 | `haproxy.tls.enabled` | If "true" this will enable TLS termination on haproxy | bool | `false` |
