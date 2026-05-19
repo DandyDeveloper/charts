@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^Chart\\.yaml$", "^values\\.yaml$"],
+      "matchStrings": [
+        "(?:appVersion|tag):\\s+\"?(?<currentValue>[\\w.\\-]+)\"?\\s*#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)"
+      ],
+      "versioningTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDepNames": ["library/redis"],
+      "groupName": "redis",
+      "commitMessageTopic": "Redis",
+      "description": "Bump Chart.yaml appVersion and values.yaml image.tag together; the CI lint job enforces they agree."
+    },
+    {
+      "matchDepNames": ["library/haproxy"],
+      "groupName": "haproxy",
+      "commitMessageTopic": "HAProxy"
+    },
+    {
+      "matchDepNames": ["quay.io/oliver006/redis_exporter"],
+      "groupName": "redis-exporter",
+      "commitMessageTopic": "redis-exporter"
+    }
+  ]
+}
