@@ -107,8 +107,13 @@ spec:
       {{- end }}
       initContainers:
       - name: config-init
+        {{- if and .Values.haproxy.init.image .Values.haproxy.init.image.repository }}
+        image: {{ .Values.haproxy.init.image.repository }}:{{ .Values.haproxy.init.image.tag }}
+        imagePullPolicy: {{ .Values.haproxy.init.image.pullPolicy | default .Values.haproxy.image.pullPolicy }}
+        {{- else }}
         image: {{ .Values.haproxy.image.repository }}:{{ .Values.haproxy.image.tag }}
         imagePullPolicy: {{ .Values.haproxy.image.pullPolicy }}
+        {{- end }}
         resources:
 {{ toYaml .Values.haproxy.init.resources | indent 10 }}
         command:

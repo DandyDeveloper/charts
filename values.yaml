@@ -231,6 +231,13 @@ haproxy:
   init:
     # -- Extra init resources
     resources: {}
+    # -- Override the init container image. Useful when the main HAProxy image is distroless (no shell).
+    # Defaults to the Redis image (Alpine) which provides sh. Set repository+tag to override.
+    image: {}
+    # image:
+    #   repository: ""
+    #   tag: ""
+    #   pullPolicy: IfNotPresent
   timeout:
     # -- haproxy.cfg `timeout connect` setting
     connect: 4s
