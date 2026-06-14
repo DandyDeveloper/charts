@@ -1,0 +1,19 @@
+{{- if .Values.haproxy.podDisruptionBudget -}}
+apiVersion: {{ template "valkey-ha.podDisruptionBudget.apiVersion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "valkey-ha.fullname" . }}-haproxy-pdb
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+    {{- range $key, $value := .Values.extraLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      release: {{ .Release.Name }}
+      app: {{ template "valkey-ha.name" . }}-haproxy
+      component: haproxy
+{{ toYaml .Values.haproxy.podDisruptionBudget | indent 2 }}
+{{- end -}}
