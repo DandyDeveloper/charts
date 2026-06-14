@@ -160,17 +160,17 @@
     }
 
     redis_update() {
-        echo "Updating redis config.."
+        echo "Updating valkey config.."
         if [ "$REDIS_TLS_REPLICATION_ENABLED" = true ]; then
-            echo "  we are slave of redis master (${1}:${REDIS_TLS_PORT})"
-            echo "slaveof ${1} ${REDIS_TLS_PORT}" >> "${REDIS_CONF}"
-            echo "slave-announce-port ${REDIS_TLS_PORT}" >> ${REDIS_CONF}
+            echo "  we are replica of valkey primary (${1}:${REDIS_TLS_PORT})"
+            echo "replicaof ${1} ${REDIS_TLS_PORT}" >> "${REDIS_CONF}"
+            echo "replica-announce-port ${REDIS_TLS_PORT}" >> ${REDIS_CONF}
         else
-            echo "  we are slave of redis master (${1}:${REDIS_PORT})"
-            echo "slaveof ${1} ${REDIS_PORT}" >> "${REDIS_CONF}"
-            echo "slave-announce-port ${REDIS_PORT}" >> ${REDIS_CONF}
+            echo "  we are replica of valkey primary (${1}:${REDIS_PORT})"
+            echo "replicaof ${1} ${REDIS_PORT}" >> "${REDIS_CONF}"
+            echo "replica-announce-port ${REDIS_PORT}" >> ${REDIS_CONF}
         fi
-        echo "slave-announce-ip ${ANNOUNCE_IP}" >> ${REDIS_CONF}
+        echo "replica-announce-ip ${ANNOUNCE_IP}" >> ${REDIS_CONF}
     }
 
     copy_config() {
@@ -190,8 +190,8 @@
             echo "  using announce (${ANNOUNCE_IP})"
             redis_update "${ANNOUNCE_IP}"
             sentinel_update "${ANNOUNCE_IP}"
-            echo "  make sure ${ANNOUNCE_IP} is not a slave (slaveof no one)"
-            sed -i "s/^.*slaveof.*//" "${REDIS_CONF}"
+            echo "  make sure ${ANNOUNCE_IP} is not a replica (replicaof no one)"
+            sed -i "s/^.*replicaof.*//" "${REDIS_CONF}"
         else
             if [ "$RESOLVE_HOSTNAMES" = true ]; then
                 echo "Getting redis master hostname.."

@@ -18,3 +18,13 @@ sources:
 - https://github.com/valkey-io/valkey
 - https://github.com/DandyDeveloper/charts/blob/master/charts/valkey-ha
 - https://github.com/oliver006/redis_exporter
+annotations:
+  # Valkey is BSD-3-Clause licensed — the permissive, open-source alternative to Redis
+  artifacthub.io/license: BSD-3-Clause
+  artifacthub.io/images: |
+    - name: valkey
+      image: valkey/valkey:8.1.8-alpine
+    - name: redis-exporter
+      image: quay.io/oliver006/redis_exporter:v1.80.2
+    - name: haproxy
+      image: public.ecr.aws/docker/library/haproxy:3.0.8-alpine

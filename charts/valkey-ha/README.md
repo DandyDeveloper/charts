@@ -18,7 +18,7 @@ By default this chart install 3 pods total:
 
 ## Introduction
 
-This chart bootstraps a [Valkey](https://valkey.io/) highly available master/slave statefulset in a [Kubernetes](http://kubernetes.io) cluster using the Helm package manager.
+This chart bootstraps a [Valkey](https://valkey.io/) highly available primary/replica statefulset in a [Kubernetes](http://kubernetes.io) cluster using the Helm package manager.
 
 ## Prerequisites
 
@@ -43,7 +43,7 @@ helm repo add dandydev https://dandydeveloper.github.io/charts
 helm install dandydev/valkey-ha
 ```
 
-The command deploys Redis on the Kubernetes cluster in the default configuration. By default this chart install one master pod containing redis master container and sentinel container along with 2 redis slave pods each containing their own sentinel sidecars. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+The command deploys Valkey on the Kubernetes cluster in the default configuration. By default this chart install one primary pod containing a valkey master container and sentinel container along with 2 valkey replica pods each containing their own sentinel sidecars. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
 > **Tip**: List all releases using `helm list`
 
@@ -59,7 +59,7 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ## Configuration
 
-The following table lists the configurable parameters of the Redis chart and their default values.
+The following table lists the configurable parameters of the Valkey chart and their default values.
 
 ### General parameters
 
@@ -114,12 +114,14 @@ The following table lists the configurable parameters of the Redis chart and the
 | `rbac.create` | Create and use RBAC resources | bool | `true` |
 | `redis.annotations` | Annotations for the redis statefulset | object | `{}` |
 | `redis.authClients` | It is possible to disable client side certificates authentication when "authClients" is set to "no" | string | `""` |
-| `redis.config` | Any valid redis config options in this section will be applied to each server, For multi-value configs use list instead of string (for example loadmodule) (see below) | object | see values.yaml |
-| `redis.config.maxmemory` | Max memory to use for each redis instance. Default is unlimited. | string | `"0"` |
-| `redis.config.maxmemory-policy` | Max memory policy to use for each redis instance. Default is volatile-lru. | string | `"volatile-lru"` |
+| `redis.config` | Any valid valkey/redis config options in this section will be applied to each server, For multi-value configs use list instead of string (for example loadmodule) (see below) | object | see values.yaml |
+| `redis.config.dual-channel-replication-enabled` | (string) Valkey 8.0+ dual-channel replication. Streams the RDB and the replication backlog on separate channels to speed up full syncs. Set to "yes" to enable. | string | `"no"` |
+| `redis.config.io-threads` | (int) Number of I/O threads. Valkey 8.0 reworked I/O threading for much higher throughput on multi-core nodes. Default is 1 (disabled); raise to roughly the number of cores allocated to the pod to benefit from it. | int | `1` |
+| `redis.config.maxmemory` | Max memory to use for each valkey instance. Default is unlimited. | string | `"0"` |
+| `redis.config.maxmemory-policy` | Max memory policy to use for each valkey instance. Default is volatile-lru. | string | `"volatile-lru"` |
 | `redis.config.min-replicas-max-lag` | Value in seconds | int | `5` |
-| `redis.config.repl-diskless-sync` | When enabled, directly sends the RDB over the wire to slaves, without using the disk as intermediate storage. Default is false. | string | `"yes"` |
-| `redis.config.save` | Please note that local (on-disk) RDBs will still be created when re-syncing with a new slave. The only way to prevent this is to enable diskless replication. | string | `"900 1"` |
+| `redis.config.repl-diskless-sync` | When enabled, directly sends the RDB over the wire to replicas, without using the disk as intermediate storage. Default is false. | string | `"yes"` |
+| `redis.config.save` | Please note that local (on-disk) RDBs will still be created when re-syncing with a new replica. The only way to prevent this is to enable diskless replication. | string | `"900 1"` |
 | `redis.customArgs` | Allows overriding the redis container arguments | list | `[]` |
 | `redis.customCommand` | Allows overriding the redis container command | list | `[]` |
 | `redis.customConfig` | Allows for custom redis.conf files to be applied. If this is used then `redis.config` is ignored | string | `nil` |
@@ -413,6 +415,18 @@ Sentinel options supported must be in the the `sentinel <option> <master-group-n
 ```
 
 If more control is needed from either the redis or sentinel config then an entire config can be defined under `redis.customConfig` or `sentinel.customConfig`. Please note that these values will override any configuration options under their respective section. For example, if you define `sentinel.customConfig` then the `sentinel.config` is ignored.
+
+## Valkey-native options
+
+This chart ships the official [`valkey/valkey`](https://hub.docker.com/r/valkey/valkey) image and exposes a few [Valkey 8.x](https://valkey.io/blog/valkey-8-0-0-rc1/) features under `redis.config`:
+
+- **Dual-channel replication** (`dual-channel-replication-enabled`): streams the RDB and the replication backlog on separate channels to speed up full syncs. Disabled by default.
+- **I/O threads** (`io-threads`): Valkey 8.0 reworked I/O threading for substantially higher throughput on multi-core nodes. Defaults to `1` (disabled); raise it towards the number of cores allocated to the pod.
+- **Availability zone** (`availability-zone`): an AZ hint reported via `INFO` and used by AZ-aware clients (e.g. valkey-glide) for locality-aware reads. A single value applies to every replica, so set it only when pods are pinned to one zone (otherwise inject a per-pod value via `redis.customConfig`).
+
+Replication is configured using Valkey's canonical `replicaof` / `replica-announce-*` directives.
+
+To use the [Valkey module bundle](https://hub.docker.com/r/valkey/valkey-bundle) (JSON, search, bloom, …) set `image.repository: valkey/valkey-bundle` and load the modules via the `redis.config.loadmodule` list.
 
 ## Host Kernel Settings
 

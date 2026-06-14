@@ -10,6 +10,16 @@ global:
 ## -- Image information for Valkey HA
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
 ##
+## To run with the native Valkey modules (JSON, search, bloom, LDAP, etc.) swap the
+## repository for `valkey/valkey-bundle` and load the modules you need via
+## `redis.config.loadmodule` (a list), e.g.:
+##   image:
+##     repository: valkey/valkey-bundle
+##     tag: 8.1.8
+##   redis:
+##     config:
+##       loadmodule:
+##         - /usr/lib/valkey/libjson.so
 image:
   # -- Valkey image repository
   repository: valkey/valkey
@@ -457,25 +467,38 @@ redis:
     - FLUSHDB
     - FLUSHALL
 
-  # -- Any valid redis config options in this section will be applied to each server, For multi-value configs use list instead of string (for example loadmodule) (see below)
+  # -- Any valid valkey/redis config options in this section will be applied to each server, For multi-value configs use list instead of string (for example loadmodule) (see below)
   # @default -- see values.yaml
   config:
-    ## -- Additional redis conf options can be added below
-    ## -- For all available options see http://download.redis.io/redis-stable/redis.conf
+    ## -- Additional valkey conf options can be added below
+    ## -- For all available options see https://github.com/valkey-io/valkey/blob/8.1/valkey.conf
     min-replicas-to-write: 1
     # -- Value in seconds
     min-replicas-max-lag: 5
-    # -- Max memory to use for each redis instance. Default is unlimited.
+    # -- Max memory to use for each valkey instance. Default is unlimited.
     maxmemory: "0"
-    # -- Max memory policy to use for each redis instance. Default is volatile-lru.
+    # -- Max memory policy to use for each valkey instance. Default is volatile-lru.
     maxmemory-policy: "volatile-lru"
     # -- Determines if scheduled RDB backups are created. Default is false.
-    # -- Please note that local (on-disk) RDBs will still be created when re-syncing with a new slave. The only way to prevent this is to enable diskless replication.
+    # -- Please note that local (on-disk) RDBs will still be created when re-syncing with a new replica. The only way to prevent this is to enable diskless replication.
     save: "900 1"
-    # -- When enabled, directly sends the RDB over the wire to slaves, without using the disk as intermediate storage. Default is false.
+    # -- When enabled, directly sends the RDB over the wire to replicas, without using the disk as intermediate storage. Default is false.
     repl-diskless-sync: "yes"
     rdbcompression: "yes"
     rdbchecksum: "yes"
+    ## Valkey-native tuning (https://valkey.io/blog/valkey-8-0-0-rc1/)
+    # -- (string) Valkey 8.0+ dual-channel replication. Streams the RDB and the
+    # replication backlog on separate channels to speed up full syncs. Set to "yes" to enable.
+    dual-channel-replication-enabled: "no"
+    # -- (int) Number of I/O threads. Valkey 8.0 reworked I/O threading for much
+    # higher throughput on multi-core nodes. Default is 1 (disabled); raise to roughly
+    # the number of cores allocated to the pod to benefit from it.
+    io-threads: 1
+    ## -- (string) Valkey 8.0+ availability zone hint reported by INFO and used by
+    ## AZ-aware clients (e.g. valkey-glide) for locality-aware reads. NOTE: a single
+    ## value applies to every replica, so only set it here when all pods are pinned to
+    ## one zone; otherwise inject a per-pod value via redis.customConfig / extraVolumes.
+    # availability-zone: "us-east-1a"
 
   # -- (string) Allows for custom redis.conf files to be applied. If this is used then `redis.config` is ignored
   customConfig: ~
