@@ -137,7 +137,7 @@ haproxy:
     # -- HAProxy Image Repository
     repository: public.ecr.aws/docker/library/haproxy
     # -- HAProxy Image Tag
-    tag: 3.0.8-alpine
+    tag: 3.3.10-alpine
     # -- HAProxy Image PullPolicy
     pullPolicy: IfNotPresent
 
@@ -182,6 +182,8 @@ haproxy:
   service:
     # -- HAProxy service type "ClusterIP", "LoadBalancer" or "NodePort"
     type: ClusterIP
+    # -- HAProxy service clusterIP. Set to "None" to create a headless service.
+    clusterIP: ""
     # -- (int) HAProxy service nodePort value (haproxy.service.type must be NodePort)
     nodePort: ~
     # -- HAProxy service loadbalancer IP
@@ -197,6 +199,10 @@ haproxy:
 
     # -- List of CIDR's allowed to connect to LoadBalancer
     loadBalancerSourceRanges: []
+    # -- HAProxy service IP family policy for dual-stack clusters
+    ipFamilyPolicy: ""
+    # -- HAProxy service IP families (e.g. ["IPv4", "IPv6"] for dual-stack)
+    ipFamilies: []
 
   # -- HAProxy serviceAccountName
   serviceAccountName: redis-sa
