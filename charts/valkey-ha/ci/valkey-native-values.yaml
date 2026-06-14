@@ -1,0 +1,23 @@
+# Exercises the Valkey-native config options together with AUTH and the
+# metrics exporter sidecar. CRD-dependent features (serviceMonitor,
+# prometheusRule) are intentionally left disabled so this installs on a
+# vanilla kind cluster during chart-testing.
+auth: true
+redisPassword: "ci-test-password"
+
+replicas: 3
+
+redis:
+  config:
+    # Valkey 8.x native tuning
+    dual-channel-replication-enabled: "yes"
+    io-threads: 2
+    maxmemory: "128mb"
+    maxmemory-policy: "allkeys-lru"
+
+sentinel:
+  auth: true
+  password: "ci-sentinel-password"
+
+exporter:
+  enabled: true

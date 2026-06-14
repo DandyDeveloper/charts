@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "valkey-ha values",
+  "description": "Schema for the valkey-ha Helm chart values. Intentionally permissive (additionalProperties allowed) so custom/extra keys are not rejected; it only type-checks the well-known options to catch common misconfiguration at install time.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "replicas": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of valkey primary/replica pods."
+    },
+    "auth": {
+      "type": "boolean",
+      "description": "Enable AUTH (requirepass & masterauth)."
+    },
+    "redisPassword": {
+      "type": ["string", "null"]
+    },
+    "existingSecret": {
+      "type": ["string", "null"]
+    },
+    "authKey": {
+      "type": "string"
+    },
+    "hardAntiAffinity": {
+      "type": "boolean"
+    },
+    "ro_replicas": {
+      "type": ["string", "integer"]
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "repository": { "type": "string" },
+        "tag": { "type": "string" },
+        "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] }
+      }
+    },
+    "imagePullSecrets": {
+      "type": "array"
+    },
+    "redis": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "port": { "type": "integer" },
+        "masterGroupName": { "type": "string" },
+        "config": { "type": "object" },
+        "customConfig": { "type": ["string", "null"] }
+      }
+    },
+    "sentinel": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "port": { "type": "integer" },
+        "auth": { "type": "boolean" },
+        "quorum": { "type": "integer", "minimum": 1 },
+        "config": { "type": "object" }
+      }
+    },
+    "haproxy": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "replicas": { "type": "integer", "minimum": 1 },
+        "servicePort": { "type": "integer" },
+        "containerPort": { "type": "integer" }
+      }
+    },
+    "exporter": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "port": { "type": "integer" }
+      }
+    },
+    "persistentVolume": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "size": { "type": "string" },
+        "accessModes": { "type": "array" }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "create": { "type": "boolean" },
+        "name": { "type": "string" }
+      }
+    },
+    "rbac": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "create": { "type": "boolean" }
+      }
+    },
+    "prometheusRule": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "rules": { "type": "array" }
+      }
+    },
+    "networkPolicy": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": { "type": "boolean" }
+      }
+    }
+  }
+}

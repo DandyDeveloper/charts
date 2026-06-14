@@ -359,7 +359,7 @@ The following table lists the configurable parameters of the Valkey chart and th
 | `prometheusRule.enabled` | If true, creates a Prometheus Operator PrometheusRule. | bool | `false` |
 | `prometheusRule.interval` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). | string | `"10s"` |
 | `prometheusRule.namespace` | Namespace which Prometheus is running in. | string | `nil` |
-| `prometheusRule.rules` | Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule). | list | `[]` |
+| `prometheusRule.rules` | Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule). | list | a set of sensible Valkey alerts (see values.yaml). Requires `exporter.enabled: true` so the metrics exist. |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
@@ -415,6 +415,17 @@ Sentinel options supported must be in the the `sentinel <option> <master-group-n
 ```
 
 If more control is needed from either the redis or sentinel config then an entire config can be defined under `redis.customConfig` or `sentinel.customConfig`. Please note that these values will override any configuration options under their respective section. For example, if you define `sentinel.customConfig` then the `sentinel.config` is ignored.
+
+## Migrating from redis-ha / Redis
+
+Valkey is a drop-in, RESP-compatible replacement for Redis, so migrating is mostly a matter of swapping the chart:
+
+- **Values** — this chart keeps the same interface as `redis-ha` (the `redis.*` / `sentinel.*` keys, `auth`, `tls`, `exporter`, `haproxy`, …), so an existing `redis-ha` values file works unchanged.
+- **Clients** — no application changes are required. `redis-cli` and every Redis client library talk to Valkey unmodified, and Valkey reports `redis_version` in `INFO` for backwards compatibility.
+- **Data** — Valkey reads existing Redis `dump.rdb` and `appendonly.aof` files; there is no on-disk conversion step. To carry your data over you can either:
+  - reuse the existing data PersistentVolumes, or
+  - restore from a snapshot at install time via `restore.s3` / `restore.ssh` (an RDB file), or
+  - live-migrate by pulling from a running Redis instance with `restore.redis.source: redis://[user:pass@]host:port`, after which Sentinel promotes a Valkey primary.
 
 ## Valkey-native options
 
@@ -499,6 +510,9 @@ The proposed solution is currently implemented as a sidecar container that runs 
 5. If the checks continue to fail after the retry attempts, the sidecar triggers a reinitialization: it regenerates the Redis configuration and instructs the Redis server to shut down. Kubernetes will then automatically restart the container.
 
 # Change Log
+
+## 1.0.0
+Initial release of the Valkey HA chart, derived from `redis-ha`. Ships the official `valkey/valkey` image and the native `valkey-server` / `valkey-sentinel` / `valkey-cli` binaries, uses Valkey's canonical `replicaof` / `replica-announce-*` replication directives, and exposes Valkey 8.x options (dual-channel replication, I/O threads, availability-zone). The `values.yaml` interface remains drop-in compatible with `redis-ha`. The entries below are inherited from the `redis-ha` lineage for historical reference.
 
 ## 4.14.9 - ** POTENTIAL BREAKING CHANGE. **
 Introduced the ability to change the Haproxy Deployment container pod

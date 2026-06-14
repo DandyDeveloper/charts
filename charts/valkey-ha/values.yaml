@@ -1019,17 +1019,65 @@ prometheusRule:
   # -- How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set).
   interval: 10s
   # -- Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule).
-  rules: []
-    # Example:
-    # - alert: RedisPodDown
-    #   expr: |
-    #     redis_up{job="{{ include "valkey-ha.fullname" . }}"} == 0
-    #   for: 5m
-    #   labels:
-    #     severity: critical
-    #   annotations:
-    #     description: Redis pod {{ "{{ $labels.pod }}" }} is down
-    #     summary: Redis pod {{ "{{ $labels.pod }}" }} is down
+  # @default -- a set of sensible Valkey alerts (see values.yaml). Requires `exporter.enabled: true` so the metrics exist.
+  # The list is rendered through `tpl`, so `{{ ... }}` expressions are evaluated against the release.
+  rules:
+    - alert: ValkeyInstanceDown
+      expr: |
+        redis_up{job="{{ include "valkey-ha.fullname" . }}"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'Valkey instance is down ({{ "{{ $labels.pod }}" }})'
+        description: 'The exporter cannot reach Valkey on {{ "{{ $labels.pod }}" }} (job {{ "{{ $labels.job }}" }}) for more than 5 minutes.'
+    - alert: ValkeyNoPrimary
+      expr: |
+        count(redis_instance_info{job="{{ include "valkey-ha.fullname" . }}",role="master"}) == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'Valkey has no primary'
+        description: 'No Valkey instance reports role=master for job {{ "{{ $labels.job }}" }}; a Sentinel failover may be in progress or stuck.'
+    - alert: ValkeyMultiplePrimaries
+      expr: |
+        count(redis_instance_info{job="{{ include "valkey-ha.fullname" . }}",role="master"}) > 1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'Valkey reports multiple primaries (possible split brain)'
+        description: 'More than one Valkey instance reports role=master for job {{ "{{ $labels.job }}" }}.'
+    - alert: ValkeyMissingReplicas
+      expr: |
+        min(redis_connected_slaves{job="{{ include "valkey-ha.fullname" . }}"}) < {{ sub (int .Values.replicas) 1 }}
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Valkey primary is missing replicas'
+        description: 'The Valkey primary has fewer than {{ sub (int .Values.replicas) 1 }} connected replicas for job {{ "{{ $labels.job }}" }}.'
+    - alert: ValkeyHighMemoryUsage
+      expr: |
+        redis_memory_max_bytes{job="{{ include "valkey-ha.fullname" . }}"} > 0
+        and
+        (redis_memory_used_bytes{job="{{ include "valkey-ha.fullname" . }}"} / redis_memory_max_bytes{job="{{ include "valkey-ha.fullname" . }}"}) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Valkey memory usage above 90% ({{ "{{ $labels.pod }}" }})'
+        description: 'Valkey {{ "{{ $labels.pod }}" }} is using more than 90% of its configured maxmemory.'
+    - alert: ValkeyRejectedConnections
+      expr: |
+        increase(redis_rejected_connections_total{job="{{ include "valkey-ha.fullname" . }}"}[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Valkey is rejecting connections ({{ "{{ $labels.pod }}" }})'
+        description: 'Valkey {{ "{{ $labels.pod }}" }} rejected one or more connections in the last 5 minutes; check the `maxclients` limit.'
 
 # -- Extra init containers to include in StatefulSet
 extraInitContainers: []
