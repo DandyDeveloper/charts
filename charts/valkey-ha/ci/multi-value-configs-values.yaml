@@ -1,0 +1,14 @@
+---
+## Testing if muti-valued config is working or not
+redis:
+  config:
+    min-replicas-to-write: 1
+    min-replicas-max-lag: 5
+    maxmemory: "0"
+    maxmemory-policy: "volatile-lru"
+    save:
+      - "900 1"
+      - "300 10"
+    repl-diskless-sync: "yes"
+    rdbcompression: "yes"
+    rdbchecksum: "yes"

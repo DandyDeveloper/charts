@@ -1,0 +1,25 @@
+Valkey can be accessed via {{ if ne (int .Values.redis.port) 0 }}port {{ .Values.redis.port }}{{ end }}  {{ if .Values.redis.tlsPort }} tls-port {{ .Values.redis.tlsPort }}{{ end }} and Sentinel can be accessed via {{ if ne (int .Values.sentinel.port) 0 }}port {{ .Values.sentinel.port }}{{ end }}  {{ if .Values.sentinel.tlsPort }} tls-port {{ .Values.sentinel.tlsPort }}{{ end }}  on the following DNS name from within your cluster:
+{{ template "valkey-ha.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+
+To connect to your Valkey server:
+
+{{- if .Values.auth }}
+1. To retrieve the valkey password:
+   echo $(kubectl get secret {{ template "valkey-ha.fullname" . }} -o "jsonpath={.data['auth']}" | base64 --decode)
+
+2. Connect to the Valkey master pod that you can use as a client. By default the {{ template "valkey-ha.fullname" . }}-server-0 pod is configured as the master:
+
+   kubectl exec -it {{ template "valkey-ha.fullname" . }}-server-0 -n {{ .Release.Namespace }} -c redis -- sh
+
+3. Connect using the Valkey CLI (inside container):
+
+   valkey-cli -a <VALKEY-PASS-FROM-SECRET>
+{{- else }}
+1. Run a Valkey pod that you can use as a client:
+
+   kubectl exec -it {{ template "valkey-ha.fullname" . }}-server-0 -n {{ .Release.Namespace }} -c redis -- sh
+
+2. Connect using the Valkey CLI:
+
+  valkey-cli -h {{ template "valkey-ha.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}
