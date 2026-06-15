@@ -116,6 +116,29 @@ entries:
   redis-ha:
   - apiVersion: v2
     appVersion: 8.2.4
+    created: "2026-06-15T01:46:59.824446757Z"
+    description: This Helm chart provides a highly available Redis implementation
+      with a master/slave configuration and uses Sentinel sidecars for failover management
+    digest: 8d8d5afd634d48730f68c2ff9d677339cca88a4146db4e6ec0901b6fd767b781
+    home: https://redis.io/
+    icon: https://img.icons8.com/external-tal-revivo-shadow-tal-revivo/24/external-redis-an-in-memory-data-structure-project-implementing-a-distributed-logo-shadow-tal-revivo.png
+    keywords:
+    - redis
+    - keyvalue
+    - database
+    maintainers:
+    - email: aaron.layfield@gmail.com
+      name: dandydeveloper
+    name: redis-ha
+    sources:
+    - https://redis.io/download
+    - https://github.com/DandyDeveloper/charts/blob/master/charts/redis-ha
+    - https://github.com/oliver006/redis_exporter
+    urls:
+    - https://github.com/DandyDeveloper/charts/releases/download/redis-ha-4.37.0/redis-ha-4.37.0.tgz
+    version: 4.37.0
+  - apiVersion: v2
+    appVersion: 8.2.4
     created: "2026-06-14T23:36:15.734138501Z"
     description: This Helm chart provides a highly available Redis implementation
       with a master/slave configuration and uses Sentinel sidecars for failover management
@@ -4187,4 +4210,4 @@ entries:
     urls:
     - redis-ha-4.4.2.tgz
     version: 4.4.2
-generated: "2026-06-14T23:36:15.734540306Z"
+generated: "2026-06-15T01:46:59.824897641Z"
