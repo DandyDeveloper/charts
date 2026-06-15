@@ -428,7 +428,7 @@
     {{- end }}
 
     get_redis_role
-    if [[ "$is_master" -eq 1 ]]; then
+    if [ "$is_master" -eq 1 ]; then
       echo "[$0] This node is currently master, we trigger a failover."
       {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
       response=$(
@@ -444,7 +444,7 @@
         {{- end}}
           SENTINEL failover {{ $masterGroupName }}
       )
-      if [[ "$response" != "OK" ]] ; then
+      if [ "$response" != "OK" ] ; then
         echo "[$0] Sentinel failover failed"
         echo "$response"
         exit 1
@@ -464,7 +464,7 @@
       {{- else }}
           -p {{ .Values.sentinel.tlsPort }} ${TLS_CLIENT_OPTION} \
       {{- end}}
-          CLIENT KILL TYPE normal
+          CLIENT KILL TYPE normal || true
 
       echo "[$0] Sentinel failover successful"
     fi
@@ -482,7 +482,7 @@
 
     timeout=30
     get_redis_role
-    while [[ "$is_master" -eq 1 && $timeout -gt 0 ]]; do
+    while [ "$is_master" -eq 1 ] && [ "$timeout" -gt 0 ]; do
       echo "[$0] This Redis node is currently master, let's wait until this has changed (${timeout}s)."
       sleep 1
       get_redis_role
