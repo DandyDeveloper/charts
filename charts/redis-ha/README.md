@@ -69,9 +69,9 @@ The following table lists the configurable parameters of the Redis chart and the
 | `authKey` | Defines the key holding the redis password in existing secret. | string | `"auth"` |
 | `authSecretAnnotations` | Annotations for auth secret | object | `{}` |
 | `configmap.labels` | Custom labels for the redis configmap | object | `{}` |
-| `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.10.0"}` |
+| `configmapTest.image` | Image for redis-ha-configmap-test hook | object | `{"repository":"koalaman/shellcheck","tag":"v0.11.0"}` |
 | `configmapTest.image.repository` | Repository of the configmap shellcheck test image. | string | `"koalaman/shellcheck"` |
-| `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.10.0"` |
+| `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.11.0"` |
 | `configmapTest.resources` | Resources for the ConfigMap test pod | object | `{}` |
 | `containerSecurityContext` | Security context to be added to the Redis containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` |
 | `emptyDir` | Configuration of `emptyDir`, used only if persistentVolume is disabled and no hostPath specified | object | `{}` |
@@ -88,7 +88,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `hostPath.path` | Use this path on the host for data storage. path is evaluated as template so placeholders are replaced | string | `""` |
 | `image.pullPolicy` | Redis image pull policy | string | `"IfNotPresent"` |
 | `image.repository` | Redis image repository | string | `"public.ecr.aws/docker/library/redis"` |
-| `image.tag` | Redis image tag | string | `"8.2.1-alpine"` |
+| `image.tag` | Redis image tag | string | `"8.8.0-alpine"` |
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
@@ -184,7 +184,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sysctlImage.registry` | sysctlImage Init container registry | string | `"public.ecr.aws/docker/library"` |
 | `sysctlImage.repository` | sysctlImage Init container name | string | `"busybox"` |
 | `sysctlImage.resources` | sysctlImage resources | object | `{}` |
-| `sysctlImage.tag` | sysctlImage Init container tag | string | `"1.34.1"` |
+| `sysctlImage.tag` | sysctlImage Init container tag | string | `"1.38.0"` |
 | `tls.caCertFile` | Name of CA certificate file | string | `"ca.crt"` |
 | `tls.certFile` | Name of certificate file | string | `"redis.crt"` |
 | `tls.dhParamsFile` | Name of Diffie-Hellman (DH) key exchange parameters file (Example: redis.dh) | string | `nil` |
@@ -350,7 +350,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `exporter.serviceMonitor.relabelings` |  | list | `[]` |
 | `exporter.serviceMonitor.telemetryPath` | Set path to redis-exporter telemtery-path (default is /metrics) | string | `""` |
 | `exporter.serviceMonitor.timeout` | Set timeout for scrape (default is 10s) | string | `""` |
-| `exporter.tag` | Exporter image tag | string | `"v1.67.0"` |
+| `exporter.tag` | Exporter image tag | string | `"v1.86.0"` |
 | `prometheusRule.additionalLabels` | Additional labels to be set in metadata. | object | `{}` |
 | `prometheusRule.enabled` | If true, creates a Prometheus Operator PrometheusRule. | bool | `false` |
 | `prometheusRule.interval` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). | string | `"10s"` |
