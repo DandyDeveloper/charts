@@ -343,7 +343,7 @@
 {{- end }}
 
 {{- define "vars.sh" }}
-    HOSTNAME="$(hostname)"
+    HOSTNAME="$(cat /proc/sys/kernel/hostname)"
     {{- if .Values.ro_replicas }}
     RO_REPLICAS="{{ .Values.ro_replicas }}"
     {{- end }}
@@ -540,6 +540,9 @@
         identify_announce_ip
     done
 
+    QUORUM_FAIL_COUNT=0
+    MAX_QUORUM_FAILURES=${MAX_QUORUM_FAILURES:-5}
+
     trap "exit 0" TERM
     while true; do
         sleep {{ .Values.splitBrainDetection.interval }}
@@ -548,6 +551,7 @@
         identify_master
 
         if [ "$MASTER" = "$ANNOUNCE_IP" ]; then
+            QUORUM_FAIL_COUNT=0
             redis_role
             if [ "$ROLE" != "master" ]; then
                 echo "waiting for redis to become master"
@@ -561,17 +565,34 @@
                 fi
             fi
         elif [ "${MASTER}" ]; then
+            QUORUM_FAIL_COUNT=0
             identify_redis_master
             if [ "$REDIS_MASTER" != "$MASTER" ]; then
                 echo "Redis master and local master are not the same. waiting."
                 sleep {{ .Values.splitBrainDetection.retryInterval }}
                 identify_master
-                identify_redis_master
-                echo "Redis master is ${MASTER}, expected master is ${REDIS_MASTER}. No need to reinitialize."
-                if [ "${REDIS_MASTER}" != "${MASTER}" ]; then
-                    echo "Redis master is ${MASTER}, expected master is ${REDIS_MASTER}, reinitializing"
-                    reinit
+                if [ "$MASTER" = "$ANNOUNCE_IP" ]; then
+                    echo "This pod became master during wait, skipping reinit"
+                else
+                    identify_redis_master
+                    echo "Redis master is ${MASTER}, expected master is ${REDIS_MASTER}. No need to reinitialize."
+                    if [ "${REDIS_MASTER}" != "${MASTER}" ]; then
+                        echo "Redis master is ${MASTER}, expected master is ${REDIS_MASTER}, reinitializing"
+                        reinit
+                    fi
                 fi
+            fi
+        else
+            QUORUM_FAIL_COUNT=$((QUORUM_FAIL_COUNT + 1))
+            echo "WARNING: Sentinel returned no master (quorum may be broken). Failure count: $QUORUM_FAIL_COUNT/$MAX_QUORUM_FAILURES"
+            if [ "$QUORUM_FAIL_COUNT" -ge "$MAX_QUORUM_FAILURES" ]; then
+                echo "ERROR: Quorum broken for $MAX_QUORUM_FAILURES consecutive checks. Attempting sentinel reset..."
+                if [ "$SENTINEL_PORT" -eq 0 ]; then
+                    redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel reset "${MASTER_GROUP}" || true
+                else
+                    redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} sentinel reset "${MASTER_GROUP}" || true
+                fi
+                QUORUM_FAIL_COUNT=0
             fi
         fi
     done
@@ -588,6 +609,7 @@
       timeout server {{ .Values.haproxy.timeout.server }}
       timeout client {{ .Values.haproxy.timeout.client }}
       timeout check {{ .Values.haproxy.timeout.check }}
+      timeout tunnel {{ .Values.haproxy.timeout.tunnel }}
 
     listen health_check_http_url
       bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:8888  {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}

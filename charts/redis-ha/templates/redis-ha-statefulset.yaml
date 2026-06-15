@@ -129,11 +129,13 @@ spec:
 {{- if and .Values.hostPath.path .Values.hostPath.chown }}
       - name: hostpath-chown
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
+        securityContext:
+          runAsUser: 0
+          runAsNonRoot: false
         resources: {{ toYaml .Values.init.resources | nindent 10 }}
         command:
         - chown
-        - "{{ .Values.containerSecurityContext.runAsUser }}"
+        - "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}"
         - /data
         volumeMounts:
         - name: data
