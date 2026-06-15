@@ -14,7 +14,7 @@ image:
   # -- Redis image repository
   repository: public.ecr.aws/docker/library/redis
   # -- Redis image tag
-  tag: 8.2.4-alpine
+  tag: 8.8.0-alpine
   # -- Redis image pull policy
   pullPolicy: IfNotPresent
 
@@ -70,7 +70,7 @@ configmapTest:
     # -- Repository of the configmap shellcheck test image.
     repository: koalaman/shellcheck
     # -- Tag of the configmap shellcheck test image.
-    tag: v0.10.0
+    tag: v0.11.0
   # -- Resources for the ConfigMap test pod
   resources: {}
 
@@ -361,7 +361,7 @@ sysctlImage:
   # -- sysctlImage Init container name
   repository: busybox
   # -- sysctlImage Init container tag
-  tag: 1.34.1
+  tag: 1.38.0
   # -- sysctlImage Init container pull policy
   pullPolicy: Always
   # -- Mount the host `/sys` folder to `/host-sys`
@@ -750,7 +750,7 @@ exporter:
   # -- Exporter image
   image: quay.io/oliver006/redis_exporter
   # -- Exporter image tag
-  tag: v1.80.2
+  tag: v1.86.0
   # -- Exporter image pullPolicy
   pullPolicy: IfNotPresent
 
