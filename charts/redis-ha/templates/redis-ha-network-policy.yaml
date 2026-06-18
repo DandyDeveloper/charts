@@ -19,8 +19,8 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      release: {{ .Release.Name }}
-      app: {{ template "redis-ha.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "redis-ha.name" . }}
   policyTypes:
     - Ingress
     - Egress
@@ -28,8 +28,8 @@ spec:
     - to:
       - podSelector: 
           matchLabels:
-            release: {{ .Release.Name }}
-            app: {{ template "redis-ha.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/name: {{ template "redis-ha.name" . }}
       ports:
       {{- include "redis-ports" . | nindent 6 }}
 {{-  range $rule := .Values.networkPolicy.egressRules }}
@@ -42,16 +42,16 @@ spec:
     - from:
       - podSelector:
           matchLabels:
-            release: {{ .Release.Name }}
-            app: {{ template "redis-ha.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/name: {{ template "redis-ha.name" . }}
       ports: 
       {{- include "redis-ports" . | nindent 6 }}
 {{- if .Values.haproxy.enabled }}
     - from:
         - podSelector:
             matchLabels:
-              release: {{ .Release.Name }}
-              app: {{ template "redis-ha.name" . }}-haproxy
+              app.kubernetes.io/instance: {{ .Release.Name }}
+              app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
       ports:
       {{- include "redis-ports" . | nindent 6 }}
 {{- end }}

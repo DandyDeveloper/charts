@@ -12,7 +12,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      release: {{ .Release.Name }}
-      app: {{ template "redis-ha.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "redis-ha.name" . }}
 {{ toYaml .Values.podDisruptionBudget | indent 2 }}
 {{- end -}}

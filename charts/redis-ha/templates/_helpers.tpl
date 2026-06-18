@@ -42,10 +42,10 @@ labels.standard prints the standard Helm labels.
 The standard labels are frequently used in metadata.
 */ -}}
 {{- define "labels.standard" -}}
-app: {{ template "redis-ha.name" . }}
-heritage: {{ .Release.Service | quote }}
-release: {{ .Release.Name | quote }}
-chart: {{ template "chartref" . }}
+app.kubernetes.io/name: {{ template "redis-ha.name" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
+helm.sh/chart: {{ template "chartref" . }}
 {{- end -}}
 
 {{- /*

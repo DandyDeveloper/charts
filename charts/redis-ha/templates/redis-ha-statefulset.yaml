@@ -18,8 +18,8 @@ metadata:
 spec:
   selector:
     matchLabels:
-      release: {{ .Release.Name }}
-      app: {{ template "redis-ha.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ template "redis-ha.name" . }}
   serviceName: {{ template "redis-ha.fullname" . }}
   replicas: {{ .Values.replicas }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}
@@ -41,8 +41,8 @@ spec:
         prometheus.io/path: {{ .Values.exporter.scrapePath }}
       {{- end }}
       labels:
-        release: {{ .Release.Name }}
-        app: {{ template "redis-ha.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ template "redis-ha.name" . }}
         {{ template "redis-ha.fullname" . }}: replica
         {{- range $key, $value := .Values.labels }}
         {{ $key }}: {{ $value | toString }}
@@ -79,8 +79,8 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  app: {{ template "redis-ha.name" . }}
-                  release: {{ .Release.Name }}
+                  app.kubernetes.io/name: {{ template "redis-ha.name" . }}
+                  app.kubernetes.io/instance: {{ .Release.Name }}
                   {{ template "redis-ha.fullname" . }}: replica
               topologyKey: kubernetes.io/hostname
     {{- else }}
@@ -89,8 +89,8 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app: {{ template "redis-ha.name" . }}
-                    release: {{ .Release.Name }}
+                    app.kubernetes.io/name: {{ template "redis-ha.name" . }}
+                    app.kubernetes.io/instance: {{ .Release.Name }}
                     {{ template "redis-ha.fullname" . }}: replica
                 topologyKey: kubernetes.io/hostname
     {{- end }}
@@ -102,8 +102,8 @@ spec:
         whenUnsatisfiable: {{ .Values.topologySpreadConstraints.whenUnsatisfiable | default "ScheduleAnyway" }}
         labelSelector:
           matchLabels:
-            app: {{ template "redis-ha.name" . }}
-            release: {{ .Release.Name }}
+            app.kubernetes.io/name: {{ template "redis-ha.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
             {{ template "redis-ha.fullname" . }}: replica
       {{- end }}
       {{- if .Values.imagePullSecrets }}
