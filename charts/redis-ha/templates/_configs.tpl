@@ -493,6 +493,16 @@
     set -e
     }
 
+    promote_self() {
+    set +e
+        if [ "$REDIS_PORT" -eq 0 ]; then
+            redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} replicaof no one
+        else
+            redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_PORT}" replicaof no one
+        fi
+    set -e
+    }
+
     identify_announce_ip
 
     while [ -z "${ANNOUNCE_IP}" ]; do
@@ -519,10 +529,21 @@
                 sleep {{ .Values.splitBrainDetection.retryInterval }}
                 identify_master
                 redis_role
-                echo "Redis role is $ROLE, expected role is master. No need to reinitialize."
                 if [ "$ROLE" != "master" ]; then
-                    echo "Redis role is $ROLE, expected role is master, reinitializing"
-                    reinit
+                    # Sentinel still names this pod as the master, but Redis here is
+                    # running as a replica. reinit re-runs init.sh + shutdown, which
+                    # for any pod that is not StatefulSet ordinal 0 just re-derives
+                    # `slaveof`, so the pod restarts straight back into a replica and
+                    # Sentinel keeps naming it -> an unrecoverable all-replicas /
+                    # no-master cycle plus a shutdown/CrashLoop loop (#383). Sentinel
+                    # has already elected THIS pod, so make reality match by promoting
+                    # it; only one pod can match get-master-addr-by-name, so this
+                    # cannot create two masters, and the other replicas already target
+                    # this address so their links recover once it is a real master.
+                    echo "Redis role is $ROLE but Sentinel names this pod as master; promoting (replicaof no one)"
+                    promote_self
+                else
+                    echo "Redis role is $ROLE, expected role is master. No need to reinitialize."
                 fi
             fi
         elif [ "${MASTER}" ]; then
