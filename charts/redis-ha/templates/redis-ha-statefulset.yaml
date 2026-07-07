@@ -256,7 +256,7 @@ spec:
         - sh
         args:
         - "-c"
-        - "echo $HOSTNAME | grep -q 'ha-server-0' \
+        - "echo $HOSTNAME | grep -q '{{ include "redis-ha.statefulSetName" . }}-0' \
           && nc -w 5 -vz {{ regexReplaceAll  "^redis:\\/\\/(.*)" .Values.restore.redis.source "${1}" }} \
           && test ! -s /data/dump.rdb \
           && timeout {{ .Values.restore.timeout }} \
