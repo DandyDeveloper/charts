@@ -152,3 +152,33 @@ Usage:
   protocol: TCP
 {{- end -}}
 {{- end -}}
+
+{{/*
+Name of the "data" volume mounted at /data across the StatefulSet's containers.
+
+This value is used in two tied roles that MUST stay in sync:
+  1. The volume identifier referenced by every volumeMount in the StatefulSet.
+  2. The volumeClaimTemplates name, which Kubernetes uses as the PVC name prefix:
+     <dataVolumeName>-<statefulset-name>-<ordinal>  (e.g. data-my-redis-server-0)
+
+It also names the hostPath/emptyDir volume when persistentVolume.enabled is false,
+so the mounts resolve regardless of the backing store.
+*/}}
+{{- define "redis-ha.dataVolumeName" -}}
+{{- default "data" .Values.dataVolumeOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Name of the Redis server StatefulSet: the fullname plus the configurable
+.Values.statefulSetSuffix (default "server", giving the historical <fullname>-server).
+
+This is a single source of truth for the StatefulSet name, because the same
+value has to appear in more than one place or the cluster breaks:
+  1. The StatefulSet's own metadata.name.
+  2. The per-pod announce Services, whose "statefulset.kubernetes.io/pod-name"
+     selector must equal <statefulSetName>-<ordinal> to target the right pod. If it
+     drifts from the StatefulSet name, those Services select nothing.
+*/}}
+{{- define "redis-ha.statefulSetName" -}}
+{{- printf "%s-%s" (include "redis-ha.fullname" .) .Values.statefulSetSuffix | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
