@@ -138,7 +138,7 @@ spec:
         - "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}"
         - /data
         volumeMounts:
-        - name: data
+        - name: {{ include "redis-ha.dataVolumeName" . }}
           mountPath: /data
 {{- end }}
       - name: config-init
@@ -182,7 +182,7 @@ spec:
         - name: config
           mountPath: /readonly-config
           readOnly: true
-        - name: data
+        - name: {{ include "redis-ha.dataVolumeName" . }}
           mountPath: /data
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
@@ -211,7 +211,7 @@ spec:
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
         volumeMounts:
-        - name: data
+        - name: {{ include "redis-ha.dataVolumeName" . }}
           mountPath: /data
 {{- end }}
 {{ if regexFind $regexRestoreSSH (toString .Values.restore.ssh.source) }}
@@ -244,7 +244,7 @@ spec:
             name: {{ include "redis-ha.fullname" . }}-secret
           {{- end }}
         volumeMounts:
-        - name: data
+        - name: {{ include "redis-ha.dataVolumeName" . }}
           mountPath: /data
 {{- end }}
 {{ if regexFind $regexRestoreRedis (toString .Values.restore.redis.source) }}
@@ -271,7 +271,7 @@ spec:
             name: {{ tpl (.Values.existingSecret | default "" ) . }}
         {{- end }}
         volumeMounts:
-        - name: data
+        - name: {{ include "redis-ha.dataVolumeName" . }}
           mountPath: /data
 {{- end }}
 {{- if .Values.extraInitContainers }}
@@ -365,7 +365,7 @@ spec:
           mountPath: /readonly-config
           readOnly: true
         - mountPath: /data
-          name: data
+          name: {{ include "redis-ha.dataVolumeName" . }}
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
           name: tls-certs
@@ -470,7 +470,7 @@ spec:
         {{- end }}
         volumeMounts:
         - mountPath: /data
-          name: data
+          name: {{ include "redis-ha.dataVolumeName" . }}
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
           name: tls-certs
@@ -527,7 +527,7 @@ spec:
           mountPath: /readonly-config
           readOnly: true
         - mountPath: /data
-          name: data
+          name: {{ include "redis-ha.dataVolumeName" . }}
         {{- if .Values.redis.tlsPort }}
         - mountPath: /tls-certs
           name: tls-certs
@@ -635,7 +635,7 @@ spec:
   - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
-      name: data
+      name: {{ include "redis-ha.dataVolumeName" . }}
       annotations:
       {{- range $key, $value := .Values.persistentVolume.annotations }}
         {{ $key }}: {{ $value }}
@@ -658,11 +658,11 @@ spec:
     {{- end }}
 {{- end }}
 {{- else if .Values.hostPath.path }}
-      - name: data
+      - name: {{ include "redis-ha.dataVolumeName" . }}
         hostPath:
           path: {{ tpl .Values.hostPath.path .}}
 {{- else }}
-      - name: data
+      - name: {{ include "redis-ha.dataVolumeName" . }}
         emptyDir:
 {{ toYaml .Values.emptyDir | indent 10 }}
 {{- end }}
