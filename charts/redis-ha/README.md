@@ -74,6 +74,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `configmapTest.image.tag` | Tag of the configmap shellcheck test image. | string | `"v0.11.0"` |
 | `configmapTest.resources` | Resources for the ConfigMap test pod | object | `{}` |
 | `containerSecurityContext` | Security context to be added to the Redis containers. | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` |
+| `dataVolumeOverride` | Override the name of the data volume. Also used as the prefix of the generated PVC name (<dataVolumeOverride>-<statefulset-name>-<ordinal>). Defaults to "data" when empty. | string | `""` |
 | `emptyDir` | Configuration of `emptyDir`, used only if persistentVolume is disabled and no hostPath specified | object | `{}` |
 | `existingSecret` | An existing secret containing a key defined by `authKey` that configures `requirepass` and `masterauth` in the conf parameters (Requires `auth: enabled`, cannot be used in conjunction with `.Values.redisPassword`) | string | `nil` |
 | `extraContainers` | Extra containers to include in StatefulSet | list | `[]` |
@@ -175,8 +176,24 @@ The following table lists the configurable parameters of the Redis chart and the
 | `serviceAccount.name` | The name of the ServiceAccount to use. If not set and create is true, a name is generated using the redis-ha.fullname template | string | `""` |
 | `serviceLabels` | Custom labels for redis service | object | `{}` |
 | `splitBrainDetection.interval` | Interval between redis sentinel and server split brain checks (in seconds) | int | `60` |
+| `splitBrainDetection.livenessProbe.exec.command[0]` |  | string | `"cat"` |
+| `splitBrainDetection.livenessProbe.exec.command[1]` |  | string | `"/readonly-config/redis.conf"` |
+| `splitBrainDetection.livenessProbe.failureThreshold` | Failure threshold for liveness probe | int | `5` |
+| `splitBrainDetection.livenessProbe.initialDelaySeconds` | Initial delay in seconds for liveness probe | int | `30` |
+| `splitBrainDetection.livenessProbe.periodSeconds` | Period in seconds after which liveness probe will be repeated | int | `15` |
+| `splitBrainDetection.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
+| `splitBrainDetection.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
+| `splitBrainDetection.readinessProbe.exec.command[0]` |  | string | `"sh"` |
+| `splitBrainDetection.readinessProbe.exec.command[1]` |  | string | `"-c"` |
+| `splitBrainDetection.readinessProbe.exec.command[2]` |  | string | `"test -d /proc/1"` |
+| `splitBrainDetection.readinessProbe.failureThreshold` | Failure threshold for readiness probe | int | `5` |
+| `splitBrainDetection.readinessProbe.initialDelaySeconds` | Initial delay in seconds for readiness probe | int | `30` |
+| `splitBrainDetection.readinessProbe.periodSeconds` | Period in seconds after which readiness probe will be repeated | int | `15` |
+| `splitBrainDetection.readinessProbe.successThreshold` | Success threshold for readiness probe | int | `1` |
+| `splitBrainDetection.readinessProbe.timeoutSeconds` | Timeout seconds for readiness probe | int | `15` |
 | `splitBrainDetection.resources` | splitBrainDetection resources | object | `{}` |
 | `splitBrainDetection.retryInterval` |  | int | `10` |
+| `statefulSetSuffix` | Suffix appended to the fullname to build the Redis server StatefulSet name (<fullname>-<statefulSetSuffix>). Set to "" for a bare <fullname>. | string | `"server"` |
 | `sysctlImage.command` | sysctlImage command to execute | list | `[]` |
 | `sysctlImage.enabled` | Enable an init container to modify Kernel settings | bool | `false` |
 | `sysctlImage.mountHostSys` | Mount the host `/sys` folder to `/host-sys` | bool | `false` |
@@ -199,14 +216,16 @@ The following table lists the configurable parameters of the Redis chart and the
 
 | Parameter | Description | Type | Default |
 |-----|------|---------|-------------|
+| `sentinel.announceHostnames` | Configures sentinel with announce-hostnames parameter, if true sets "announce-hostnames yes" in sentinel.conf | bool | `nil` |
 | `sentinel.auth` | Enables or disables sentinel AUTH (Requires `sentinel.password` to be set) | bool | `false` |
 | `sentinel.authClients` | It is possible to disable client side certificates authentication when "authClients" is set to "no" | string | `""` |
 | `sentinel.authKey` | The key holding the sentinel password in an existing secret. | string | `"sentinel-password"` |
+| `sentinel.bind` |  | string | `nil` |
 | `sentinel.config` | Valid sentinel config options in this section will be applied as config options to each sentinel (see below) | object | see values.yaml |
 | `sentinel.customArgs` |  | list | `[]` |
 | `sentinel.customCommand` |  | list | `[]` |
 | `sentinel.customConfig` | Allows for custom sentinel.conf files to be applied. If this is used then `sentinel.config` is ignored | string | `""` |
-| `sentinel.existingSecret` | An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`) | string | `""` |
+| `sentinel.existingSecret` | An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`) Supports templates like "{{ .Release.Name }}-sentinel-creds" | string | `""` |
 | `sentinel.extraVolumeMounts` | additional volumeMounts for Sentinel container | list | `[]` |
 | `sentinel.lifecycle` | Container Lifecycle Hooks for sentinel container. Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ | object | `{}` |
 | `sentinel.livenessProbe.enabled` |  | bool | `true` |
@@ -216,8 +235,6 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.livenessProbe.successThreshold` | Success threshold for liveness probe | int | `1` |
 | `sentinel.livenessProbe.timeoutSeconds` | Timeout seconds for liveness probe | int | `15` |
 | `sentinel.password` | A password that configures a `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`) | string | `nil` |
-| `sentinel.resolveHostnames` | Configures sentinel with resolve-hostnames parameter, if true sets "resolve-hostnames yes" in sentinel.conf | bool | `nil` |
-| `sentinel.announceHostnames` | Configures sentinel with announce-hostnames parameter, if true sets "announce-hostnames yes" in sentinel.conf | bool | `nil` |
 | `sentinel.port` | Port to access the sentinel service | int | `26379` |
 | `sentinel.quorum` | Minimum number of nodes expected to be live. | int | `2` |
 | `sentinel.readinessProbe.enabled` |  | bool | `true` |
@@ -226,6 +243,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.readinessProbe.periodSeconds` | Period in seconds after which readiness probe will be repeated | int | `15` |
 | `sentinel.readinessProbe.successThreshold` | Success threshold for readiness probe | int | `3` |
 | `sentinel.readinessProbe.timeoutSeconds` | Timeout seconds for readiness probe | int | `15` |
+| `sentinel.resolveHostnames` | Configures sentinel with resolve-hostnames parameter, if true sets "resolve-hostnames yes" in sentinel.conf | bool | `nil` |
 | `sentinel.resources` | CPU/Memory for sentinel node resource requests/limits | object | `{}` |
 | `sentinel.startupProbe` | Startup probe parameters for redis container | object | `{"enabled":true,"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":15}` |
 | `sentinel.startupProbe.enabled` | Enable Startup Probe | bool | `true` |
@@ -243,7 +261,7 @@ The following table lists the configurable parameters of the Redis chart and the
 |-----|------|---------|-------------|
 | `haproxy.IPv6.enabled` | Enable HAProxy parameters to bind and consume IPv6 addresses. Enabled by default. | bool | `true` |
 | `haproxy.additionalAffinities` | Additional affinities to add to the haproxy pods. | object | `{}` |
-| `haproxy.additionalPorts` | Additional ports to expose on HAProxy service and deployment. Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort) | list | `[]` |
+| `haproxy.additionalPorts` | Additional ports to expose on HAProxy service and deployment Each port should have a name, containerPort, and optionally servicePort (defaults to containerPort) | list | `[]` |
 | `haproxy.affinity` | Override all other affinity settings for the haproxy pods with a string. | string | `""` |
 | `haproxy.annotations` | HAProxy template annotations | object | `{}` |
 | `haproxy.checkFall` | haproxy.cfg `check fall` setting | int | `1` |
@@ -259,7 +277,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.hardAntiAffinity` | Whether the haproxy pods should be forced to run on separate nodes. | bool | `true` |
 | `haproxy.image.pullPolicy` | HAProxy Image PullPolicy | string | `"IfNotPresent"` |
 | `haproxy.image.repository` | HAProxy Image Repository | string | `"public.ecr.aws/docker/library/haproxy"` |
-| `haproxy.image.tag` | HAProxy Image Tag | string | `"3.0.8-alpine"` |
+| `haproxy.image.tag` | HAProxy Image Tag | string | `"3.3.10-alpine"` |
 | `haproxy.imagePullSecrets` | Reference to one or more secrets to be used when pulling images ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ | list | `[]` |
 | `haproxy.init.resources` | Extra init resources | object | `{}` |
 | `haproxy.labels` | Custom labels for the haproxy pod | object | `{}` |
@@ -291,8 +309,11 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.resources` | HAProxy resources | object | `{}` |
 | `haproxy.securityContext` | Security context to be added to the HAProxy deployment. | object | `{"fsGroup":99,"runAsNonRoot":true,"runAsUser":99}` |
 | `haproxy.service.annotations` | HAProxy service annotations | string | `nil` |
+| `haproxy.service.clusterIP` | HAProxy service clusterIP. Set to "None" to create a headless service. | string | `""` |
 | `haproxy.service.externalIPs` | HAProxy external IPs | object | `{}` |
 | `haproxy.service.externalTrafficPolicy` | HAProxy service externalTrafficPolicy value (haproxy.service.type must be LoadBalancer) | string | `nil` |
+| `haproxy.service.ipFamilies` | HAProxy service IP families (e.g. ["IPv4", "IPv6"] for dual-stack) | list | `[]` |
+| `haproxy.service.ipFamilyPolicy` | HAProxy service IP family policy for dual-stack clusters | string | `""` |
 | `haproxy.service.labels` | HAProxy service labels | object | `{}` |
 | `haproxy.service.loadBalancerIP` | HAProxy service loadbalancer IP | string | `nil` |
 | `haproxy.service.loadBalancerSourceRanges` | List of CIDR's allowed to connect to LoadBalancer | list | `[]` |
@@ -313,7 +334,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `haproxy.tls.certMountPath` | Path to mount the secret that contains the certificates. haproxy | string | `"/tmp/"` |
 | `haproxy.tls.enabled` | If "true" this will enable TLS termination on haproxy | bool | `false` |
 | `haproxy.tls.keyName` | Key file name | string | `nil` |
-| `haproxy.tls.secretName` | Secret containing the .pem file | string | `""` |
+| `haproxy.tls.secretName` | Secret containing the .pem file Supports templates like "{{ .Release.Name }}-haproxy-tls" | string | `""` |
 
 ### Prometheus exporter parameters
 
