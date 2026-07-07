@@ -24,6 +24,9 @@ fullnameOverride: ""
 # -- Name override for Redis HA resources
 nameOverride: ""
 
+# -- Suffix appended to the fullname to build the Redis server StatefulSet name (<fullname>-<statefulSetSuffix>). Set to "" for a bare <fullname>.
+statefulSetSuffix: server
+
 # -- Override the name of the data volume. Also used as the prefix of the generated PVC name (<dataVolumeOverride>-<statefulset-name>-<ordinal>). Defaults to "data" when empty.
 dataVolumeOverride: ""
 
