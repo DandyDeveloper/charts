@@ -4,10 +4,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-health-configmap
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    app: {{ template "redis-ha.fullname" . }}
+{{ include "labels.standard" . | indent 4 }}
     {{- range $key, $value := .Values.extraLabels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
