@@ -274,6 +274,19 @@ spec:
         - name: data
           mountPath: /data
 {{- end }}
+{{ if .Values.restore.removeStaleTemporaryFiles }}
+      - name: remove-stale-rdb-temporary-files
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: IfNotPresent
+        command:
+          - /bin/sh
+          - -ec
+          - find /data -maxdepth 1 -type f -name 'temp-*.rdb' -exec rm -f {} \;
+        securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
+        volumeMounts:
+          - name: data
+            mountPath: /data
+{{- end }}
 {{- if .Values.extraInitContainers }}
 {{- toYaml .Values.extraInitContainers | nindent 6 }}
 {{- end }}

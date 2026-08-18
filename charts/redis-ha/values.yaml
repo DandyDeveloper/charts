@@ -988,6 +988,7 @@ restore:
     key: ""
   redis:
     source: ""
+  removeStaleTemporaryFiles: true
 
 ## Custom PrometheusRule to be defined
 ## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
