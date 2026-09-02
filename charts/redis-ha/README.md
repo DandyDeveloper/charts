@@ -106,6 +106,10 @@ The following table lists the configurable parameters of the Redis chart and the
 | `persistentVolume.labels` | Labels for the volume | object | `{}` |
 | `persistentVolume.size` | Persistent volume size | string | `"10Gi"` |
 | `persistentVolume.storageClass` | redis-ha data Persistent Volume Storage Class | string | `nil` |
+| `persistentVolumeClaimRetentionPolicy` | Configure whether PersistentVolumeClaims created by the StatefulSet are retained or deleted when the StatefulSet is deleted or scaled down. Requires Kubernetes support for StatefulSet PersistentVolumeClaim retention. | object | `{"enabled":false,"whenDeleted":"Retain","whenScaled":"Retain"}` |
+| `persistentVolumeClaimRetentionPolicy.enabled` | Enable StatefulSet PersistentVolumeClaim retention policy | bool | `false` |
+| `persistentVolumeClaimRetentionPolicy.whenDeleted` | PVC retention behavior when the StatefulSet is deleted. Allowed values: Retain, Delete | string | `"Retain"` |
+| `persistentVolumeClaimRetentionPolicy.whenScaled` | PVC retention behavior when the StatefulSet is scaled down. Allowed values: Retain, Delete | string | `"Retain"` |
 | `podDisruptionBudget` | Pod Disruption Budget rules | object | `{}` |
 | `podManagementPolicy` | The statefulset pod management policy | string | `"OrderedReady"` |
 | `priorityClassName` | Kubernetes priorityClass name for the redis-ha-server pod | string | `""` |
