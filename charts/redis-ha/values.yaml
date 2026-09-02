@@ -914,6 +914,18 @@ persistentVolume:
   annotations: {}
   # -- Labels for the volume
   labels: {}
+
+# -- Configure whether PersistentVolumeClaims created by the StatefulSet are
+# retained or deleted when the StatefulSet is deleted or scaled down.
+# Requires Kubernetes support for StatefulSet PersistentVolumeClaim retention.
+persistentVolumeClaimRetentionPolicy:
+  # -- Enable StatefulSet PersistentVolumeClaim retention policy
+  enabled: false
+  # -- PVC retention behavior when the StatefulSet is deleted. Allowed values: Retain, Delete
+  whenDeleted: Retain
+  # -- PVC retention behavior when the StatefulSet is scaled down. Allowed values: Retain, Delete
+  whenScaled: Retain
+
 init:
   # -- Extra init resources
   resources: {}

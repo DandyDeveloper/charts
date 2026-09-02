@@ -23,6 +23,11 @@ spec:
   serviceName: {{ template "redis-ha.fullname" . }}
   replicas: {{ .Values.replicas }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}
+  {{- if .Values.persistentVolumeClaimRetentionPolicy.enabled }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.persistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.persistentVolumeClaimRetentionPolicy.whenScaled }}
+  {{- end }}
   updateStrategy:
     type: {{ .Values.redis.updateStrategy.type }}
   {{- if .Values.redis.minReadySeconds }}
