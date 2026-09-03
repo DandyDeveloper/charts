@@ -91,6 +91,8 @@ The following table lists the configurable parameters of the Redis chart and the
 | `image.tag` | Redis image tag | string | `"8.8.0-alpine"` |
 | `imagePullSecrets` | Reference to one or more secrets to be used when pulling redis images | list | `[]` |
 | `init.resources` | Extra init resources | object | `{}` |
+| `ipFamilies` | ipFamilies for the headless and announce Services (e.g. ["IPv6"]). Empty = cluster default. | list | `[]` |
+| `ipFamilyPolicy` | ipFamilyPolicy for the headless and announce Services (e.g. SingleStack / PreferDualStack). Empty = cluster default. | string | `""` |
 | `labels` | Custom labels for the redis pod | object | `{}` |
 | `nameOverride` | Name override for Redis HA resources | string | `""` |
 | `networkPolicy.annotations` | Annotations for NetworkPolicy | object | `{}` |
@@ -437,6 +439,10 @@ A such case could happen if the orchestator is pending the nomination of redis p
 Risk is limited because announce-service is using `publishNotReadyAddresses: true`, although, in such case, HAProxy pod will be rescheduled afterward by the orchestrator.
 
 PodDisruptionBudgets are not configured by default, you may need to set the `haproxy.podDisruptionBudget` parameter in values.yaml to enable it.
+
+### Dual-stack and IPv6-primary clusters
+
+On dual-stack or IPv6-primary clusters, setting `sentinel.resolveHostnames: true` and `sentinel.announceHostnames: true` is recommended: HAProxy backend server lines then use the announce Service FQDNs and Sentinel announces hostnames instead of start-time resolved IPs. To run the Services IPv6-primary, additionally set `ipFamilies`/`ipFamilyPolicy` (headless and announce Services) and `haproxy.service.ipFamilies`/`haproxy.service.ipFamilyPolicy`. Changing a Service's family is rejected in place by admission, so conversion requires delete+recreate (letting Helm/Argo CD own the recreate is exactly why these values exist).
 
 ## Network policies
 

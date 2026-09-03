@@ -26,6 +26,12 @@ spec:
   publishNotReadyAddresses: true
 {{- end }}
   type: ClusterIP
+  {{- if $root.Values.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ $root.Values.ipFamilyPolicy }}
+  {{- end }}
+  {{- if $root.Values.ipFamilies }}
+  ipFamilies: {{ toYaml $root.Values.ipFamilies | nindent 2 }}
+  {{- end }}
   ports:
   {{- if ne (int $root.Values.redis.port) 0 }}
   - name: tcp-server

@@ -58,6 +58,12 @@ labels: {}
 # -- Custom labels for redis service
 serviceLabels: {}
 
+# -- ipFamilyPolicy for the headless and announce Services (e.g. SingleStack / PreferDualStack). Empty = cluster default.
+ipFamilyPolicy: ""
+
+# -- ipFamilies for the headless and announce Services (e.g. ["IPv6"]). Empty = cluster default.
+ipFamilies: []
+
 ## Custom labels for the redis configmap
 configmap:
   # -- Custom labels for the redis configmap
