@@ -21,6 +21,12 @@ metadata:
 spec:
   type: ClusterIP
   clusterIP: None
+  {{- if .Values.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.ipFamilyPolicy }}
+  {{- end }}
+  {{- if .Values.ipFamilies }}
+  ipFamilies: {{ toYaml .Values.ipFamilies | nindent 2 }}
+  {{- end }}
   ports:
   {{- if ne (int .Values.redis.port) 0 }}
   - name: tcp-server
