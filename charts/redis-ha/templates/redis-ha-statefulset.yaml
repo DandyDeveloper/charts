@@ -294,8 +294,9 @@ spec:
           - /data/conf/redis.conf
         {{- end }}
         securityContext: {{- include "compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 10 }}
-        {{- if .Values.auth }}
+        {{- if or .Values.auth .Values.sentinel.auth }}
         env:
+        {{- if .Values.auth }}
         - name: AUTH
           valueFrom:
             secretKeyRef:
@@ -305,6 +306,19 @@ spec:
               name: {{ template "redis-ha.fullname" . }}
             {{- end }}
               key: {{ .Values.authKey }}
+        {{- end }}
+        {{- if .Values.sentinel.auth }}
+        # The preStop hook asks sentinel to fail over, so it needs sentinel's password.
+        - name: SENTINELAUTH
+          valueFrom:
+            secretKeyRef:
+            {{- if tpl (.Values.sentinel.existingSecret | default "" ) . }}
+              name: {{ tpl (.Values.sentinel.existingSecret | default "" ) . }}
+            {{- else }}
+              name: {{ template "redis-ha.fullname" . }}-sentinel
+            {{- end }}
+              key: {{ .Values.sentinel.authKey }}
+        {{- end }}
         {{- end }}
         {{- if .Values.redis.envFrom }}
         envFrom:

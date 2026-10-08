@@ -645,8 +645,15 @@ sentinel:
   #    memory: 200Mi
 
   # -- Container Lifecycle Hooks for sentinel container.
+  # The default preStop hook keeps sentinel running while the redis container's
+  # preStop hook fails the master over. Without it, sentinel stops first and the
+  # failover request fails.
   # Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
-  lifecycle: {}
+  # @default -- see values.yaml
+  lifecycle:
+    preStop:
+      exec:
+        command: ["/bin/sh", "/health/sentinel_prestop.sh"]
 
   # -- additional volumeMounts for Sentinel container
   extraVolumeMounts: []

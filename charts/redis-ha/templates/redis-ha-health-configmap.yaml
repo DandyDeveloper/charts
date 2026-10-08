@@ -18,3 +18,5 @@ data:
 {{- include "redis_readiness.sh" . }}
   sentinel_liveness.sh: |
 {{- include "sentinel_liveness.sh" . }}
+  sentinel_prestop.sh: |
+{{- include "sentinel_prestop.sh" . }}

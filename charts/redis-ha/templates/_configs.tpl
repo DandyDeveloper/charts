@@ -473,48 +473,78 @@
     {{- if or (eq (int .Values.redis.port) 0) (eq (int .Values.sentinel.port) 0) }}
     TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
     {{- end }}
+    {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
+    redis_local() {
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "${AUTH}" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if (int .Values.redis.port) }}
+        -p {{ .Values.redis.port }} \
+      {{- else }}
+        -p {{ .Values.redis.tlsPort }} ${TLS_CLIENT_OPTION} \
+      {{- end}}
+        "$@"
+    }
+    sentinel_local() {
+      redis-cli \
+      {{- if .Values.sentinel.auth }}
+        -a "${SENTINELAUTH}" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if (int .Values.sentinel.port) }}
+        -p {{ .Values.sentinel.port }} \
+      {{- else }}
+        -p {{ .Values.sentinel.tlsPort }} ${TLS_CLIENT_OPTION} \
+      {{- end}}
+        "$@"
+    }
     get_redis_role() {
-      is_master=$(
-        redis-cli \
-        {{- if .Values.auth }}
-          -a "${AUTH}" --no-auth-warning \
-        {{- end }}
-          -h localhost \
-        {{- if (int .Values.redis.port) }}
-          -p {{ .Values.redis.port }} \
-        {{- else }}
-          -p {{ .Values.redis.tlsPort }} ${TLS_CLIENT_OPTION} \
-        {{- end}}
-          info | grep -c 'role:master' || true
-      )
+      is_master=$(redis_local info replication | grep -c 'role:master' || true)
     }
     get_redis_role
-    if [[ "$is_master" -eq 1 ]]; then
+    if [ "$is_master" -eq 1 ]; then
       echo "This node is currently master, we trigger a failover."
-      {{- $masterGroupName := include "redis-ha.masterGroupName" . }}
-      response=$(
-        redis-cli \
-        {{- if .Values.sentinel.auth }}
-          -a "${SENTINELAUTH}" --no-auth-warning \
-        {{- end }}
-          -h localhost \
-        {{- if (int .Values.sentinel.port) }}
-          -p {{ .Values.sentinel.port }} \
-        {{- else }}
-          -p {{ .Values.sentinel.tlsPort }} ${TLS_CLIENT_OPTION} \
-        {{- end}}
-          SENTINEL failover {{ $masterGroupName }}
-      )
-      if [[ "$response" != "OK" ]] ; then
+      # Hold writes during the handoff. A write this node accepts after the
+      # promotion is lost. A held write fails with READONLY once this node is
+      # a replica, and the client retries it on the new master.
+      if [ "$(redis_local client pause 35000 write)" != "OK" ]; then
+        echo "Could not pause writes, failing over without the pause."
+      fi
+      old_master=$(sentinel_local sentinel get-master-addr-by-name {{ $masterGroupName }} | head -n 1)
+      response=$(sentinel_local sentinel failover {{ $masterGroupName }})
+      if [ "$response" != "OK" ] ; then
         echo "$response"
+        redis_local client unpause >/dev/null
         exit 1
       fi
       timeout=30
-      while [[ "$is_master" -eq 1 && $timeout -gt 0 ]]; do
+      while [ "$is_master" -eq 1 ] && [ "$timeout" -gt 0 ]; do
         sleep 1
+        # Follow the promoted node at once. Sentinel demotes this node only on
+        # its next check, which keeps the held writes waiting longer.
+        new_master=$(sentinel_local sentinel get-master-addr-by-name {{ $masterGroupName }} | tr '\n' ' ')
+        # shellcheck disable=SC2086
+        set -- $new_master
+        if [ -n "${1:-}" ] && [ "$1" != "$old_master" ]; then
+          redis_local replicaof "$1" "$2" >/dev/null
+        fi
         get_redis_role
         timeout=$((timeout - 1))
+        # Sentinel can accept the request and then abort it, for example
+        # when no replica qualifies. Stop holding writes when that happens.
+        if [ "$is_master" -eq 1 ] && [ "$timeout" -lt 27 ] && \
+           ! sentinel_local sentinel master {{ $masterGroupName }} | grep -q failover_in_progress; then
+          echo "Sentinel is no longer failing over."
+          break
+        fi
       done
+      redis_local client unpause >/dev/null
+      if [ "$is_master" -eq 1 ]; then
+        echo "Failover did not complete within 30s."
+        exit 1
+      fi
       echo "Failover successful"
     fi
 {{- end }}
@@ -1052,6 +1082,37 @@
       *) exit 1 ;;
     esac
     exit 0
+{{- end }}
+
+{{- define "sentinel_prestop.sh" }}
+    {{- if eq (int .Values.redis.port) 0 }}
+    TLS_CLIENT_OPTION="--tls --cacert /tls-certs/{{ .Values.tls.caCertFile }}{{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{end}}"
+    {{- end }}
+    redis_role() {
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "${AUTH}" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if ne (int .Values.redis.port) 0 }}
+        -p {{ .Values.redis.port }} \
+      {{- else }}
+        -p {{ .Values.redis.tlsPort }} ${TLS_CLIENT_OPTION} \
+      {{- end}}
+        role 2>/dev/null | head -n 1
+    }
+    # The redis container's preStop hook asks this sentinel to fail over.
+    # Kubernetes stops both containers at once, so keep this sentinel running
+    # until the local redis is no longer master.
+    waited=0
+    while [ "$waited" -lt 40 ] && [ "$(redis_role)" = "master" ]; do
+      sleep 1
+      waited=$((waited + 1))
+    done
+    if [ "$waited" -gt 0 ]; then
+      # Give this sentinel time to publish the new configuration.
+      sleep 5
+    fi
 {{- end }}
 
 {{- define "redis_readiness.sh" }}
