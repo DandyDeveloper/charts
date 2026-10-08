@@ -208,37 +208,80 @@
         cp /readonly-config/sentinel.conf "${SENTINEL_CONF}"
     }
 
+    redis_cli_at() {
+        _host="${1}"
+        shift
+        if [ "$REDIS_PORT" -eq 0 ]; then
+            redis-cli -h "${_host}"{{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} "$@"
+        else
+            redis-cli -h "${_host}"{{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -p "${REDIS_PORT}" "$@"
+        fi
+    }
+
+    # Prints the role ("master" or "slave") the redis at $1 reports, or
+    # nothing when it does not answer.
+    redis_role_at() {
+    set +e
+        redis_cli_at "${1}" role 2>/dev/null | head -n 1
+    set -e
+    }
+
+    # Sets DEFAULT_MASTER to another member that really holds the master
+    # role: the one sentinel names if it does, otherwise the first member
+    # found. Sets REACHABLE_MEMBERS to the number of other members that
+    # answered.
+    find_role_master() {
+        DEFAULT_MASTER=''
+        REACHABLE_MEMBERS=0
+        _named="$(sentinel_get_master)"
+        if [ -n "${_named}" ] && [ "${_named}" != "${ANNOUNCE_IP}" ] && [ "$(redis_role_at "${_named}")" = "master" ]; then
+            DEFAULT_MASTER="${_named}"
+        fi
+        _i=0
+        while [ "${_i}" -lt "${REPLICA_COUNT}" ]; do
+            if [ "${_i}" != "${INDEX}" ]; then
+                _role="$(redis_role_at "${SERVICE}-announce-${_i}")"
+                if [ -n "${_role}" ]; then
+                    REACHABLE_MEMBERS=$((REACHABLE_MEMBERS + 1))
+                fi
+                if [ "${_role}" = "master" ] && [ -z "${DEFAULT_MASTER}" ]; then
+                    DEFAULT_MASTER="$(getent_hosts "${_i}" | awk '{ print $1 }')"
+                fi
+            fi
+            _i=$((_i + 1))
+        done
+    }
+
+    # Never follow a member that is not master: a replica of a replica
+    # forms a loop that sentinel cannot break. Wait for a master instead.
+    # Pod 0 makes itself master when no other member answers, as on a
+    # fresh install, or after MASTERLESS_WAIT_ROUNDS rounds of waiting.
     setup_defaults() {
         echo "Setting up defaults.."
         echo "  using statefulset index (${INDEX})"
-        if [ "${INDEX}" = "0" ]; then
-            echo "Setting this pod as master for redis and sentinel.."
-            echo "  using announce (${ANNOUNCE_IP})"
-            redis_update "${ANNOUNCE_IP}"
-            sentinel_update "${ANNOUNCE_IP}"
-            echo "  make sure ${ANNOUNCE_IP} is not a slave (slaveof no one)"
-            sed -i "s/^.*slaveof.*//" "${REDIS_CONF}"
-        else
-            if [ "$RESOLVE_HOSTNAMES" = true ]; then
-                echo "Getting redis master hostname.."
-                echo "  blindly assuming (${SERVICE}-announce-0.${NAMESPACE}.svc) is master"
-                DEFAULT_MASTER="${SERVICE}-announce-0.${NAMESPACE}.svc"
-                echo "  identified redis (may be redis master) hostname (${DEFAULT_MASTER})"
-            else
-                echo "Getting redis master ip.."
-                echo "  blindly assuming (${SERVICE}-announce-0) or (${SERVICE}-server-0) are master"
-                DEFAULT_MASTER="$(getent_hosts 0 | awk '{ print $1 }')"
-                if [ -z "${DEFAULT_MASTER}" ]; then
-                    echo "Error: Unable to resolve redis master (getent hosts)."
-                    exit 1
-                fi
-                echo "  identified redis (may be redis master) ip (${DEFAULT_MASTER})"
+        _round=0
+        while true; do
+            find_role_master
+            if [ -n "${DEFAULT_MASTER}" ]; then
+                echo "  $(date) Found member holding the master role (${DEFAULT_MASTER})"
+                echo "Setting default slave config for redis and sentinel.."
+                redis_update "${DEFAULT_MASTER}"
+                sentinel_update "${DEFAULT_MASTER}"
+                return 0
             fi
-            echo "Setting default slave config for redis and sentinel.."
-            echo "  using master address (${DEFAULT_MASTER})"
-            redis_update "${DEFAULT_MASTER}"
-            sentinel_update "${DEFAULT_MASTER}"
-        fi
+            if [ "${INDEX}" = "0" ] && { [ "${REACHABLE_MEMBERS}" -eq 0 ] || [ "${_round}" -ge "${MASTERLESS_WAIT_ROUNDS}" ]; }; then
+                echo "Setting this pod as master for redis and sentinel.."
+                echo "  using announce (${ANNOUNCE_IP})"
+                redis_update "${ANNOUNCE_IP}"
+                sentinel_update "${ANNOUNCE_IP}"
+                echo "  make sure ${ANNOUNCE_IP} is not a slave (slaveof no one)"
+                sed -i "s/^.*slaveof.*//" "${REDIS_CONF}"
+                return 0
+            fi
+            _round=$((_round + 1))
+            echo "  $(date) No member holds the master role (${REACHABLE_MEMBERS} other members answered). Waiting, round ${_round}.."
+            sleep 10
+        done
     }
 
     redis_ping() {
@@ -256,7 +299,9 @@
         retry=${1}
         sleep=3
         for i in $(seq 1 "${retry}"); do
-            if [ "$(redis_ping)" = "PONG" ]; then
+            # Our own announce address is not a master we can follow: this
+            # pod is starting, and the address may still reach its predecessor.
+            if [ "${MASTER}" != "${ANNOUNCE_IP}" ] && [ "$(redis_ping)" = "PONG" ] && [ "$(redis_role_at "${MASTER}")" = "master" ]; then
                ping='PONG'
                break
             fi
@@ -275,6 +320,16 @@
         fi
         if [ "$(redis_ping_retry 3)" != "PONG" ]; then
             echo "  $(date) Can't ping redis master (${MASTER})"
+            # Sentinel may have failed over meanwhile. Forcing another
+            # failover would move a healthy new master again.
+            find_role_master
+            if [ -n "${DEFAULT_MASTER}" ]; then
+                echo "  $(date) Found member holding the master role (${DEFAULT_MASTER})"
+                echo "Updating redis and sentinel config.."
+                sentinel_update "${DEFAULT_MASTER}"
+                redis_update "${DEFAULT_MASTER}"
+                return 0
+            fi
             echo "Attempting to force failover (sentinel failover).."
             echo "  on sentinels (${SERVICE}-announce-*), sentinel grp (${MASTER_GROUP})"
             if sentinel_failover | grep -q 'NOGOODSLAVE' ; then
@@ -289,14 +344,14 @@
             echo "We should get redis master's ip now. Asking (get-master-addr-by-name).."
             echo "  sentinels (${SERVICE}-announce-*), sentinel grp (${MASTER_GROUP})"
             MASTER="$(sentinel_get_master)"
-            if [ "${MASTER}" ]; then
+            if [ "${MASTER}" ] && [ "${MASTER}" != "${ANNOUNCE_IP}" ]; then
                 echo "  $(date) Found redis master (${MASTER})"
                 echo "Updating redis and sentinel config.."
                 sentinel_update "${MASTER}"
                 redis_update "${MASTER}"
             else
-                echo "$(date) Error: Could not failover, exiting..."
-                exit 1
+                echo "  $(date) Sentinel still names no other master"
+                setup_defaults
             fi
         else
             echo "  $(date) Found reachable redis master (${MASTER})"
@@ -355,6 +410,7 @@
     SENTINEL_TLS_PORT={{ .Values.sentinel.tlsPort }}
     SERVICE={{ template "redis-ha.fullname" . }}
     REPLICA_COUNT={{ .Values.replicas }}
+    MASTERLESS_WAIT_ROUNDS=${MASTERLESS_WAIT_ROUNDS:-12}
     NAMESPACE="{{ .Release.Namespace }}"
     SENTINEL_TLS_REPLICATION_ENABLED={{ default false .Values.sentinel.tlsReplication }}
     REDIS_TLS_REPLICATION_ENABLED={{ default false .Values.redis.tlsReplication }}
