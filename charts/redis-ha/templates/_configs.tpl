@@ -571,42 +571,39 @@
     set -e
     }
 
-    # Announce services publish not-ready addresses; the headless ${SERVICE}
-    # does not, so it stops resolving once every pod is unready.
-    REPLICA_COUNT={{ .Values.replicas }}
     REDIS_ACTIVE_PORT="${REDIS_PORT}"
     [ "$REDIS_PORT" -eq 0 ] && REDIS_ACTIVE_PORT="${REDIS_TLS_PORT}"
 
     announce_info() {
     set +e
-        if [ "$REDIS_PORT" -eq 0 ]; then
-            redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -h "$1" -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} info replication 2>/dev/null | sed 's/\r//'
-        else
-            redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -h "$1" -p "${REDIS_PORT}" info replication 2>/dev/null | sed 's/\r//'
-        fi
+        redis_cli_at "$1" info replication 2>/dev/null | sed 's/\r//'
     set -e
     }
 
     announce_cmd() {
     set +e
-        host="$1"; shift
-        if [ "$REDIS_PORT" -eq 0 ]; then
-            redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -h "$host" -p "${REDIS_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} "$@"
-        else
-            redis-cli {{ if .Values.auth }} -a "${AUTH}" --no-auth-warning{{ end }} -h "$host" -p "${REDIS_PORT}" "$@"
-        fi
+        redis_cli_at "$@"
     set -e
     }
 
     announce_sentinel_cmd() {
     set +e
-        host="$1"; shift
-        if [ "$SENTINEL_PORT" -eq 0 ]; then
-            redis-cli {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} -h "$host" -p "${SENTINEL_TLS_PORT}" --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} "$@"
-        else
-            redis-cli {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} -h "$host" -p "${SENTINEL_PORT}" "$@"
-        fi
+        sentinel_cli "$@"
     set -e
+    }
+
+    # True when at least a quorum of sentinels flag the named master as down,
+    # so a master this pod cannot reach is not just cut off from this pod.
+    sentinels_see_master_down() {
+        _down=0
+        _k=0
+        while [ "$_k" -lt "$REPLICA_COUNT" ]; do
+            if announce_sentinel_cmd "${SERVICE}-announce-${_k}" sentinel master "${MASTER_GROUP}" 2>/dev/null | grep -q 's_down'; then
+                _down=$((_down + 1))
+            fi
+            _k=$((_k + 1))
+        done
+        [ "$_down" -ge "$QUORUM" ]
     }
 
     # True if no member holds the master role.
@@ -669,7 +666,7 @@
             return 1
         fi
         _best_host="${SERVICE}-announce-${_best}"
-        _best_ip=$(getent hosts "$_best_host" | awk '{ print $1 }')
+        _best_ip=$(getent_hosts "$_best" | awk '{ print $1 }')
         echo "ERROR: no member holds the master role. Promoting ${_best_host} (replication offset ${_best_off})."
         announce_cmd "$_best_host" replicaof no one
         _i=0
@@ -719,6 +716,18 @@
         while [ "$_k" -lt "$REPLICA_COUNT" ]; do
             announce_sentinel_cmd "${SERVICE}-announce-${_k}" sentinel remove "${MASTER_GROUP}"
             announce_sentinel_cmd "${SERVICE}-announce-${_k}" sentinel monitor "${MASTER_GROUP}" "$1" "$_monitor_port" "$QUORUM"
+            # A new monitor entry starts from sentinel's defaults. Put back what
+            # sentinel.conf sets, or the sentinel cannot authenticate to the master.
+            {{- if not .Values.sentinel.customConfig }}
+            {{- range $key, $value := .Values.sentinel.config }}
+            {{- if ne "maxclients" $key }}
+            announce_sentinel_cmd "${SERVICE}-announce-${_k}" sentinel set "${MASTER_GROUP}" {{ $key }} {{ $value }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.auth }}
+            announce_sentinel_cmd "${SERVICE}-announce-${_k}" sentinel set "${MASTER_GROUP}" auth-pass "${AUTH}"
+            {{- end }}
             _k=$((_k + 1))
         done
         echo "Repointed sentinels: monitor ${MASTER_GROUP} ${1}:${_monitor_port} quorum ${QUORUM}"
@@ -743,11 +752,7 @@
             return 0
         fi
         echo "ERROR: no member holds the master role. Forcing a failover..."
-        if [ "$SENTINEL_PORT" -eq 0 ]; then
-            redis-cli -h "${SERVICE}" -p "${SENTINEL_TLS_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} --tls --cacert /tls-certs/{{ .Values.tls.caCertFile }} {{ if ne (default "yes" .Values.sentinel.authClients) "no"}} --cert /tls-certs/{{ .Values.tls.certFile }} --key /tls-certs/{{ .Values.tls.keyFile }}{{ end }} sentinel failover "${MASTER_GROUP}" || true
-        else
-            redis-cli -h "${SERVICE}" -p "${SENTINEL_PORT}" {{ if .Values.sentinel.auth }} -a "${SENTINELAUTH}" --no-auth-warning{{ end }} sentinel failover "${MASTER_GROUP}" || true
-        fi
+        sentinel_failover || true
         # SENTINEL FAILOVER returns -NOGOODSLAVE when no candidate looks
         # fresh; promote directly instead.
         sleep {{ .Values.splitBrainDetection.retryInterval }}
@@ -826,12 +831,16 @@
                 # Agreeing with sentinel is not enough: the named master may
                 # itself be a replica, leaving the set with no master at all.
                 master_actual_role
-                if [ -z "${MASTER_ACTUAL_ROLE}" ] || [ "${MASTER_ACTUAL_ROLE}" = "master" ]; then
-                    # healthy, or unreachable (sentinel's own down detection handles that)
+                if [ "${MASTER_ACTUAL_ROLE}" = "master" ]; then
+                    STALE_MASTER_COUNT=0
+                elif [ -z "${MASTER_ACTUAL_ROLE}" ] && ! sentinels_see_master_down; then
+                    # Unreachable from this pod only: sentinel's own down detection decides.
                     STALE_MASTER_COUNT=0
                 else
+                    # A named master that stays down for several checks gets no
+                    # failover when sentinel finds no good replica either.
                     STALE_MASTER_COUNT=$((STALE_MASTER_COUNT + 1))
-                    echo "WARNING: Sentinel names ${MASTER} as master but its actual role is '${MASTER_ACTUAL_ROLE}' (set may be masterless). Failure count: $STALE_MASTER_COUNT/$MAX_STALE_MASTER_FAILURES"
+                    echo "WARNING: Sentinel names ${MASTER} as master but its actual role is '${MASTER_ACTUAL_ROLE:-unreachable}' (set may be masterless). Failure count: $STALE_MASTER_COUNT/$MAX_STALE_MASTER_FAILURES"
                     if [ "$STALE_MASTER_COUNT" -ge "$MAX_STALE_MASTER_FAILURES" ]; then
                         echo "ERROR: Sentinel-named master has not held the master role for $MAX_STALE_MASTER_FAILURES consecutive checks. Healing..."
                         heal_stale_sentinel
