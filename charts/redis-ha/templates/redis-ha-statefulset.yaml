@@ -285,7 +285,8 @@ spec:
         {{- if .Values.redis.customCommand }}
 {{ toYaml .Values.redis.customCommand | indent 10 }}
         {{- else }}
-          - redis-server
+          - sh
+          - /readonly-config/redis-start.sh
         {{- end }}
         args:
         {{- if .Values.redis.customArgs }}

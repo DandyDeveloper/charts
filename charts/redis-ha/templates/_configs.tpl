@@ -427,6 +427,8 @@
     {{- include "lib.sh" . }}
 
     mkdir -p /data/conf/
+    # A pod start, not a container restart: see redis-start.sh.
+    rm -f /data/conf/.redis-started
 
     echo "Initializing config.."
     copy_config
@@ -467,6 +469,43 @@
     fi
 
     echo "$(date) Ready..."
+{{- end }}
+
+{{- define "redis-start.sh" }}
+    {{- include "vars.sh" . }}
+
+    set -eu
+
+    {{- include "lib.sh" . }}
+
+    # config-init removes the marker on every pod start, so finding it means
+    # the redis container restarted inside a running pod: a crash, an OOM
+    # kill or a failed liveness probe. If sentinel still names this node as
+    # master, its data is older than its replicas' data. Starting it as
+    # master would make every replica resync from that older data. Ask
+    # sentinel to promote a replica first, and start as its replica.
+    if [ -f /data/conf/.redis-started ]; then
+        identify_announce_ip
+        MASTER="$(sentinel_get_master)"
+        if [ -n "${ANNOUNCE_IP}" ] && [ "${MASTER}" = "${ANNOUNCE_IP}" ]; then
+            echo "$(date) Restarted while sentinel names this node as master; failing over first.."
+            echo "  sentinel replied: $(sentinel_failover)"
+            _wait=0
+            while [ "${_wait}" -lt 30 ] && [ "$(sentinel_get_master)" = "${ANNOUNCE_IP}" ]; do
+                sleep 1
+                _wait=$((_wait + 1))
+            done
+            MASTER="$(sentinel_get_master)"
+            if [ -n "${MASTER}" ] && [ "${MASTER}" != "${ANNOUNCE_IP}" ]; then
+                sed -i -e '/^slaveof /d' -e '/^replicaof /d' "${REDIS_CONF}"
+                redis_update "${MASTER}"
+            else
+                echo "  $(date) No other master; starting with the local data."
+            fi
+        fi
+    fi
+    touch /data/conf/.redis-started
+    exec redis-server "$@"
 {{- end }}
 
 {{- define "trigger-failover-if-master.sh" }}
