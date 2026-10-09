@@ -208,7 +208,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `sentinel.customConfig` | Allows for custom sentinel.conf files to be applied. If this is used then `sentinel.config` is ignored | string | `""` |
 | `sentinel.existingSecret` | An existing secret containing a key defined by `sentinel.authKey` that configures `requirepass` in the conf parameters (Requires `sentinel.auth: enabled`, cannot be used in conjunction with `.Values.sentinel.password`) | string | `""` |
 | `sentinel.extraVolumeMounts` | additional volumeMounts for Sentinel container | list | `[]` |
-| `sentinel.lifecycle` | Container Lifecycle Hooks for sentinel container. Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ | object | `{}` |
+| `sentinel.lifecycle` | Container Lifecycle Hooks for sentinel container. The default preStop hook keeps sentinel running while the redis container's preStop hook fails the master over. Without it, sentinel stops first and the failover request fails. Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ | object | see values.yaml |
 | `sentinel.livenessProbe.enabled` |  | bool | `true` |
 | `sentinel.livenessProbe.failureThreshold` | Failure threshold for liveness probe | int | `5` |
 | `sentinel.livenessProbe.initialDelaySeconds` | Initial delay in seconds for liveness probe | int | `30` |
