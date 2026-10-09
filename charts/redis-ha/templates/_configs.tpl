@@ -543,6 +543,18 @@
       is_master=$(redis_local info replication | grep -c 'role:master' || true)
     }
     get_redis_role
+    if [ "$is_master" -ne 1 ]; then
+      # A terminating replica must not be promoted. A failover that started
+      # before sentinel saw the new priority can still pick it, so watch for
+      # a few seconds and hand the role on if that happens.
+      redis_local config set replica-priority 0 >/dev/null 2>&1 || true
+      waited=0
+      while [ "$is_master" -ne 1 ] && [ "$waited" -lt 10 ]; do
+        sleep 1
+        get_redis_role
+        waited=$((waited + 1))
+      done
+    fi
     if [ "$is_master" -eq 1 ]; then
       echo "This node is currently master, we trigger a failover."
       # Hold writes during the handoff. A write this node accepts after the
@@ -584,6 +596,8 @@
         echo "Failover did not complete within 30s."
         exit 1
       fi
+      # This node is now a terminating replica: keep the next failover off it.
+      redis_local config set replica-priority 0 >/dev/null 2>&1 || true
       echo "Failover successful"
     fi
 {{- end }}
@@ -1142,13 +1156,20 @@
     }
     # The redis container's preStop hook asks this sentinel to fail over.
     # Kubernetes stops both containers at once, so keep this sentinel running
-    # until the local redis is no longer master.
+    # until the local redis is no longer master. A replica watches for 10s
+    # whether it gets promoted anyway, so stay up at least that long.
     waited=0
-    while [ "$waited" -lt 40 ] && [ "$(redis_role)" = "master" ]; do
+    was_master=0
+    while [ "$waited" -lt 40 ]; do
+      if [ "$(redis_role)" = "master" ]; then
+        was_master=1
+      elif [ "$waited" -ge 12 ]; then
+        break
+      fi
       sleep 1
       waited=$((waited + 1))
     done
-    if [ "$waited" -gt 0 ]; then
+    if [ "$was_master" -eq 1 ]; then
       # Give this sentinel time to publish the new configuration.
       sleep 5
     fi
