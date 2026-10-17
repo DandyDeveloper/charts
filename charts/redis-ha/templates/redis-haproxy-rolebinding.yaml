@@ -6,11 +6,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-haproxy
   namespace: {{ .Release.Namespace | quote }}
   labels:
-{{ include "labels.standard" . | indent 4 }}
-    app.kubernetes.io/component: haproxy
-    {{- range $key, $value := .Values.extraLabels }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ include "redis-ha.labels" (dict "context" . "defaults" (dict "component" "haproxy" "app.kubernetes.io/component" "haproxy") "customLabels" (list .Values.extraLabels)) | indent 4 }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "redis-ha.serviceAccountName" . }}-haproxy

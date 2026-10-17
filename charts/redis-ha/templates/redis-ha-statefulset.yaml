@@ -8,18 +8,14 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-server
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{ template "redis-ha.fullname" . }}: replica
-    {{- range $key, $value := .Values.extraLabels }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-{{ include "labels.standard" . | indent 4 }}
+{{ include "redis-ha.labels" (dict "context" . "customLabels" (list .Values.extraLabels) "required" (dict (include "redis-ha.fullname" .) "replica")) | indent 4 }}
   annotations:
 {{ toYaml .Values.redis.annotations | indent 4 }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/name: {{ template "redis-ha.name" . }}
+      release: {{ .Release.Name }}
+      app: {{ template "redis-ha.name" . }}
   serviceName: {{ template "redis-ha.fullname" . }}
   replicas: {{ .Values.replicas }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}
@@ -41,15 +37,7 @@ spec:
         prometheus.io/path: {{ .Values.exporter.scrapePath }}
       {{- end }}
       labels:
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/name: {{ template "redis-ha.name" . }}
-        {{ template "redis-ha.fullname" . }}: replica
-        {{- range $key, $value := .Values.labels }}
-        {{ $key }}: {{ $value | toString }}
-        {{- end }}
-        {{- range $key, $value := .Values.extraLabels }}
-        {{ $key }}: {{ $value | quote }}
-        {{- end }}
+{{ include "redis-ha.labels" (dict "context" . "customLabels" (list .Values.labels .Values.extraLabels) "required" (dict (include "redis-ha.fullname" .) "replica")) | indent 8 }}
     spec:
       {{- if .Values.redis.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.redis.terminationGracePeriodSeconds }}
@@ -79,8 +67,8 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  app.kubernetes.io/name: {{ template "redis-ha.name" . }}
-                  app.kubernetes.io/instance: {{ .Release.Name }}
+                  app: {{ template "redis-ha.name" . }}
+                  release: {{ .Release.Name }}
                   {{ template "redis-ha.fullname" . }}: replica
               topologyKey: kubernetes.io/hostname
     {{- else }}
@@ -89,8 +77,8 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app.kubernetes.io/name: {{ template "redis-ha.name" . }}
-                    app.kubernetes.io/instance: {{ .Release.Name }}
+                    app: {{ template "redis-ha.name" . }}
+                    release: {{ .Release.Name }}
                     {{ template "redis-ha.fullname" . }}: replica
                 topologyKey: kubernetes.io/hostname
     {{- end }}
@@ -102,8 +90,8 @@ spec:
         whenUnsatisfiable: {{ .Values.topologySpreadConstraints.whenUnsatisfiable | default "ScheduleAnyway" }}
         labelSelector:
           matchLabels:
-            app.kubernetes.io/name: {{ template "redis-ha.name" . }}
-            app.kubernetes.io/instance: {{ .Release.Name }}
+            app: {{ template "redis-ha.name" . }}
+            release: {{ .Release.Name }}
             {{ template "redis-ha.fullname" . }}: replica
       {{- end }}
       {{- if .Values.imagePullSecrets }}

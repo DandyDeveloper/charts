@@ -5,7 +5,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-service-test
   namespace: {{ .Release.Namespace | quote }}
   labels:
-{{ include "labels.standard" . | indent 4 }}
+{{ include "redis-ha.labels" (dict "context" .) | indent 4 }}
   annotations:
   {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | indent 4 }}

@@ -10,10 +10,7 @@ metadata:
   name: {{ $fullName }}-announce-{{ $i }}
   namespace: {{ $namespace | quote }}
   labels:
-{{ include "labels.standard" $root | indent 4 }}
-    {{- range $key, $value := $root.Values.extraLabels }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ include "redis-ha.labels" (dict "context" $root "customLabels" (list $root.Values.extraLabels)) | indent 4 }}
   annotations:
 {{- if (semverCompare "<=1.10-0" $.Capabilities.KubeVersion.Version) }}
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
@@ -58,7 +55,7 @@ spec:
     targetPort: {{ $root.Values.exporter.portName }}
   {{- end }}
   selector:
-    app.kubernetes.io/instance: {{ $root.Release.Name }}
-    app.kubernetes.io/name: {{ include "redis-ha.name" $root }}
+    release: {{ $root.Release.Name }}
+    app: {{ include "redis-ha.name" $root }}
     "statefulset.kubernetes.io/pod-name": {{ $fullName }}-server-{{ $i }}
 {{- end }}

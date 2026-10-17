@@ -5,11 +5,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-haproxy
   namespace: {{ .Release.Namespace | quote }}
   labels:
-{{ include "labels.standard" . | indent 4 }}
-    app.kubernetes.io/component: haproxy
-    {{- range $key, $value := .Values.extraLabels }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ include "redis-ha.labels" (dict "context" . "defaults" (dict "component" "haproxy" "app.kubernetes.io/component" "haproxy") "customLabels" (list .Values.extraLabels)) | indent 4 }}
   {{- if .Values.haproxy.deploymentAnnotations }}
   annotations:
     {{- range $key, $value := .Values.haproxy.deploymentAnnotations }}
@@ -25,22 +21,14 @@ spec:
   replicas: {{ .Values.haproxy.replicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/component: haproxy
+      app: {{ template "redis-ha.name" . }}-haproxy
+      release: {{ .Release.Name }}
+      component: haproxy
   template:
     metadata:
       name: {{ template "redis-ha.fullname" . }}-haproxy
       labels:
-        app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: haproxy
-        {{- range $key, $value := .Values.haproxy.labels }}
-        {{ $key }}: {{ $value | toString }}
-        {{- end }}
-        {{- range $key, $value := .Values.extraLabels }}
-        {{ $key }}: {{ $value | quote }}
-        {{- end }}
+{{ include "redis-ha.labels" (dict "context" . "defaults" (dict "app" (printf "%s-haproxy" (include "redis-ha.name" .)) "app.kubernetes.io/name" (printf "%s-haproxy" (include "redis-ha.name" .)) "component" "haproxy" "app.kubernetes.io/component" "haproxy") "customLabels" (list .Values.haproxy.labels .Values.extraLabels)) | indent 8 }}
       annotations:
       {{- if and (.Values.haproxy.metrics.enabled) (not .Values.haproxy.metrics.serviceMonitor.enabled)  }}
         prometheus.io/port: "{{ .Values.haproxy.metrics.port }}"
@@ -78,9 +66,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
-                  app.kubernetes.io/instance: {{ .Release.Name }}
-                  app.kubernetes.io/component: haproxy
+                  app: {{ template "redis-ha.name" . }}-haproxy
+                  release: {{ .Release.Name }}
+                  component: haproxy
               topologyKey: kubernetes.io/hostname
     {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -88,9 +76,9 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
-                    app.kubernetes.io/instance: {{ .Release.Name }}
-                    app.kubernetes.io/component: haproxy
+                    app: {{ template "redis-ha.name" . }}-haproxy
+                    release: {{ .Release.Name }}
+                    component: haproxy
                 topologyKey: kubernetes.io/hostname
     {{- end }}
     {{- end }}
@@ -101,9 +89,9 @@ spec:
         whenUnsatisfiable: {{ .Values.topologySpreadConstraints.whenUnsatisfiable | default "ScheduleAnyway" }}
         labelSelector:
           matchLabels:
-            app.kubernetes.io/name: {{ template "redis-ha.name" . }}-haproxy
-            app.kubernetes.io/instance: {{ .Release.Name }}
-            app.kubernetes.io/component: haproxy
+            app: {{ template "redis-ha.name" . }}-haproxy
+            release: {{ .Release.Name }}
+            component: haproxy
       {{- end }}
       initContainers:
       - name: config-init

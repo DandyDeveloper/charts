@@ -5,13 +5,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}
   namespace: {{ .Values.exporter.serviceMonitor.namespace | default .Release.Namespace | quote }}
   labels:
-{{ include "labels.standard" . | indent 4 }}
-    {{- range $key, $value := .Values.extraLabels }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-    {{- range $key, $value := .Values.exporter.serviceMonitor.labels }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ include "redis-ha.labels" (dict "context" . "customLabels" (list .Values.extraLabels .Values.exporter.serviceMonitor.labels)) | indent 4 }}
 spec:
   endpoints:
   - targetPort: {{ .Values.exporter.port }}
@@ -41,7 +35,7 @@ spec:
     - {{ .Release.Namespace | quote }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ template "redis-ha.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      app: {{ template "redis-ha.name" . }}
+      release: {{ .Release.Name }}
       exporter: enabled
 {{- end }}
