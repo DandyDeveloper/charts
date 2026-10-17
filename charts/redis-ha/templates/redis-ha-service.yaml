@@ -4,16 +4,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
-{{ include "labels.standard" . | indent 4 }}
-{{- if .Values.exporter.enabled }}
-    exporter: enabled
-{{- end }}
-{{- range $key, $value := .Values.extraLabels }}
-    {{ $key }}: {{ $value | quote }}
-{{- end }}
-{{- range $key, $value := .Values.serviceLabels }}
-    {{ $key }}: {{ $value | quote }}
-{{- end }}
+{{ include "redis-ha.labels" (dict "context" . "defaults" (ternary (dict "exporter" "enabled") (dict) .Values.exporter.enabled) "customLabels" (list .Values.extraLabels .Values.serviceLabels)) | indent 4 }}
   annotations:
   {{- if .Values.serviceAnnotations }}
 {{ toYaml .Values.serviceAnnotations | indent 4 }}

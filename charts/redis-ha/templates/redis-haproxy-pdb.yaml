@@ -5,10 +5,7 @@ metadata:
   name: {{ template "redis-ha.fullname" . }}-haproxy-pdb
   namespace: {{ .Release.Namespace | quote }}
   labels:
-{{ include "labels.standard" . | indent 4 }}
-    {{- range $key, $value := .Values.extraLabels }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
+{{ include "redis-ha.labels" (dict "context" . "customLabels" (list .Values.extraLabels)) | indent 4 }}
 spec:
   selector:
     matchLabels:

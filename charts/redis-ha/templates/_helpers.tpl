@@ -46,6 +46,29 @@ app: {{ template "redis-ha.name" . }}
 heritage: {{ .Release.Service | quote }}
 release: {{ .Release.Name | quote }}
 chart: {{ template "chartref" . }}
+app.kubernetes.io/name: {{ template "redis-ha.name" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
+helm.sh/chart: {{ template "chartref" . }}
+{{- end -}}
+
+{{/*
+Merge legacy and standard label defaults with custom label maps in order.
+Custom values override defaults, except legacy labels used by selectors and
+explicit required labels. Render each key once and keep all values strings.
+Arguments: context, defaults (optional), customLabels (optional list),
+required (optional map of labels that must retain their chart values).
+*/}}
+{{- define "redis-ha.labels" -}}
+{{- $labels := mergeOverwrite (include "labels.standard" .context | fromYaml) (default (dict) .defaults) -}}
+{{- $required := mergeOverwrite (pick $labels "app" "release" "component" "exporter") (default (dict) .required) -}}
+{{- range .customLabels -}}
+  {{- $labels = mergeOverwrite $labels (deepCopy (default (dict) .)) -}}
+{{- end -}}
+{{- $labels = mergeOverwrite $labels $required -}}
+{{- range $key, $value := $labels }}
+{{ $key }}: {{ $value | toString | quote }}
+{{- end -}}
 {{- end -}}
 
 {{- /*
