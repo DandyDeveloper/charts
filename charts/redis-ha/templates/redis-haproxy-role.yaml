@@ -18,5 +18,12 @@ rules:
     - endpoints
   verbs:
     - get
+# EndpointSlices supersede the Endpoints API, which is deprecated as of Kubernetes v1.33.
+- apiGroups:
+    - discovery.k8s.io
+  resources:
+    - endpointslices
+  verbs:
+    - get
 {{- end }}
 {{- end }}
