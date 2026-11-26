@@ -99,6 +99,9 @@ spec:
       - maxSkew: {{ .Values.topologySpreadConstraints.maxSkew | default 1 }}
         topologyKey: {{ .Values.topologySpreadConstraints.topologyKey | default "topology.kubernetes.io/zone" }}
         whenUnsatisfiable: {{ .Values.topologySpreadConstraints.whenUnsatisfiable | default "ScheduleAnyway" }}
+        {{- with .Values.topologySpreadConstraints.nodeTaintsPolicy }}
+        nodeTaintsPolicy: {{ . | quote }}
+        {{- end }}
         labelSelector:
           matchLabels:
             app: {{ template "redis-ha.name" . }}-haproxy

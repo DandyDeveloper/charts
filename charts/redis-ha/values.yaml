@@ -738,6 +738,8 @@ topologySpreadConstraints:
   enabled: false
   # -- Max skew of pods tolerated
   maxSkew: ""
+  # -- Node taint inclusion policy (Honor or Ignore); empty preserves the Kubernetes default
+  nodeTaintsPolicy: ""
   # -- Topology key for spread constraints
   topologyKey: ""
   # -- Enforcement policy, hard or soft

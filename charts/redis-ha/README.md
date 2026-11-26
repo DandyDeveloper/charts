@@ -192,6 +192,7 @@ The following table lists the configurable parameters of the Redis chart and the
 | `tolerations` |  | list | `[]` |
 | `topologySpreadConstraints.enabled` | Enable topology spread constraints | bool | `false` |
 | `topologySpreadConstraints.maxSkew` | Max skew of pods tolerated | string | `""` |
+| `topologySpreadConstraints.nodeTaintsPolicy` | Node taint inclusion policy (Honor or Ignore); empty preserves the Kubernetes default | string | `""` |
 | `topologySpreadConstraints.topologyKey` | Topology key for spread constraints | string | `""` |
 | `topologySpreadConstraints.whenUnsatisfiable` | Enforcement policy, hard or soft | string | `""` |
 
